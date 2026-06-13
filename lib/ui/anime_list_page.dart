@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/anime.dart';
 import '../services/anime_service.dart';
+import 'anime_detail_page.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
@@ -264,7 +265,12 @@ class AnimeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to details
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnimeDetailPage(anime: anime),
+          ),
+        );
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,10 +288,10 @@ class AnimeCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Hero(
-                  tag: 'anime_${anime.id}',
+              child: Hero(
+                tag: 'anime_${anime.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
                   child: anime.thumbnail != null
                       ? Image.network(
                           anime.thumbnail!,
