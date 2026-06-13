@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'ui/anime_list_page.dart';
 
 void main() {
@@ -27,6 +28,9 @@ class AkiraApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
+        textTheme: GoogleFonts.poppinsTextTheme(
+          ThemeData.dark().textTheme,
+        ),
       ),
       home: const AnimeListPage(),
     );

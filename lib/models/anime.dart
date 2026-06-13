@@ -29,7 +29,9 @@ class Anime {
 
     return Anime(
       id: json['_id'],
-      name: json['name'],
+      name: (json['englishName'] != null && json['englishName'].toString().isNotEmpty)
+          ? json['englishName']
+          : json['name'],
       thumbnail: thumbnail,
     );
   }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/anime.dart';
 
@@ -11,31 +10,52 @@ class AnimeService {
     int limit = 40,
     int page = 1,
   }) async {
-    const String query = r'''
-      query($search: SearchInput, $limit: Int, $page: Int, $translationType: VaildTranslationTypeEnumType, $countryOrigin: VaildCountryOriginEnumType) {
-        shows(search: $search, limit: $limit, page: $page, translationType: $translationType, countryOrigin: $countryOrigin) {
+    // Determine query and variables based on whether it's a search or a generic fetch
+    final bool isSearch = queryText.isNotEmpty;
+
+    final String queryTypes = isSearch
+        ? r'$search: SearchInput!'
+        : r'$search: SearchInput, $limit: Int, $page: Int, $translationType: VaildTranslationTypeEnumType, $countryOrigin: VaildCountryOriginEnumType';
+
+    final String queryFields = isSearch
+        ? 'shows(search: \$search)'
+        : 'shows(search: \$search, limit: \$limit, page: \$page, translationType: \$translationType, countryOrigin: \$countryOrigin)';
+
+    final String query = '''
+      query($queryTypes) {
+        $queryFields {
           edges {
             _id
             name
+            englishName
             thumbnails
           }
         }
       }
     ''';
 
-    final variables = {
-      'search': {
-        'allowAdult': false,
-        'allowUnknown': false,
-        'query': queryText,
-      },
-      'limit': limit,
-      'page': page,
-      'translationType': 'sub',
-      'countryOrigin': 'ALL',
-    };
+    final Map<String, dynamic> variables = isSearch
+        ? {
+            'search': {
+              'allowAdult': false,
+              'allowUnknown': false,
+              'query': queryText,
+            },
+          }
+        : {
+            'search': {
+              'allowAdult': false,
+              'allowUnknown': false,
+              'query': '',
+            },
+            'limit': limit,
+            'page': page,
+            'translationType': 'sub',
+            'countryOrigin': 'ALL',
+          };
 
     try {
+      // Reverting to POST for stability with GraphQL
       final response = await http.post(
         Uri.parse(_apiUrl),
         headers: {
@@ -51,12 +71,12 @@ class AnimeService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['shows'] == null) {
-          throw Exception('Invalid API response');
+          return [];
         }
         final List edges = data['data']['shows']['edges'];
         return edges.map((e) => Anime.fromJson(e)).toList();
       } else {
-        throw Exception('Server returned ${response.statusCode}');
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       rethrow;
