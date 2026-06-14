@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'ui/anime_list_page.dart';
+import 'ui/anime_list_page/anime_list_page.dart';
 import 'services/theme_service.dart';
 
 void main() {

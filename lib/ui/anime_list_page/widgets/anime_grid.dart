@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/anime.dart';
+import '../../../models/anime.dart';
 import 'anime_card.dart';
 
 class AnimeGrid extends StatelessWidget {

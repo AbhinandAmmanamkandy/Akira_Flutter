@@ -1,10 +1,10 @@
-import '../models/anime.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/anime_grid.dart';
-import '../widgets/state_widgets.dart';
+import '../../models/anime.dart';
+import 'widgets/bottom_search_bar.dart';
+import 'widgets/anime_grid.dart';
+import 'widgets/state_widgets.dart';
 import 'package:flutter/material.dart';
-import '../services/anime_service.dart';
-import '../widgets/anime_list_header.dart';
+import '../../services/anime_service.dart';
+import 'widgets/anime_list_header.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../ui/settings_page.dart';
+import '../../settings_page/settings_page.dart';
 
 class AnimeListHeader extends StatelessWidget {
   final double appBarOpacity;

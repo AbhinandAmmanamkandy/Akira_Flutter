@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/anime.dart';
-import '../services/anime_service.dart';
-import '../models/anime_details.dart';
-import '../widgets/anime_detail_header.dart';
-import '../widgets/custom_chips.dart';
+import '../../models/anime.dart';
+import '../../services/anime_service.dart';
+import '../../models/anime_details.dart';
+import 'widgets/anime_detail_header.dart';
+import 'widgets/stat_pill.dart';
+import 'widgets/custom_badge.dart';
+import 'widgets/genre_chip.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
@@ -84,104 +86,27 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     );
   }
 
-  Widget _buildMetadataSection(BuildContext context, AnimeDetails details) {
+  Widget _buildMetadataSection(AnimeDetails details) {
     return Row(
       children: [
-        _buildInfoPill(
-          context,
-          Icons.wb_sunny_rounded,
-          details.season?.quarter ?? 'N/A',
-          'Season',
+        StatPill(
+          icon: Icons.wb_sunny_rounded,
+          value: details.season?.quarter ?? 'N/A',
+          label: 'Season',
         ),
         const SizedBox(width: 10),
-        _buildInfoPill(
-          context,
-          Icons.calendar_today_rounded,
-          details.season?.year?.toString() ?? 'N/A',
-          'Year',
+        StatPill(
+          icon: Icons.calendar_today_rounded,
+          value: details.season?.year?.toString() ?? 'N/A',
+          label: 'Year',
         ),
         const SizedBox(width: 10),
-        _buildInfoPill(
-          context,
-          Icons.video_library_rounded,
-          details.lastEpisode ?? 'N/A',
-          'Episodes',
+        StatPill(
+          icon: Icons.video_library_rounded,
+          value: details.lastEpisode ?? 'N/A',
+          label: 'Episodes',
         ),
       ],
-    );
-  }
-
-  Widget _buildInfoPill(
-    BuildContext context,
-    IconData icon,
-    String value,
-    String label,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: colorScheme.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                          fontSize: 13,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: colorScheme.primary.withValues(alpha: 0.8),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(BuildContext context, String text, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-      ),
     );
   }
 
@@ -264,9 +189,17 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                         ),
                       ),
                     if (_details!.status != null)
-                      _buildBadge(context, _details!.status!.toUpperCase(), colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer),
+                      CustomBadge(
+                        text: _details!.status!.toUpperCase(),
+                        bgColor: colorScheme.tertiaryContainer,
+                        textColor: colorScheme.onTertiaryContainer,
+                      ),
                     if (_details!.rating != null)
-                      _buildBadge(context, _details!.rating!, colorScheme.secondaryContainer, colorScheme.onSecondaryContainer),
+                      CustomBadge(
+                        text: _details!.rating!,
+                        bgColor: colorScheme.secondaryContainer,
+                        textColor: colorScheme.onSecondaryContainer,
+                      ),
                     ..._details!.genres.map((g) => GenreChip(label: g)),
                   ],
                 ),
@@ -274,7 +207,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
               ],
 
               // Metadata Bar
-              _buildMetadataSection(context, _details!),
+              _buildMetadataSection(_details!),
               const SizedBox(height: 32),
 
               // Description Section
