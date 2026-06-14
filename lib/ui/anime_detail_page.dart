@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../models/anime.dart';
 import '../widgets/custom_chips.dart';
 import '../widgets/info_tile.dart';
@@ -86,15 +87,21 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text(
-              widget.anime.description != null && widget.anime.description!.isNotEmpty
-                  ? widget.anime.description!.replaceAll(RegExp(r'<[^>]*>'), '')
-                  : 'No description available.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    height: 1.5,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+            widget.anime.description != null && widget.anime.description!.isNotEmpty
+                ? HtmlWidget(
+                    widget.anime.description!,
+                    textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  )
+                : Text(
+                    'No description available.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                   ),
-            ),
             const SizedBox(height: 24),
             if (widget.anime.rating != null) RatingBadge(rating: widget.anime.rating!),
           ],
