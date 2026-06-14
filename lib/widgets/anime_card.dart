@@ -63,7 +63,9 @@ class AnimeCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                anime.name,
+                (anime.englishName != null && anime.englishName!.isNotEmpty)
+                    ? anime.englishName!
+                    : anime.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(

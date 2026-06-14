@@ -23,7 +23,9 @@ class AnimeDetailHeader extends StatelessWidget {
       ),
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
-          anime.name,
+          (anime.englishName != null && anime.englishName!.isNotEmpty)
+              ? anime.englishName!
+              : anime.name,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

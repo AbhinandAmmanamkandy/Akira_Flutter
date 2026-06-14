@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'theme_service.dart';
 import '../models/anime.dart';
+import '../models/anime_details.dart';
 import 'package:http/http.dart' as http;
 
 class AnimeService {
@@ -71,6 +73,7 @@ class AnimeService {
       );
 
       if (response.statusCode == 200) {
+        developer.log('API Response (fetchAnimeDetails): ${response.body}');
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['shows'] == null) {
           return [];
@@ -85,40 +88,47 @@ class AnimeService {
     }
   }
 
-  Future<Anime?> fetchAnimeDetails(String id) async {
-    const String query = '''
-      query(\$id: String!) {
-        show(_id: \$id) {
+  Future<AnimeDetails?> fetchAnimeDetails(String id) async {
+    final String query = r'''
+      query($id: String!) {
+        show(_id: $id) {
           _id
           name
           englishName
           thumbnails
+          description
         }
       }
-    ''';
+    ''' ;
 
     try {
+      final body = jsonEncode({
+        'variables': {'id': id},
+        'query': query,
+      });
+      developer.log('Fetching Anime Details for ID: $id');
+
       final response = await http.post(
         Uri.parse(_apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Referer': 'https://allmanga.to',
+          'Referer': 'https://allanime.to',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
         },
-        body: jsonEncode({
-          'variables': {'id': id},
-          'query': query,
-        }),
+        body: body,
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['show'] == null) {
+          developer.log('No data returned for anime ID: $id');
           return null;
         }
-        return Anime.fromJson(data['data']['show']);
+        return AnimeDetails.fromJson(data['data']['show']);
       }
       return null;
     } catch (e) {
+      developer.log('Exception while fetching anime details for $id: $e');
       return null;
     }
   }

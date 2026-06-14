@@ -33,9 +33,7 @@ class Anime {
 
     return Anime(
       id: json['_id']?.toString() ?? '',
-      name: (json['englishName'] != null && json['englishName'].toString().isNotEmpty)
-          ? json['englishName'].toString()
-          : (json['name']?.toString() ?? 'Unknown'),
+      name: json['name']?.toString() ?? 'Unknown',
       englishName: json['englishName']?.toString(),
       thumbnail: thumbnail,
     );
