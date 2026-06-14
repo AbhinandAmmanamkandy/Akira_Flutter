@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'theme_service.dart';
+import 'api_client.dart';
 import '../models/anime.dart';
 import '../models/anime_details.dart';
-import 'package:http/http.dart' as http;
 
 class AnimeService {
-  static const String _apiUrl = 'https://api.allanime.day/api';
   final ThemeService _settings = ThemeService();
 
   Future<List<Anime>> fetchAnime({
@@ -59,17 +58,9 @@ class AnimeService {
           };
 
     try {
-      // Reverting to POST for stability with GraphQL
-      final response = await http.post(
-        Uri.parse(_apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Referer': 'https://allmanga.to',
-        },
-        body: jsonEncode({
-          'variables': variables,
-          'query': query,
-        }),
+      final response = await ApiClient.post(
+        query,
+        variables: variables,
       );
 
       if (response.statusCode == 200) {
@@ -102,19 +93,9 @@ class AnimeService {
     ''' ;
 
     try {
-      final body = jsonEncode({
-        'variables': {'id': id},
-        'query': query,
-      });
-
-      final response = await http.post(
-        Uri.parse(_apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Referer': 'https://allanime.to',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        },
-        body: body,
+      final response = await ApiClient.post(
+        query,
+        variables: {'id': id},
       );
 
       if (response.statusCode == 200) {
