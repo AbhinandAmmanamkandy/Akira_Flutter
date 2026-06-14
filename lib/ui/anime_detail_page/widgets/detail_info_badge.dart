@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class CustomBadge extends StatelessWidget {
+class DetailInfoBadge extends StatelessWidget {
   final String text;
   final Color bgColor;
   final Color textColor;
 
-  const CustomBadge({
+  const DetailInfoBadge({
     super.key,
     required this.text,
     required this.bgColor,

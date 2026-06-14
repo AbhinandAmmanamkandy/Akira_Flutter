@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../models/anime_details.dart';
-import 'widgets/anime_detail_header.dart';
-import 'widgets/stat_pill.dart';
-import 'widgets/custom_badge.dart';
-import 'widgets/genre_chip.dart';
+import 'widgets/detail_app_bar.dart';
+import 'widgets/detail_stat_pill.dart';
+import 'widgets/detail_info_badge.dart';
+import 'widgets/detail_genre_tag.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
@@ -78,7 +78,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            AnimeDetailHeader(anime: animeData),
+            DetailAppBar(anime: animeData),
             _buildContent(context, animeData),
           ],
         ),
@@ -89,19 +89,19 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   Widget _buildMetadataSection(AnimeDetails details) {
     return Row(
       children: [
-        StatPill(
+        DetailStatPill(
           icon: Icons.wb_sunny_rounded,
           value: details.season?.quarter ?? 'N/A',
           label: 'Season',
         ),
         const SizedBox(width: 10),
-        StatPill(
+        DetailStatPill(
           icon: Icons.calendar_today_rounded,
           value: details.season?.year?.toString() ?? 'N/A',
           label: 'Year',
         ),
         const SizedBox(width: 10),
-        StatPill(
+        DetailStatPill(
           icon: Icons.video_library_rounded,
           value: details.lastEpisode ?? 'N/A',
           label: 'Episodes',
@@ -189,18 +189,18 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                         ),
                       ),
                     if (_details!.status != null)
-                      CustomBadge(
+                      DetailInfoBadge(
                         text: _details!.status!.toUpperCase(),
                         bgColor: colorScheme.tertiaryContainer,
                         textColor: colorScheme.onTertiaryContainer,
                       ),
                     if (_details!.rating != null)
-                      CustomBadge(
+                      DetailInfoBadge(
                         text: _details!.rating!,
                         bgColor: colorScheme.secondaryContainer,
                         textColor: colorScheme.onSecondaryContainer,
                       ),
-                    ..._details!.genres.map((g) => GenreChip(label: g)),
+                    ..._details!.genres.map((g) => DetailGenreTag(label: g)),
                   ],
                 ),
                 const SizedBox(height: 24),

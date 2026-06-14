@@ -1,10 +1,10 @@
 import '../../models/anime.dart';
-import 'widgets/bottom_search_bar.dart';
-import 'widgets/anime_grid.dart';
-import 'widgets/state_widgets.dart';
+import 'widgets/list_search_bar.dart';
+import 'widgets/list_grid.dart';
+import 'widgets/list_state_views.dart';
 import 'package:flutter/material.dart';
 import '../../services/anime_service.dart';
-import 'widgets/anime_list_header.dart';
+import 'widgets/list_app_bar.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
@@ -95,13 +95,13 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   return CustomScrollView(
                     controller: _scrollController,
                     slivers: [
-                      AnimeListHeader(appBarOpacity: _appBarOpacity),
+                      ListAppBar(appBarOpacity: _appBarOpacity),
                       if (snapshot.connectionState == ConnectionState.waiting)
                         const SliverFillRemaining(
                           child: Center(child: CircularProgressIndicator()),
                         )
                       else if (snapshot.hasError)
-                        ErrorStateWidget(
+                        ListErrorView(
                           error: snapshot.error,
                           onRetry: () => setState(() {
                             _animeList = _animeService.fetchAnime(
@@ -110,7 +110,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                           }),
                         )
                       else if (!snapshot.hasData || snapshot.data!.isEmpty)
-                        EmptyStateWidget(
+                        ListEmptyView(
                           isSearching: _isSearching,
                           onClearSearch: () {
                             _searchController.clear();
@@ -118,7 +118,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                           },
                         )
                       else
-                        AnimeGrid(animeList: snapshot.data!),
+                        ListGrid(animeList: snapshot.data!),
                       const SliverToBoxAdapter(
                         child: SizedBox(height: 130), // Space for the bottom search bar
                       ),
@@ -126,7 +126,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   );
                 },
               ),
-              BottomSearchBar(
+              ListSearchBar(
                 controller: _searchController,
                 onSearch: _onSearch,
                 onChanged: (value) {

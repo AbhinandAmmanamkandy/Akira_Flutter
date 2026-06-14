@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class StatPill extends StatelessWidget {
+class DetailStatPill extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
 
-  const StatPill({
+  const DetailStatPill({
     super.key,
     required this.icon,
     required this.value,

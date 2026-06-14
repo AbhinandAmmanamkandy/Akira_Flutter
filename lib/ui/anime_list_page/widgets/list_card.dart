@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../models/anime.dart';
 import '../../anime_detail_page/anime_detail_page.dart';
 
-class AnimeCard extends StatelessWidget {
+class ListCard extends StatelessWidget {
   final Anime anime;
 
-  const AnimeCard({super.key, required this.anime});
+  const ListCard({super.key, required this.anime});
 
   @override
   Widget build(BuildContext context) {

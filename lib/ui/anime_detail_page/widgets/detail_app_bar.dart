@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../models/anime.dart';
 
-class AnimeDetailHeader extends StatelessWidget {
+class DetailAppBar extends StatelessWidget {
   final Anime anime;
 
-  const AnimeDetailHeader({super.key, required this.anime});
+  const DetailAppBar({super.key, required this.anime});
 
   @override
   Widget build(BuildContext context) {

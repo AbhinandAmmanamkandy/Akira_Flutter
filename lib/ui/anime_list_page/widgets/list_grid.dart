@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../models/anime.dart';
-import 'anime_card.dart';
+import 'list_card.dart';
 
-class AnimeGrid extends StatelessWidget {
+class ListGrid extends StatelessWidget {
   final List<Anime> animeList;
 
-  const AnimeGrid({super.key, required this.animeList});
+  const ListGrid({super.key, required this.animeList});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class AnimeGrid extends StatelessWidget {
           mainAxisSpacing: 16,
         ),
         delegate: SliverChildBuilderDelegate(
-          (context, index) => AnimeCard(anime: animeList[index]),
+          (context, index) => ListCard(anime: animeList[index]),
           childCount: animeList.length,
         ),
       ),

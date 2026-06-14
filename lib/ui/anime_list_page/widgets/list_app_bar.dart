@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../settings_page/settings_page.dart';
 
-class AnimeListHeader extends StatelessWidget {
+class ListAppBar extends StatelessWidget {
   final double appBarOpacity;
 
-  const AnimeListHeader({super.key, required this.appBarOpacity});
+  const ListAppBar({super.key, required this.appBarOpacity});
 
   @override
   Widget build(BuildContext context) {

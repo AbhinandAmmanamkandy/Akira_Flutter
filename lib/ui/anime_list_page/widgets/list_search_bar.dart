@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class BottomSearchBar extends StatelessWidget {
+class ListSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final Function(String) onSearch;
   final Function(String) onChanged;
 
-  const BottomSearchBar({
+  const ListSearchBar({
     super.key,
     required this.controller,
     required this.onSearch,

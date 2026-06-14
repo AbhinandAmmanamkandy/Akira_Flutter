@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ErrorStateWidget extends StatelessWidget {
+class ListErrorView extends StatelessWidget {
   final Object? error;
   final VoidCallback onRetry;
 
-  const ErrorStateWidget({
+  const ListErrorView({
     super.key,
     required this.error,
     required this.onRetry,
@@ -31,11 +31,11 @@ class ErrorStateWidget extends StatelessWidget {
   }
 }
 
-class EmptyStateWidget extends StatelessWidget {
+class ListEmptyView extends StatelessWidget {
   final bool isSearching;
   final VoidCallback onClearSearch;
 
-  const EmptyStateWidget({
+  const ListEmptyView({
     super.key,
     required this.isSearching,
     required this.onClearSearch,

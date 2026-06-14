@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class GenreChip extends StatelessWidget {
+class DetailGenreTag extends StatelessWidget {
   final String label;
 
-  const GenreChip({super.key, required this.label});
+  const DetailGenreTag({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
