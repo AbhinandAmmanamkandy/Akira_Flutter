@@ -1,9 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'theme_service.dart';
 import '../models/anime.dart';
+import 'package:http/http.dart' as http;
 
 class AnimeService {
   static const String _apiUrl = 'https://api.allanime.day/api';
+  final ThemeService _settings = ThemeService();
 
   Future<List<Anime>> fetchAnime({
     String queryText = '',
@@ -37,15 +39,15 @@ class AnimeService {
     final Map<String, dynamic> variables = isSearch
         ? {
             'search': {
-              'allowAdult': false,
-              'allowUnknown': false,
+              'allowAdult': _settings.allowAdult,
+              'allowUnknown': _settings.allowUnknown,
               'query': queryText,
             },
           }
         : {
             'search': {
-              'allowAdult': false,
-              'allowUnknown': false,
+              'allowAdult': _settings.allowAdult,
+              'allowUnknown': _settings.allowUnknown,
               'query': '',
             },
             'limit': limit,

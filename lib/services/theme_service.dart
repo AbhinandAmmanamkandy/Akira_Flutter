@@ -17,11 +17,27 @@ class ThemeService extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
+  bool _allowAdult = false;
+  bool get allowAdult => _allowAdult;
+
+  bool _allowUnknown = false;
+  bool get allowUnknown => _allowUnknown;
+
   void toggleMaterialUI() {
     _isMaterialUI = !_isMaterialUI;
     if (!_isMaterialUI) {
       _useSystemAccent = false;
     }
+    notifyListeners();
+  }
+
+  void toggleAllowAdult() {
+    _allowAdult = !_allowAdult;
+    notifyListeners();
+  }
+
+  void toggleAllowUnknown() {
+    _allowUnknown = !_allowUnknown;
     notifyListeners();
   }
 

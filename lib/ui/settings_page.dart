@@ -60,35 +60,35 @@ class SettingsPage extends StatelessWidget {
                       ],
                     ),
                     const SettingsSectionHeader(title: 'PREFERENCES'),
-                SettingsCard(
-                  children: [
-                    SettingsTile(
-                      icon: Icons.brightness_auto_outlined,
-                      title: 'Follow System',
-                      subtitle: 'Match system theme',
-                      trailing: Switch(
-                        value: themeService.themeMode == ThemeMode.system,
-                        onChanged: (value) => themeService.toggleFollowSystem(value),
-                        activeColor: colorScheme.primary,
-                      ),
-                    ),
-                    const SettingsDivider(),
-                    SettingsTile(
-                      icon: Icons.dark_mode_outlined,
-                      title: 'Dark Mode',
-                      subtitle: 'Better for your eyes',
-                      enabled: themeService.themeMode != ThemeMode.system,
-                      trailing: Switch(
-                        value: themeService.themeMode == ThemeMode.system
-                            ? MediaQuery.of(context).platformBrightness == Brightness.dark
-                            : themeService.themeMode == ThemeMode.dark,
-                        onChanged: themeService.themeMode != ThemeMode.system
-                            ? (value) => themeService.toggleDarkMode(value)
-                            : null,
-                        activeColor: colorScheme.primary,
-                      ),
-                    ),
-                    const SettingsDivider(),
+                    SettingsCard(
+                      children: [
+                        SettingsTile(
+                          icon: Icons.brightness_auto_outlined,
+                          title: 'Follow System',
+                          subtitle: 'Match system theme',
+                          trailing: Switch(
+                            value: themeService.themeMode == ThemeMode.system,
+                            onChanged: (value) => themeService.toggleFollowSystem(value),
+                            activeThumbColor: colorScheme.primary,
+                          ),
+                        ),
+                        const SettingsDivider(),
+                        SettingsTile(
+                          icon: Icons.dark_mode_outlined,
+                          title: 'Dark Mode',
+                          subtitle: 'Better for your eyes',
+                          enabled: themeService.themeMode != ThemeMode.system,
+                          trailing: Switch(
+                            value: themeService.themeMode == ThemeMode.system
+                                ? MediaQuery.of(context).platformBrightness == Brightness.dark
+                                : themeService.themeMode == ThemeMode.dark,
+                            onChanged: themeService.themeMode != ThemeMode.system
+                                ? (value) => themeService.toggleDarkMode(value)
+                                : null,
+                            activeThumbColor: colorScheme.primary,
+                          ),
+                        ),
+                        const SettingsDivider(),
                         SettingsTile(
                           icon: Icons.auto_awesome_outlined,
                           title: 'Material UI',
@@ -96,7 +96,7 @@ class SettingsPage extends StatelessWidget {
                           trailing: Switch(
                             value: themeService.isMaterialUI,
                             onChanged: (_) => themeService.toggleMaterialUI(),
-                            activeColor: colorScheme.primary,
+                            activeThumbColor: colorScheme.primary,
                           ),
                         ),
                         const SettingsDivider(),
@@ -110,7 +110,7 @@ class SettingsPage extends StatelessWidget {
                             onChanged: themeService.isMaterialUI
                                 ? (_) => themeService.toggleSystemAccent()
                                 : null,
-                            activeColor: colorScheme.primary,
+                            activeThumbColor: colorScheme.primary,
                           ),
                         ),
                         if (themeService.useSystemAccent && themeService.isMaterialUI) ...[
@@ -139,12 +139,31 @@ class SettingsPage extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ],
+                    ),
+                    const SettingsSectionHeader(title: 'CONTENT'),
+                    SettingsCard(
+                      children: [
+                        SettingsTile(
+                          icon: Icons.explicit_outlined,
+                          title: 'Allow Adult Content',
+                          subtitle: 'Include 18+ content in search',
+                          trailing: Switch(
+                            value: themeService.allowAdult,
+                            onChanged: (_) => themeService.toggleAllowAdult(),
+                            activeThumbColor: colorScheme.primary,
+                          ),
+                        ),
                         const SettingsDivider(),
                         SettingsTile(
-                          icon: Icons.translate_rounded,
-                          title: 'Language',
-                          subtitle: 'English (US)',
-                          onTap: () {},
+                          icon: Icons.help_outline_rounded,
+                          title: 'Allow Unknown Content',
+                          subtitle: 'Include content with unknown rating',
+                          trailing: Switch(
+                            value: themeService.allowUnknown,
+                            onChanged: (_) => themeService.toggleAllowUnknown(),
+                            activeThumbColor: colorScheme.primary,
+                          ),
                         ),
                       ],
                     ),
