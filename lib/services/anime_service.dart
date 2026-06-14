@@ -28,16 +28,7 @@ class AnimeService {
             _id
             name
             englishName
-            nativeName
             thumbnails
-            description
-            score
-            status
-            genres
-            type
-            season
-            studios
-            rating
           }
         }
       }
@@ -99,17 +90,7 @@ class AnimeService {
           _id
           name
           englishName
-          nativeName
           thumbnails
-          description
-          score
-          status
-          genres
-          type
-          season
-          studios
-          rating
-          availableEpisodes
         }
       }
     ''';
