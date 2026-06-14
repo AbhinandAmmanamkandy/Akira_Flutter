@@ -28,6 +28,7 @@ class AkiraApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
+        fontFamily: GoogleFonts.poppins().fontFamily,
         textTheme: GoogleFonts.poppinsTextTheme(
           ThemeData.dark().textTheme,
         ),

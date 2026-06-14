@@ -29,18 +29,18 @@ class AnimeListHeader extends StatelessWidget {
         opacity: appBarOpacity > 0.8 ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
         child: Text(
-          'Akira',
+          'AKIRA',
           style: TextStyle(
             color: colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
           ),
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground],
         background: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          padding: const EdgeInsets.fromLTRB(30, 0, 24, 24),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -54,23 +54,23 @@ class AnimeListHeader extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'Akira',
+                          'AKIRA',
                           style: TextStyle(
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w900,
-                            fontSize: 56,
+                            fontSize: 42,
                             height: 1.0,
                             letterSpacing: -2.0,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Text(
                           'HUB',
                           style: TextStyle(
                             color: colorScheme.primary,
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            letterSpacing: 1.5,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
