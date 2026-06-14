@@ -42,19 +42,59 @@ class AnimeCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Hero(
-                tag: 'anime_${anime.id}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: anime.thumbnail != null
-                      ? Image.network(
-                          anime.thumbnail!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _placeholder(context, Icons.broken_image),
-                        )
-                      : _placeholder(context, Icons.movie),
-                ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Hero(
+                      tag: 'anime_${anime.id}',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: anime.thumbnail != null
+                            ? Image.network(
+                                anime.thumbnail!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    _placeholder(context, Icons.broken_image),
+                              )
+                            : _placeholder(context, Icons.movie),
+                      ),
+                    ),
+                  ),
+                  if (anime.lastEpisode != null && anime.lastEpisode!.isNotEmpty)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondaryContainer
+                              .withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'EP ${anime.lastEpisode}',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer,
+                              ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

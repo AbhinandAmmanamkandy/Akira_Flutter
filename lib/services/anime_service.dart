@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'theme_service.dart';
 import '../models/anime.dart';
 import '../models/anime_details.dart';
@@ -33,6 +32,7 @@ class AnimeService {
             name
             englishName
             thumbnails
+            lastEpisodeInfo
           }
         }
       }
@@ -73,7 +73,6 @@ class AnimeService {
       );
 
       if (response.statusCode == 200) {
-        developer.log('API Response (fetchAnimeDetails): ${response.body}');
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['shows'] == null) {
           return [];
@@ -97,6 +96,7 @@ class AnimeService {
           englishName
           thumbnails
           description
+          lastEpisodeInfo
         }
       }
     ''' ;
@@ -106,7 +106,6 @@ class AnimeService {
         'variables': {'id': id},
         'query': query,
       });
-      developer.log('Fetching Anime Details for ID: $id');
 
       final response = await http.post(
         Uri.parse(_apiUrl),
@@ -121,14 +120,12 @@ class AnimeService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['show'] == null) {
-          developer.log('No data returned for anime ID: $id');
           return null;
         }
         return AnimeDetails.fromJson(data['data']['show']);
       }
       return null;
     } catch (e) {
-      developer.log('Exception while fetching anime details for $id: $e');
       return null;
     }
   }

@@ -1,14 +1,16 @@
 class Anime {
   final String id;
   final String name;
-  final String? englishName;
   final String? thumbnail;
+  final String? englishName;
+  final String? lastEpisode;
 
   Anime({
     required this.id,
     required this.name,
     this.englishName,
     this.thumbnail,
+    this.lastEpisode,
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) {
@@ -16,26 +18,24 @@ class Anime {
     String? thumbnail;
 
     if (thumbnails != null && thumbnails.isNotEmpty) {
-      try {
-        thumbnail = thumbnails.firstWhere(
-          (t) => t.toString().contains('https'),
-          orElse: () => thumbnails[0],
-        ).toString();
-      } catch (e) {
-        thumbnail = thumbnails[0].toString();
-      }
-
-      if (!thumbnail.contains('https')) {
-        thumbnail =
-            'https://wp.youtube-anime.com/aln.youtube-anime.com/$thumbnail';
+      for (var t in thumbnails) {
+        final str = t.toString();
+        if (str.startsWith('http')) {
+          thumbnail = str;
+          break;
+        }
       }
     }
+
+    final lastEpisodeInfo = json['lastEpisodeInfo'];
+    final String? lastEpisode = lastEpisodeInfo?['sub']?['episodeString']?.toString();
 
     return Anime(
       id: json['_id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown',
       englishName: json['englishName']?.toString(),
       thumbnail: thumbnail,
+      lastEpisode: lastEpisode,
     );
   }
 }

@@ -8,44 +8,19 @@ class AnimeDetails extends Anime {
     required super.name,
     super.englishName,
     super.thumbnail,
+    super.lastEpisode,
     this.description,
   });
 
   factory AnimeDetails.fromJson(Map<String, dynamic> json) {
-    String? description = json['description']?.toString();
-    if (description != null) {
-      // Basic HTML stripping and decoding
-      description = description
-          .replaceAll(RegExp(r'<[^>]*>'), '')
-          .replaceAll('&quot;', '"')
-          .replaceAll('&amp;', '&')
-          .replaceAll('#39;', "'")
-          .replaceAll('&rsquo;', "'")
-          .replaceAll('&ndash;', "–")
-          .trim();
-    }
-
+    final anime = Anime.fromJson(json);
     return AnimeDetails(
-      id: json['_id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      englishName: json['englishName']?.toString(),
-      thumbnail: _parseThumbnail(json['thumbnails']),
-      description: description,
+      id: anime.id,
+      name: anime.name,
+      englishName: anime.englishName,
+      thumbnail: anime.thumbnail,
+      lastEpisode: anime.lastEpisode,
+      description: json['description']?.toString(),
     );
-  }
-
-  static String? _parseThumbnail(dynamic thumbnails) {
-    if (thumbnails is List && thumbnails.isNotEmpty) {
-      String thumb = thumbnails.firstWhere(
-        (t) => t.toString().contains('https'),
-        orElse: () => thumbnails[0],
-      ).toString();
-
-      if (!thumb.contains('https')) {
-        thumb = 'https://wp.youtube-anime.com/aln.youtube-anime.com/$thumb';
-      }
-      return thumb;
-    }
-    return null;
   }
 }
