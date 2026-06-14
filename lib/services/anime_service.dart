@@ -78,7 +78,6 @@ class AnimeService {
       );
 
       if (response.statusCode == 200) {
-        print('API Response: ${response.body}');
         final data = jsonDecode(response.body);
         if (data['data'] == null || data['data']['shows'] == null) {
           return [];
@@ -86,7 +85,6 @@ class AnimeService {
         final List edges = data['data']['shows']['edges'];
         return edges.map((e) => Anime.fromJson(e)).toList();
       } else {
-        print('API Error Body: ${response.body}');
         throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
