@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/anime.dart';
 import '../services/anime_service.dart';
 import '../widgets/anime_card.dart';
+import 'settings_page.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
@@ -27,7 +28,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   void _onScroll() {
     final offset = _scrollController.offset;
-    final newOpacity = (offset / 80).clamp(0.0, 0.97);
+    final newOpacity = (offset / 120).clamp(0.0, 1.0);
     if (newOpacity != _appBarOpacity) {
       setState(() {
         _appBarOpacity = newOpacity;
@@ -71,6 +72,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
         }
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -82,26 +85,34 @@ class _AnimeListPageState extends State<AnimeListPage> {
               ],
             ),
           ),
-          child: FutureBuilder<List<Anime>>(
-            future: _animeList,
-            builder: (context, snapshot) {
-              return CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  _buildAppBar(context),
-                  if (snapshot.connectionState == ConnectionState.waiting)
-                    const SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (snapshot.hasError)
-                    _buildErrorState(snapshot.error)
-                  else if (!snapshot.hasData || snapshot.data!.isEmpty)
-                    _buildEmptyState()
-                  else
-                    _buildAnimeGrid(snapshot.data!),
-                ],
-              );
-            },
+          child: Stack(
+            children: [
+              FutureBuilder<List<Anime>>(
+                future: _animeList,
+                builder: (context, snapshot) {
+                  return CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      _buildAppBar(context),
+                      if (snapshot.connectionState == ConnectionState.waiting)
+                        const SliverFillRemaining(
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (snapshot.hasError)
+                        _buildErrorState(snapshot.error)
+                      else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                        _buildEmptyState()
+                      else
+                        _buildAnimeGrid(snapshot.data!),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: 130), // Space for the bottom search bar
+                      ),
+                    ],
+                  );
+                },
+              ),
+              _buildBottomSearchBar(context),
+            ],
           ),
         ),
       ),
@@ -109,104 +120,195 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SliverAppBar(
-      expandedHeight: _isSearching ? 0 : 160.0,
-      floating: false,
+      expandedHeight: 170.0,
       pinned: true,
       stretch: true,
-      backgroundColor: Theme.of(context)
-          .colorScheme
-          .surface
-          .withValues(alpha: _appBarOpacity),
+      backgroundColor: colorScheme.surface,
       elevation: 0,
-      centerTitle: true,
-      title: _isSearching ? _buildSearchField(context) : null,
-      flexibleSpace: _isSearching ? null : _buildFlexibleSpace(context),
-      actions: _isSearching ? [const SizedBox(width: 48)] : [],
-    );
-  }
-
-  Widget _buildSearchField(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 48,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        autofocus: true,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface,
-          fontSize: 16,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(20),
         ),
-        decoration: InputDecoration(
-          hintText: 'Search anime...',
-          border: InputBorder.none,
-          prefixIcon: IconButton(
-            icon: const Icon(Icons.arrow_back, size: 22),
-            onPressed: _toggleSearch,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
-                  onPressed: () {
-                    _searchController.clear();
-                    _onSearch('');
-                  },
-                )
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        onSubmitted: _onSearch,
-        onChanged: (value) => setState(() {}),
       ),
-    );
-  }
-
-  Widget _buildFlexibleSpace(BuildContext context) {
-    return FlexibleSpaceBar(
-      centerTitle: true,
-      expandedTitleScale: 1.5,
-      titlePadding: const EdgeInsets.only(bottom: 24),
-      title: InkWell(
-        onTap: _toggleSearch,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      automaticallyImplyLeading: false,
+      toolbarHeight: 70,
+      centerTitle: false,
+      title: AnimatedOpacity(
+        opacity: _appBarOpacity > 0.8 ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        child: Text(
+          'Akira',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+      ),
+      actions: [],
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground],
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                'Akira',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          'Akira',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 56,
+                            height: 1.0,
+                            letterSpacing: -2.0,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'HUB',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'YOUR ULTIMATE ANIME DESTINATION',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.search,
-                  size: 14,
-                  color: Theme.of(context).colorScheme.primary,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsPage()),
+                    );
+                  },
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.settings_rounded,
+                    size: 24,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomSearchBar(BuildContext context) {
+    return Positioned(
+      bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      left: 20,
+      right: 20,
+      child: Hero(
+        tag: 'search_bar',
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                width: 1.5,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: BackdropFilter(
+                filter: ColorFilter.mode(
+                  Colors.white.withValues(alpha: 0.05),
+                  BlendMode.overlay,
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search for anime...',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    ),
+                    border: InputBorder.none,
+                    prefixIcon: Container(
+                      margin: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.search_rounded,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 20),
+                            onPressed: () {
+                              _searchController.clear();
+                              _onSearch('');
+                              FocusScope.of(context).unfocus();
+                            },
+                          )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                  ),
+                  onSubmitted: _onSearch,
+                  onChanged: (value) {
+                    setState(() {
+                      _isSearching = value.isNotEmpty;
+                    });
+                  },
+                ),
+              ),
+            ),
           ),
         ),
       ),
