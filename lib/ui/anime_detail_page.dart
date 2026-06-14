@@ -3,6 +3,7 @@ import '../models/anime.dart';
 import '../services/anime_service.dart';
 import '../models/anime_details.dart';
 import '../widgets/anime_detail_header.dart';
+import '../widgets/custom_chips.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
@@ -83,68 +84,275 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     );
   }
 
+  Widget _buildMetadataSection(BuildContext context, AnimeDetails details) {
+    return Row(
+      children: [
+        _buildInfoPill(
+          context,
+          Icons.wb_sunny_rounded,
+          details.season?.quarter ?? 'N/A',
+          'Season',
+        ),
+        const SizedBox(width: 10),
+        _buildInfoPill(
+          context,
+          Icons.calendar_today_rounded,
+          details.season?.year?.toString() ?? 'N/A',
+          'Year',
+        ),
+        const SizedBox(width: 10),
+        _buildInfoPill(
+          context,
+          Icons.video_library_rounded,
+          details.lastEpisode ?? 'N/A',
+          'Episodes',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoPill(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: colorScheme.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: colorScheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                          fontSize: 13,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.primary.withValues(alpha: 0.8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(BuildContext context, String text, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+      ),
+    );
+  }
+
   Widget _buildContent(BuildContext context, Anime animeData) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_isLoadingDetails)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40.0),
+                padding: EdgeInsets.symmetric(vertical: 60.0),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (_details != null) ...[
+              // Action Buttons Row
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Watch Now'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.bookmark_border_rounded,
+                          color: colorScheme.onSecondaryContainer),
+                      padding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Genres & Status & Rating & Score
+              if (_details!.genres.isNotEmpty || _details!.status != null || _details!.rating != null || _details!.averageScore != null) ...[
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (_details!.averageScore != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, size: 14, color: Colors.black87),
+                            const SizedBox(width: 4),
+                            Text(
+                              (_details!.averageScore! / 10).toStringAsFixed(1),
+                              style: textTheme.labelSmall?.copyWith(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (_details!.status != null)
+                      _buildBadge(context, _details!.status!.toUpperCase(), colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer),
+                    if (_details!.rating != null)
+                      _buildBadge(context, _details!.rating!, colorScheme.secondaryContainer, colorScheme.onSecondaryContainer),
+                    ..._details!.genres.map((g) => GenreChip(label: g)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // Metadata Bar
+              _buildMetadataSection(context, _details!),
+              const SizedBox(height: 32),
+
+              // Description Section
               if (_details!.description != null && _details!.description!.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                Text(
-                  'Description',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Overview',
+                      style: textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
                   _details!.description!,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  style: textTheme.bodyLarge?.copyWith(
+                    height: 1.6,
+                    color: colorScheme.onSurfaceVariant,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ] else
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40.0),
                   child: Center(
-                    child: Text('No description available.'),
+                    child: Column(
+                      children: [
+                        Icon(Icons.notes_rounded,
+                            size: 40, color: colorScheme.outline),
+                        const SizedBox(height: 8),
+                        const Text('No description available.'),
+                      ],
+                    ),
                   ),
                 ),
             ] else ...[
-              const SizedBox(height: 20),
+              // Error State
               Center(
                 child: Column(
                   children: [
+                    const SizedBox(height: 40),
                     Icon(
-                      Icons.info_outline,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.outline,
+                      Icons.error_outline_rounded,
+                      size: 64,
+                      color: colorScheme.error,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Could not load additional details.',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      'Oops! Something went wrong',
+                      style: textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    TextButton.icon(
+                    Text(
+                      'We couldn\'t load the show details.',
+                      style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.tonalIcon(
                       onPressed: _fetchDetails,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try Again'),
                     ),
                   ],
                 ),
               ),
             ],
-            const SizedBox(height: 40),
+            const SizedBox(height: 60),
           ],
         ),
       ),

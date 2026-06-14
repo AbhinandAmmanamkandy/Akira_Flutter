@@ -88,6 +88,11 @@ class AnimeService {
           thumbnails
           description
           lastEpisodeInfo
+          season
+          genres
+          status
+          averageScore
+          rating
         }
       }
     ''' ;
