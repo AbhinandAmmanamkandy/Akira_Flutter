@@ -13,6 +13,7 @@ class Anime {
   final String? season;
   final List<String>? studios;
   final String? rating;
+  final Map<String, List<String>>? availableEpisodes;
 
   Anime({
     required this.id,
@@ -29,6 +30,7 @@ class Anime {
     this.season,
     this.studios,
     this.rating,
+    this.availableEpisodes,
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) {
@@ -78,6 +80,14 @@ class Anime {
       season: seasonStr,
       studios: (json['studios'] as List?)?.map((e) => e.toString()).toList(),
       rating: json['rating']?.toString(),
+      availableEpisodes: json['availableEpisodes'] is Map
+          ? (json['availableEpisodes'] as Map).map(
+              (key, value) => MapEntry(
+                key.toString(),
+                value is List ? value.map((e) => e.toString()).toList() : <String>[],
+              ),
+            )
+          : null,
     );
   }
 }

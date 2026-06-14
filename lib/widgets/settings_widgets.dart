@@ -63,6 +63,7 @@ class SettingsTile extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final bool enabled;
 
   const SettingsTile({
     super.key,
@@ -71,34 +72,44 @@ class SettingsTile extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
+      enabled: enabled,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+          color: enabled
+              ? colorScheme.primaryContainer.withValues(alpha: 0.2)
+              : colorScheme.onSurface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
-          color: colorScheme.primary,
+          color: enabled ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.3),
           size: 20,
         ),
       ),
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+          color: enabled ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.3),
+        ),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle!,
               style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
+                color: enabled
+                    ? colorScheme.onSurfaceVariant
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                 fontSize: 13,
               ),
             )

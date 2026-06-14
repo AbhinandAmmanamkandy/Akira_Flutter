@@ -91,4 +91,52 @@ class AnimeService {
       rethrow;
     }
   }
+
+  Future<Anime?> fetchAnimeDetails(String id) async {
+    const String query = '''
+      query(\$id: String!) {
+        show(_id: \$id) {
+          _id
+          name
+          englishName
+          nativeName
+          thumbnails
+          description
+          score
+          status
+          genres
+          type
+          season
+          studios
+          rating
+          availableEpisodes
+        }
+      }
+    ''';
+
+    try {
+      final response = await http.post(
+        Uri.parse(_apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Referer': 'https://allmanga.to',
+        },
+        body: jsonEncode({
+          'variables': {'id': id},
+          'query': query,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] == null || data['data']['show'] == null) {
+          return null;
+        }
+        return Anime.fromJson(data['data']['show']);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }

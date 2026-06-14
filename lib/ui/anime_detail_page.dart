@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../models/anime.dart';
+import '../services/anime_service.dart';
 import '../widgets/custom_chips.dart';
 import '../widgets/info_tile.dart';
 import '../widgets/rating_badge.dart';
@@ -17,6 +18,45 @@ class AnimeDetailPage extends StatefulWidget {
 
 class _AnimeDetailPageState extends State<AnimeDetailPage> {
   final ScrollController _scrollController = ScrollController();
+  final AnimeService _animeService = AnimeService();
+  String? _selectedType;
+  bool _isLoadingDetails = false;
+  Anime? _detailedAnime;
+
+  @override
+  void initState() {
+    super.initState();
+    _detailedAnime = widget.anime;
+    if (_detailedAnime!.availableEpisodes != null && _detailedAnime!.availableEpisodes!.isNotEmpty) {
+      _selectedType = _detailedAnime!.availableEpisodes!.keys.first;
+    } else {
+      _fetchDetails();
+    }
+  }
+
+  Future<void> _fetchDetails() async {
+    setState(() {
+      _isLoadingDetails = true;
+    });
+    try {
+      final details = await _animeService.fetchAnimeDetails(widget.anime.id);
+      if (details != null && mounted) {
+        setState(() {
+          _detailedAnime = details;
+          if (_detailedAnime!.availableEpisodes != null &&
+              _detailedAnime!.availableEpisodes!.isNotEmpty) {
+            _selectedType = _detailedAnime!.availableEpisodes!.keys.first;
+          }
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingDetails = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -104,9 +144,99 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   ),
             const SizedBox(height: 24),
             if (widget.anime.rating != null) RatingBadge(rating: widget.anime.rating!),
+            const SizedBox(height: 32),
+            _buildEpisodeSection(context),
+            const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEpisodeSection(BuildContext context) {
+    if (_isLoadingDetails) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_detailedAnime?.availableEpisodes == null || _detailedAnime!.availableEpisodes!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final types = _detailedAnime!.availableEpisodes!.keys.toList();
+    final episodes = _selectedType != null ? _detailedAnime!.availableEpisodes![_selectedType]! : [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Episodes',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        if (types.length > 1) ...[
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: types.map((type) {
+                final isSelected = _selectedType == type;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ChoiceChip(
+                    label: Text(type.toUpperCase()),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedType = type;
+                        });
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 1.2,
+          ),
+          itemCount: episodes.length,
+          itemBuilder: (context, index) {
+            final episode = episodes[index];
+            return InkWell(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Selected Episode $episode (${_selectedType?.toUpperCase()})')),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  episode,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
