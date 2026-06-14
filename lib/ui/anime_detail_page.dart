@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/anime.dart';
 import '../widgets/custom_chips.dart';
 import '../widgets/info_tile.dart';
+import '../widgets/rating_badge.dart';
+import '../widgets/anime_detail_header.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
@@ -40,63 +42,8 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            _buildAppBar(context),
+            AnimeDetailHeader(anime: widget.anime),
             _buildContent(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 300.0,
-      pinned: true,
-      leading: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.black.withValues(alpha: 0.3),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          widget.anime.name,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            shadows: [Shadow(color: Colors.black, blurRadius: 10)],
-          ),
-        ),
-        titlePadding: const EdgeInsetsDirectional.only(start: 56.0, bottom: 16.0, end: 16.0),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Hero(
-              tag: 'anime_${widget.anime.id}',
-              child: ClipRRect(
-                borderRadius: BorderRadius.zero,
-                child: widget.anime.thumbnail != null
-                    ? Image.network(widget.anime.thumbnail!, fit: BoxFit.cover)
-                    : Container(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.movie, size: 100),
-                      ),
-              ),
-            ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black87],
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -111,11 +58,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.anime.genres != null && widget.anime.genres!.isNotEmpty) ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.anime.genres!.map((genre) => GenreChip(label: genre)).toList(),
-              ),
+              GenreList(genres: widget.anime.genres!),
               const SizedBox(height: 24),
             ],
             Row(
@@ -153,26 +96,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   ),
             ),
             const SizedBox(height: 24),
-            if (widget.anime.rating != null) _buildRatingBadge(context),
+            if (widget.anime.rating != null) RatingBadge(rating: widget.anime.rating!),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildRatingBadge(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, size: 20),
-          const SizedBox(width: 12),
-          Text('Rating: ${widget.anime.rating}', style: Theme.of(context).textTheme.bodyMedium),
-        ],
       ),
     );
   }

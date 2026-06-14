@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import '../ui/settings_page.dart';
+
+class AnimeListHeader extends StatelessWidget {
+  final double appBarOpacity;
+
+  const AnimeListHeader({super.key, required this.appBarOpacity});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SliverAppBar(
+      expandedHeight: 170.0,
+      pinned: true,
+      stretch: true,
+      backgroundColor: colorScheme.surface,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(20),
+        ),
+      ),
+      automaticallyImplyLeading: false,
+      toolbarHeight: 70,
+      centerTitle: false,
+      title: AnimatedOpacity(
+        opacity: appBarOpacity > 0.8 ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        child: Text(
+          'Akira',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground],
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          'Akira',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 56,
+                            height: 1.0,
+                            letterSpacing: -2.0,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'HUB',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'YOUR ULTIMATE ANIME DESTINATION',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsPage()),
+                    );
+                  },
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.settings_rounded,
+                    size: 24,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

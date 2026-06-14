@@ -24,3 +24,18 @@ class GenreChip extends StatelessWidget {
     );
   }
 }
+
+class GenreList extends StatelessWidget {
+  final List<String> genres;
+
+  const GenreList({super.key, required this.genres});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: genres.map((genre) => GenreChip(label: genre)).toList(),
+    );
+  }
+}
