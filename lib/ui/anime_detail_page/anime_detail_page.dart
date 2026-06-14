@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../models/anime_details.dart';
+import '../watch_page/watch_page.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_stat_pill.dart';
 import 'widgets/detail_info_badge.dart';
@@ -131,7 +132,17 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WatchPage(
+                              anime: animeData,
+                              details: _details,
+                            ),
+                          ),
+                        );
+                      },
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text('Watch Now'),
                       style: FilledButton.styleFrom(
