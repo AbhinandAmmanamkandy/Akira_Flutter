@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
 import '../models/anime.dart';
-import '../services/anime_service.dart';
-import '../widgets/anime_card.dart';
-import '../widgets/anime_grid.dart';
-import '../widgets/anime_list_header.dart';
 import '../widgets/search_bar.dart';
+import '../widgets/anime_grid.dart';
 import '../widgets/state_widgets.dart';
-import 'settings_page.dart';
+import 'package:flutter/material.dart';
+import '../services/anime_service.dart';
+import '../widgets/anime_list_header.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
@@ -16,12 +14,12 @@ class AnimeListPage extends StatefulWidget {
 }
 
 class _AnimeListPageState extends State<AnimeListPage> {
-  final AnimeService _animeService = AnimeService();
-  late Future<List<Anime>> _animeList;
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   bool _isSearching = false;
   double _appBarOpacity = 0.0;
+  late Future<List<Anime>> _animeList;
+  final AnimeService _animeService = AnimeService();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
