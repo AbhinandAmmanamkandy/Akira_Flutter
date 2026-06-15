@@ -120,12 +120,9 @@ class _WatchPageState extends State<WatchPage> {
         throw Exception('No playable video URL found for this episode.');
       }
 
-      // Check history
       final history = HistoryService().getHistory(widget.anime.id);
       final bool hasHistory = history != null && history.episode == _selectedEpisode && history.position.inSeconds > 2;
       
-      debugPrint('WatchPage: History check - Has history: $hasHistory, Position: ${history?.position}');
-
       setState(() {
         _historyToResume = hasHistory ? history.position : null;
         _showResumeOverlay = hasHistory;
@@ -145,7 +142,6 @@ class _WatchPageState extends State<WatchPage> {
 
     } catch (e) {
       _videoError = e.toString();
-      debugPrint('WatchPage: video load error: $_videoError');
     } finally {
       if (mounted) {
         setState(() {

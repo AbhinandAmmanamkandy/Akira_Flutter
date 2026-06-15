@@ -38,9 +38,8 @@ class HistoryService extends ChangeNotifier {
         decoded.forEach((key, value) {
           _history[key] = WatchHistory.fromJson(value);
         });
-        debugPrint('HistoryService: Loaded ${_history.length} entries');
       } catch (e) {
-        debugPrint('HistoryService: Error decoding history: $e');
+        // Silent error
       }
     }
     _initialized = true;
@@ -48,9 +47,7 @@ class HistoryService extends ChangeNotifier {
   }
 
   WatchHistory? getHistory(String animeId) {
-    final h = _history[animeId];
-    debugPrint('HistoryService: Getting history for $animeId: ${h?.episode} at ${h?.position}');
-    return h;
+    return _history[animeId];
   }
 
   void saveHistory(String animeId, int episode, Duration position) {
