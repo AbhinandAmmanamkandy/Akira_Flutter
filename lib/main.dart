@@ -1,25 +1,15 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'ui/anime_list_page/anime_list_page.dart';
 import 'services/theme_service.dart';
+import 'package:media_kit/media_kit.dart';
 import 'services/anime_stream_service.dart';
+import 'ui/anime_list_page/anime_list_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final response = await AnimeStreamService.getApiResp("srGrP23qJnjsHrRYD", "1");
-  final data = jsonDecode(response.body);
-  final String toBeParsed = data['data']['tobeparsed'];
-
-  final sources = AnimeStreamService.extractAndProcessSources(toBeParsed);
-  for (final source in sources) {
-    debugPrint('${source['name']} : ${source['url']}');
-  }
-
-  await AnimeStreamService.getPostApiResp("srGrP23qJnjsHrRYD", "1");
+  MediaKit.ensureInitialized();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -27,6 +17,19 @@ Future<void> main() async {
       statusBarIconBrightness: Brightness.light,
     ),
   );
+
+  try {
+    debugPrint('Main: testing getEpisodeVideoUrl');
+    final videoUrl = await AllAnimeApi().getEpisodeVideoUrl(
+      'Gcou36nB8su3KWXrr',
+      '1',
+    );
+    debugPrint('Main: getEpisodeVideoUrl result: $videoUrl');
+  } catch (e, st) {
+    debugPrint('Main: getEpisodeVideoUrl error: $e');
+    debugPrint('Main: stack trace: $st');
+  }
+
   runApp(const AkiraApp());
 }
 
