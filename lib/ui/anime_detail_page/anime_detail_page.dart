@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
@@ -273,7 +272,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              isAdding ? 'Added to bookmarks' : 'Removed from bookmarks',
+                              isAdding ? 'Added to Senpai\'s Picks' : 'Removed from Senpai\'s Picks',
                               style: TextStyle(
                                 color: colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,

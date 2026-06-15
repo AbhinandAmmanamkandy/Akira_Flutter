@@ -82,7 +82,7 @@ class BookmarksPage extends StatelessWidget {
                               )
                             : null,
                         title: const Text(
-                          'My Bookmarks',
+                          'Senpai\'s Picks',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         centerTitle: true,
@@ -104,29 +104,15 @@ class BookmarksPage extends StatelessWidget {
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '404',
-                                      style: TextStyle(
-                                        fontSize: 84,
-                                        fontWeight: FontWeight.w900,
-                                        color: colorScheme.primary.withValues(alpha: 0.5),
-                                        letterSpacing: -5,
-                                      ),
+                                children: [
+                                    Icon(
+                                      Icons.auto_awesome_rounded,
+                                      size: 84,
+                                      color: colorScheme.primary.withValues(alpha: 0.5),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 24),
                                     Text(
-                                      'PAGE NOT FOUND',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 4,
-                                        color: colorScheme.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 32),
-                                    Text(
-                                      'YOUR BOOKMARKS ARE MISSING',
+                                      'SENPAI\'S PICKS ARE EMPTY',
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                             fontWeight: FontWeight.bold,
@@ -134,28 +120,42 @@ class BookmarksPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      'It seems you haven\'t added any anime to your collection yet. Let\'s fix that!',
+                                      'It looks like Senpai\'s Picks is currently empty. Start adding your favorite anime to build a collection worthy of Senpai\'s attention!',
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                             color: colorScheme.onSurfaceVariant,
                                             height: 1.5,
                                           ),
                                     ),
-                                    const SizedBox(height: 40),
-                                    FilledButton.icon(
-                                      onPressed: () => Navigator.pop(context),
-                                      icon: const Icon(Icons.explore_rounded),
-                                      label: const Text('BACK TO HOME'),
-                                      style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 32,
-                                          vertical: 18,
+                                    const SizedBox(height: 32),
+                                    if (ThemeService().useOverscrollToClose)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.primary.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(20),
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.swipe_down_rounded,
+                                              size: 16,
+                                              color: colorScheme.primary,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'SWIPE DOWN TO GO HOME',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1.2,
+                                                color: colorScheme.primary,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               ),

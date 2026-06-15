@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../settings_page/settings_page.dart';
 import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
@@ -117,6 +116,7 @@ class ListAppBar extends StatelessWidget {
                                 width: 1.5,
                               ),
                               child: IconButton(
+                                tooltip: 'Senpai\'s Picks',
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -133,6 +133,7 @@ class ListAppBar extends StatelessWidget {
                               ),
                             )
                           : IconButton(
+                              tooltip: 'Senpai\'s Picks',
                               onPressed: () {
                                 Navigator.push(
                                   context,

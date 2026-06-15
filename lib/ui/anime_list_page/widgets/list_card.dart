@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../../models/anime.dart';
 import '../../anime_detail_page/anime_detail_page.dart';
 import 'list_card_badge.dart';

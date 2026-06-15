@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
 import 'widgets/list_app_bar.dart';
-import '../widgets/overscroll_pop_handler.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
