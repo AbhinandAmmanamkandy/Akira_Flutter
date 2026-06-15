@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../settings_page/settings_page.dart';
+import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
 import '../../widgets/glass_container.dart';
 
@@ -104,44 +105,99 @@ class ListAppBar extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: useGlass 
-                    ? GlassContainer(
-                        borderRadius: 16,
-                        opacity: 0.1,
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SettingsPage()),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.settings_rounded,
-                            size: 24,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      )
-                    : IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SettingsPage()),
-                          );
-                        },
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                          padding: const EdgeInsets.all(12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: Icon(
-                          Icons.settings_rounded,
-                          size: 24,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
+                  child: Row(
+                    children: [
+                      useGlass
+                          ? GlassContainer(
+                              borderRadius: 16,
+                              opacity: 0.1,
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const BookmarksPage()),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.bookmark_rounded,
+                                  size: 24,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const BookmarksPage()),
+                                );
+                              },
+                              style: IconButton.styleFrom(
+                                backgroundColor: colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                padding: const EdgeInsets.all(12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              icon: Icon(
+                                Icons.bookmark_rounded,
+                                size: 24,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                      const SizedBox(width: 8),
+                      useGlass
+                          ? GlassContainer(
+                              borderRadius: 16,
+                              opacity: 0.1,
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SettingsPage()),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.settings_rounded,
+                                  size: 24,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SettingsPage()),
+                                );
+                              },
+                              style: IconButton.styleFrom(
+                                backgroundColor: colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                padding: const EdgeInsets.all(12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              icon: Icon(
+                                Icons.settings_rounded,
+                                size: 24,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ],
             ),

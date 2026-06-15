@@ -5,11 +5,13 @@ import '../../../services/theme_service.dart';
 class DetailActionRow extends StatelessWidget {
   final VoidCallback onWatchNow;
   final VoidCallback onBookmark;
+  final bool isBookmarked;
 
   const DetailActionRow({
     super.key,
     required this.onWatchNow,
     required this.onBookmark,
+    this.isBookmarked = false,
   });
 
   @override
@@ -69,7 +71,11 @@ class DetailActionRow extends StatelessWidget {
           opacity: 0.1,
           child: IconButton(
             onPressed: onBookmark,
-            icon: Icon(Icons.bookmark_border_rounded, color: colorScheme.primary),
+            icon: Icon(
+                isBookmarked
+                    ? Icons.bookmark_rounded
+                    : Icons.bookmark_border_rounded,
+                color: colorScheme.primary),
             padding: const EdgeInsets.all(12),
           ),
         ),

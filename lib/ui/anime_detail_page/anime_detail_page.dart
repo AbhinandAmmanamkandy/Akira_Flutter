@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
+import '../../services/favorite_service.dart';
 import '../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
+import '../widgets/glass_container.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
@@ -63,7 +65,10 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeService(),
+      listenable: Listenable.merge([
+        ThemeService(),
+        FavoriteService(),
+      ]),
       builder: (context, _) {
         final animeData = _details ?? widget.anime;
         final colorScheme = Theme.of(context).colorScheme;
@@ -143,6 +148,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
               )
             else if (_details != null) ...[
               DetailActionRow(
+                isBookmarked: FavoriteService().isFavorite(animeData.id),
                 onWatchNow: () {
                   Navigator.push(
                     context,
@@ -154,7 +160,47 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                     ),
                   );
                 },
-                onBookmark: () {},
+                onBookmark: () {
+                  final isAdding = !FavoriteService().isFavorite(animeData.id);
+                  FavoriteService().toggleFavorite(animeData);
+                  
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      behavior: SnackBarBehavior.floating,
+                      content: GlassContainer(
+                        borderRadius: 16,
+                        opacity: 0.2,
+                        blur: 15,
+                        withBlur: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isAdding ? Icons.bookmark_added_rounded : Icons.bookmark_remove_rounded,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              isAdding ? 'Added to bookmarks' : 'Removed from bookmarks',
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 24),
 
