@@ -188,7 +188,7 @@ class _WatchPageState extends State<WatchPage> {
                             tooltip: 'Reverse Order',
                           ),
                           IconButton(
-                            icon: const Icon(Icons.search, size: 20),
+                            icon: const Icon(Icons.bolt_rounded, size: 24),
                             onPressed: () => _showJumpToEpisodeDialog(context, _parseLastEpisode(widget.anime.lastEpisode)),
                             tooltip: 'Jump to Episode',
                           ),
@@ -227,11 +227,12 @@ class _WatchPageState extends State<WatchPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final int chunks = (totalEpisodes / 50).ceil();
 
-    return SizedBox(
-      height: 40,
+    return Container(
+      height: 48,
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: chunks,
         itemBuilder: (context, index) {
           final start = (index * 50) + 1;
@@ -239,22 +240,24 @@ class _WatchPageState extends State<WatchPage> {
           final isSelected = _selectedRangeIndex == index;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
-              label: Text('$start-$end'),
+              label: Text('$start - $end'),
               selected: isSelected,
               onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedRangeIndex = index;
-                  });
-                }
+                if (selected) setState(() => _selectedRangeIndex = index);
               },
-              selectedColor: colorScheme.primaryContainer,
+              showCheckmark: false,
+              selectedColor: colorScheme.primary,
               labelStyle: TextStyle(
-                color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: BorderSide(
+                color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
               ),
             ),
           );
@@ -276,8 +279,14 @@ class _WatchPageState extends State<WatchPage> {
       episodes.sort((a, b) => b.compareTo(a));
     }
 
-    return ListView.builder(
+    return GridView.builder(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1,
+      ),
       itemCount: episodes.length,
       itemBuilder: (context, index) {
         final episodeNum = episodes[index];
@@ -285,9 +294,7 @@ class _WatchPageState extends State<WatchPage> {
           episodeNum: episodeNum,
           isSelected: _selectedEpisode == episodeNum,
           onTap: () {
-            setState(() {
-              _selectedEpisode = episodeNum;
-            });
+            setState(() => _selectedEpisode = episodeNum);
             _loadVideo();
           },
         );
@@ -310,53 +317,77 @@ class _WatchPageState extends State<WatchPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
+        margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.circular(32),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Jump to Episode',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(Icons.bolt_rounded, color: colorScheme.onPrimaryContainer),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Jump to Episode',
+                          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Select 1 - $total',
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter an episode number between 1 and $total',
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
                 autofocus: true,
-                style: textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+                style: textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
                 decoration: InputDecoration(
-                  hintText: 'Episode number...',
-                  prefixIcon: const Icon(Icons.numbers_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  hintText: '000',
+                  hintStyle: TextStyle(color: colorScheme.outlineVariant),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.outlineVariant, width: 2),
                   ),
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.primary, width: 3),
+                  ),
                 ),
                 onSubmitted: (value) {
                   final ep = int.tryParse(value);
@@ -370,29 +401,42 @@ class _WatchPageState extends State<WatchPage> {
                   }
                 },
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    final ep = int.tryParse(controller.text);
-                    if (ep != null && ep >= 1 && ep <= total) {
-                      setState(() {
-                        _selectedEpisode = ep;
-                        _selectedRangeIndex = (ep - 1) ~/ 50;
-                      });
-                      _loadVideo();
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  child: const Text('Go to Episode'),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        final ep = int.tryParse(controller.text);
+                        if (ep != null && ep >= 1 && ep <= total) {
+                          setState(() {
+                            _selectedEpisode = ep;
+                            _selectedRangeIndex = (ep - 1) ~/ 50;
+                          });
+                          _loadVideo();
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Let\'s Go'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

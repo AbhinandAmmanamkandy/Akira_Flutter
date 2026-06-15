@@ -15,56 +15,33 @@ class EpisodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: isSelected 
+            ? colorScheme.primary 
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected 
+              ? colorScheme.primary 
+              : colorScheme.outlineVariant.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isSelected 
-                ? colorScheme.primaryContainer 
-                : colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected 
-                ? Border.all(color: colorScheme.primary) 
-                : null,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isSelected 
-                      ? colorScheme.primary 
-                      : colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '$episodeNum',
-                  style: TextStyle(
-                    color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Episode $episodeNum',
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-              if (isSelected)
-                Icon(Icons.play_circle_outline, color: colorScheme.primary, size: 20),
-            ],
+        borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: Text(
+            '$episodeNum',
+            style: TextStyle(
+              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
         ),
       ),
