@@ -93,6 +93,7 @@ class AnimeService {
           status
           averageScore
           rating
+          relatedShows
         }
       }
     ''' ;

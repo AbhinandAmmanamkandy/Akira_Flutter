@@ -63,6 +63,93 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     super.dispose();
   }
 
+  Widget _buildRelatedShowsButtons(BuildContext context, List<RelatedShow> relatedShows) {
+    final prequels = relatedShows.where((e) => e.relation == 'prequel').toList();
+    final sequels = relatedShows.where((e) => e.relation == 'sequel').toList();
+    
+    if (prequels.isEmpty && sequels.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        if (prequels.isNotEmpty)
+          Expanded(
+            child: _buildRelationButton(
+              context, 
+              'Prequel', 
+              Icons.arrow_back_rounded, 
+              prequels.first.showId
+            ),
+          ),
+        if (prequels.isNotEmpty && sequels.isNotEmpty) const SizedBox(width: 12),
+        if (sequels.isNotEmpty)
+          Expanded(
+            child: _buildRelationButton(
+              context, 
+              'Sequel', 
+              Icons.arrow_forward_rounded, 
+              sequels.first.showId
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRelationButton(BuildContext context, String label, IconData icon, String showId) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final useGlass = ThemeService().useGlassTheme;
+
+    void onPressed() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AnimeDetailPage(
+            anime: Anime(id: showId, name: label),
+          ),
+        ),
+      );
+    }
+
+    if (useGlass) {
+      return GlassContainer(
+        borderRadius: 12,
+        opacity: 0.1,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -207,6 +294,10 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   );
                 },
               ),
+              if (_details!.relatedShows.any((e) => e.relation == 'prequel' || e.relation == 'sequel')) ...[
+                const SizedBox(height: 12),
+                _buildRelatedShowsButtons(context, _details!.relatedShows),
+              ],
               const SizedBox(height: 24),
 
               DetailTagsRow(details: _details!),

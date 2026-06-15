@@ -14,6 +14,20 @@ class Season {
   }
 }
 
+class RelatedShow {
+  final String relation;
+  final String showId;
+
+  RelatedShow({required this.relation, required this.showId});
+
+  factory RelatedShow.fromJson(Map<String, dynamic> json) {
+    return RelatedShow(
+      relation: json['relation']?.toString() ?? '',
+      showId: json['showId']?.toString() ?? '',
+    );
+  }
+}
+
 class AnimeDetails extends Anime {
   final String? description;
   final Season? season;
@@ -21,6 +35,7 @@ class AnimeDetails extends Anime {
   final String? status;
   final double? averageScore;
   final String? rating;
+  final List<RelatedShow> relatedShows;
 
   AnimeDetails({
     required super.id,
@@ -34,6 +49,7 @@ class AnimeDetails extends Anime {
     this.status,
     this.averageScore,
     this.rating,
+    this.relatedShows = const [],
   });
 
   factory AnimeDetails.fromJson(Map<String, dynamic> json) {
@@ -50,6 +66,10 @@ class AnimeDetails extends Anime {
       status: json['status']?.toString(),
       averageScore: (json['averageScore'] as num?)?.toDouble(),
       rating: json['rating']?.toString(),
+      relatedShows: (json['relatedShows'] as List?)
+              ?.map((e) => RelatedShow.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }
