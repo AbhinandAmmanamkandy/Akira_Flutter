@@ -20,18 +20,50 @@ class WatchHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.play_circle_filled_rounded, size: 12, color: colorScheme.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      'NOW PLAYING',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
             title,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+              color: colorScheme.onSurface,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             'Episode $currentEpisode',
-            style: textTheme.bodyMedium?.copyWith(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w600,
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

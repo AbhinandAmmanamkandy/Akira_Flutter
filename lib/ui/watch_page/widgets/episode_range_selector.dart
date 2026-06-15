@@ -32,7 +32,7 @@ class EpisodeRangeSelector extends StatelessWidget {
           final isSelected = selectedRangeIndex == index;
 
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 12),
             child: ChoiceChip(
               label: Text('$start - $end'),
               selected: isSelected,
@@ -41,16 +41,19 @@ class EpisodeRangeSelector extends StatelessWidget {
               },
               showCheckmark: false,
               selectedColor: colorScheme.primary,
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               labelStyle: TextStyle(
                 color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 13,
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
-              side: BorderSide(
-                color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
-              ),
+              side: BorderSide.none,
+              elevation: isSelected ? 4 : 0,
+              shadowColor: colorScheme.primary.withValues(alpha: 0.4),
             ),
           );
         },

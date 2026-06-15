@@ -18,31 +18,74 @@ class EpisodeControlsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Text(
             'Episodes',
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: Icon(isReversed ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
-            onPressed: onToggleSort,
-            tooltip: 'Reverse Order',
-          ),
-          IconButton(
-            icon: const Icon(Icons.bolt_rounded, size: 24),
-            onPressed: onJumpToEpisode,
-            tooltip: 'Jump to Episode',
-          ),
-          if (totalEpisodes != null)
-            Text(
-              '$totalEpisodes Total',
-              style: textTheme.bodySmall,
+            style: textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
             ),
+          ),
+          if (totalEpisodes != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              '($totalEpisodes)',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+          const Spacer(),
+          _HeaderButton(
+            icon: isReversed ? Icons.sort_rounded : Icons.sort_rounded,
+            onTap: onToggleSort,
+            isSelected: isReversed,
+          ),
+          const SizedBox(width: 8),
+          _HeaderButton(
+            icon: Icons.bolt_rounded,
+            onTap: onJumpToEpisode,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeaderButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isSelected;
+
+  const _HeaderButton({
+    required this.icon,
+    required this.onTap,
+    this.isSelected = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+          ),
+        ),
       ),
     );
   }

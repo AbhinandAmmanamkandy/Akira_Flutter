@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -178,36 +179,33 @@ class _WatchPageState extends State<WatchPage> {
 
         return Scaffold(
           backgroundColor: Colors.black,
-          body: SafeArea(
-            child: Stack(
-              children: [
-                if (useGlass) ...[
-                  Positioned(
-                    top: 200,
-                    right: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: colorScheme.primary.withValues(alpha: 0.15),
-                      ),
+          body: Stack(
+            children: [
+              // Background Gradient
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        colorScheme.surface.withValues(alpha: 0.1),
+                        Colors.black,
+                      ],
                     ),
                   ),
-                  Positioned(
-                    bottom: 100,
-                    left: -50,
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: colorScheme.secondary.withValues(alpha: 0.1),
-                      ),
-                    ),
+                ),
+              ),
+              if (useGlass)
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    child: Container(color: Colors.transparent),
                   ),
-                ],
-                OverscrollPopHandler(
+                ),
+
+              SafeArea(
+                child: OverscrollPopHandler(
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
@@ -231,36 +229,28 @@ class _WatchPageState extends State<WatchPage> {
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: useGlass
-                                ? colorScheme.surface.withValues(alpha: 0.05)
-                                : colorScheme.surface,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              WatchHeader(
-                                title: widget.anime.englishName ?? widget.anime.name,
-                                currentEpisode: _selectedEpisode,
-                              ),
-                              const SizedBox(height: 24),
-                              EpisodeControlsHeader(
-                                totalEpisodes: widget.anime.lastEpisode,
-                                isReversed: _isReversed,
-                                onToggleSort: () => setState(() => _isReversed = !_isReversed),
-                                onJumpToEpisode: () => _showJumpToEpisodeDialog(context, totalEpisodes),
-                              ),
-                              const SizedBox(height: 8),
-                              EpisodeRangeSelector(
-                                totalEpisodes: totalEpisodes,
-                                selectedRangeIndex: _selectedRangeIndex,
-                                onRangeSelected: (index) => setState(() => _selectedRangeIndex = index),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WatchHeader(
+                              title: widget.anime.englishName ?? widget.anime.name,
+                              currentEpisode: _selectedEpisode,
+                            ),
+                            const SizedBox(height: 24),
+                            EpisodeControlsHeader(
+                              totalEpisodes: widget.anime.lastEpisode,
+                              isReversed: _isReversed,
+                              onToggleSort: () => setState(() => _isReversed = !_isReversed),
+                              onJumpToEpisode: () => _showJumpToEpisodeDialog(context, totalEpisodes),
+                            ),
+                            const SizedBox(height: 8),
+                            EpisodeRangeSelector(
+                              totalEpisodes: totalEpisodes,
+                              selectedRangeIndex: _selectedRangeIndex,
+                              onRangeSelected: (index) => setState(() => _selectedRangeIndex = index),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                         ),
                       ),
                       EpisodeGrid(
@@ -274,8 +264,8 @@ class _WatchPageState extends State<WatchPage> {
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
