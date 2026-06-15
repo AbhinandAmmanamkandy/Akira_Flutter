@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
@@ -7,6 +8,7 @@ import '../../services/history_service.dart';
 import '../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
 import '../widgets/glass_container.dart';
+import '../widgets/overscroll_pop_handler.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
@@ -192,16 +194,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   ),
                 ),
               ],
-              NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is ScrollUpdateNotification) {
-                    if (notification.metrics.pixels < -80 && notification.dragDetails != null) {
-                      Navigator.of(context).pop();
-                      return true;
-                    }
-                  }
-                  return false;
-                },
+              OverscrollPopHandler(
                 child: CustomScrollView(
                   controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(

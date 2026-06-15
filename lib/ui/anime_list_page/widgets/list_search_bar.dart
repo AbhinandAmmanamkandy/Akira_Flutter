@@ -28,6 +28,10 @@ class ListSearchBar extends StatelessWidget {
             blur: 20,
             opacity: 0.2,
             withBlur: true,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+              width: 2.0,
+            ),
             child: TextField(
               controller: controller,
               style: TextStyle(

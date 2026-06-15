@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeService extends ChangeNotifier {
   static final ThemeService _instance = ThemeService._internal();
   factory ThemeService() => _instance;
   ThemeService._internal();
+
+  late SharedPreferences _prefs;
 
   bool _isMaterialUI = true;
   bool get isMaterialUI => _isMaterialUI;
@@ -25,9 +28,46 @@ class ThemeService extends ChangeNotifier {
 
   bool _useGlassTheme = false;
   bool get useGlassTheme => _useGlassTheme;
+  
+  bool _useOverscrollToClose = true;
+  bool get useOverscrollToClose => _useOverscrollToClose;
+  
+  int? _lastSystemAccentColor;
+  int? get lastSystemAccentColor => _lastSystemAccentColor;
+
+  Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    _isMaterialUI = _prefs.getBool('isMaterialUI') ?? true;
+    _useSystemAccent = _prefs.getBool('useSystemAccent') ?? true;
+    _accentShade = _prefs.getInt('accentShade') ?? 0;
+    _allowAdult = _prefs.getBool('allowAdult') ?? false;
+    _allowUnknown = _prefs.getBool('allowUnknown') ?? false;
+    _useGlassTheme = _prefs.getBool('useGlassTheme') ?? false;
+    _useOverscrollToClose = _prefs.getBool('useOverscrollToClose') ?? true;
+    _lastSystemAccentColor = _prefs.getInt('lastSystemAccentColor');
+    
+    final themeModeIndex = _prefs.getInt('themeMode') ?? 0;
+    _themeMode = ThemeMode.values[themeModeIndex];
+    
+    notifyListeners();
+  }
+
+  void saveSystemAccentColor(Color color) {
+    if (_lastSystemAccentColor != color.toARGB32()) {
+      _lastSystemAccentColor = color.toARGB32();
+      _prefs.setInt('lastSystemAccentColor', color.toARGB32());
+    }
+  }
 
   void toggleGlassTheme() {
     _useGlassTheme = !_useGlassTheme;
+    _prefs.setBool('useGlassTheme', _useGlassTheme);
+    notifyListeners();
+  }
+  
+  void toggleOverscrollToClose() {
+    _useOverscrollToClose = !_useOverscrollToClose;
+    _prefs.setBool('useOverscrollToClose', _useOverscrollToClose);
     notifyListeners();
   }
 
@@ -35,37 +75,45 @@ class ThemeService extends ChangeNotifier {
     _isMaterialUI = !_isMaterialUI;
     if (!_isMaterialUI) {
       _useSystemAccent = false;
+      _prefs.setBool('useSystemAccent', false);
     }
+    _prefs.setBool('isMaterialUI', _isMaterialUI);
     notifyListeners();
   }
 
   void toggleAllowAdult() {
     _allowAdult = !_allowAdult;
+    _prefs.setBool('allowAdult', _allowAdult);
     notifyListeners();
   }
 
   void toggleAllowUnknown() {
     _allowUnknown = !_allowUnknown;
+    _prefs.setBool('allowUnknown', _allowUnknown);
     notifyListeners();
   }
 
   void setAccentShade(int shade) {
     _accentShade = shade;
+    _prefs.setInt('accentShade', shade);
     notifyListeners();
   }
 
   void toggleSystemAccent() {
     _useSystemAccent = !_useSystemAccent;
+    _prefs.setBool('useSystemAccent', _useSystemAccent);
     notifyListeners();
   }
 
   void toggleFollowSystem(bool follow) {
     _themeMode = follow ? ThemeMode.system : ThemeMode.dark;
+    _prefs.setInt('themeMode', _themeMode.index);
     notifyListeners();
   }
 
   void toggleDarkMode(bool isDark) {
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    _prefs.setInt('themeMode', _themeMode.index);
     notifyListeners();
   }
 }

@@ -9,6 +9,7 @@ import '../../services/anime_stream_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/history_service.dart';
 import '../widgets/glass_container.dart';
+import '../widgets/overscroll_pop_handler.dart';
 import 'widgets/video_section.dart';
 import 'widgets/watch_header.dart';
 import 'widgets/episode_controls_header.dart';
@@ -37,8 +38,7 @@ class _WatchPageState extends State<WatchPage> {
   VideoController? _controller;
   bool _isLoadingVideo = false;
   String? _videoError;
-  bool _isFirstLoad = true;
-  bool _isSeekingToHistory = false;
+  final bool _isSeekingToHistory = false;
   StreamSubscription? _positionSubscription;
   StreamSubscription? _bufferingSubscription;
   Duration? _historyToResume;
@@ -207,67 +207,72 @@ class _WatchPageState extends State<WatchPage> {
                     ),
                   ),
                 ],
-                Column(
-                  children: [
-                    VideoSection(
-                      controller: _controller,
-                      isLoading: _isLoadingVideo,
-                      isBuffering: _isBuffering,
-                      errorMessage: _videoError,
-                      onRetry: _loadVideo,
-                      onBack: () => Navigator.pop(context),
-                      resumePosition: _showResumeOverlay ? _historyToResume : null,
-                      onResume: () async {
-                        if (_historyToResume != null && !_isBuffering) {
-                          setState(() => _showResumeOverlay = false);
-                          await _player!.seek(_historyToResume!);
-                        }
-                      },
+                OverscrollPopHandler(
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: useGlass
-                              ? colorScheme.surface.withValues(alpha: 0.05)
-                              : colorScheme.surface,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            WatchHeader(
-                              title: widget.anime.englishName ?? widget.anime.name,
-                              currentEpisode: _selectedEpisode,
-                            ),
-                            const SizedBox(height: 24),
-                            EpisodeControlsHeader(
-                              totalEpisodes: widget.anime.lastEpisode,
-                              isReversed: _isReversed,
-                              onToggleSort: () => setState(() => _isReversed = !_isReversed),
-                              onJumpToEpisode: () => _showJumpToEpisodeDialog(context, totalEpisodes),
-                            ),
-                            const SizedBox(height: 8),
-                            EpisodeRangeSelector(
-                              totalEpisodes: totalEpisodes,
-                              selectedRangeIndex: _selectedRangeIndex,
-                              onRangeSelected: (index) => setState(() => _selectedRangeIndex = index),
-                            ),
-                            const SizedBox(height: 12),
-                            Expanded(
-                              child: EpisodeGrid(
-                                episodes: _getEpisodesForRange(totalEpisodes),
-                                selectedEpisode: _selectedEpisode,
-                                onEpisodeSelected: (ep) {
-                                  setState(() => _selectedEpisode = ep);
-                                  _loadVideo();
-                                },
-                              ),
-                            ),
-                          ],
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: VideoSection(
+                          controller: _controller,
+                          isLoading: _isLoadingVideo,
+                          isBuffering: _isBuffering,
+                          errorMessage: _videoError,
+                          onRetry: _loadVideo,
+                          onBack: () => Navigator.pop(context),
+                          resumePosition: _showResumeOverlay ? _historyToResume : null,
+                          onResume: () async {
+                            if (_historyToResume != null && !_isBuffering) {
+                              setState(() => _showResumeOverlay = false);
+                              await _player!.seek(_historyToResume!);
+                            }
+                          },
                         ),
                       ),
-                    ),
-                  ],
+                      SliverToBoxAdapter(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: useGlass
+                                ? colorScheme.surface.withValues(alpha: 0.05)
+                                : colorScheme.surface,
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              WatchHeader(
+                                title: widget.anime.englishName ?? widget.anime.name,
+                                currentEpisode: _selectedEpisode,
+                              ),
+                              const SizedBox(height: 24),
+                              EpisodeControlsHeader(
+                                totalEpisodes: widget.anime.lastEpisode,
+                                isReversed: _isReversed,
+                                onToggleSort: () => setState(() => _isReversed = !_isReversed),
+                                onJumpToEpisode: () => _showJumpToEpisodeDialog(context, totalEpisodes),
+                              ),
+                              const SizedBox(height: 8),
+                              EpisodeRangeSelector(
+                                totalEpisodes: totalEpisodes,
+                                selectedRangeIndex: _selectedRangeIndex,
+                                onRangeSelected: (index) => setState(() => _selectedRangeIndex = index),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                      EpisodeGrid(
+                        episodes: _getEpisodesForRange(totalEpisodes),
+                        selectedEpisode: _selectedEpisode,
+                        onEpisodeSelected: (ep) {
+                          setState(() => _selectedEpisode = ep);
+                          _loadVideo();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

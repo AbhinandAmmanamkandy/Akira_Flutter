@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
 import 'widgets/list_app_bar.dart';
+import '../widgets/overscroll_pop_handler.dart';
 
 class AnimeListPage extends StatefulWidget {
   const AnimeListPage({super.key});
@@ -125,37 +126,42 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   FutureBuilder<List<Anime>>(
                     future: _animeList,
                     builder: (context, snapshot) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [
-                          ListAppBar(appBarOpacity: _appBarOpacity),
-                          if (snapshot.connectionState == ConnectionState.waiting)
-                            const SliverFillRemaining(
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                          else if (snapshot.hasError)
-                            ListErrorView(
-                              error: snapshot.error,
-                              onRetry: () => setState(() {
-                                _animeList = _animeService.fetchAnime(
-                                  queryText: _searchController.text,
-                                );
-                              }),
-                            )
-                          else if (!snapshot.hasData || snapshot.data!.isEmpty)
-                            ListEmptyView(
-                              isSearching: _isSearching,
-                              onClearSearch: () {
-                                _searchController.clear();
-                                _toggleSearch();
-                              },
-                            )
-                          else
-                            ListGrid(animeList: snapshot.data!),
-                          const SliverToBoxAdapter(
-                            child: SizedBox(height: 130), // Space for the bottom search bar
+                      return OverscrollPopHandler(
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
                           ),
-                        ],
+                          slivers: [
+                            ListAppBar(appBarOpacity: _appBarOpacity),
+                            if (snapshot.connectionState == ConnectionState.waiting)
+                              const SliverFillRemaining(
+                                child: Center(child: CircularProgressIndicator()),
+                              )
+                            else if (snapshot.hasError)
+                              ListErrorView(
+                                error: snapshot.error,
+                                onRetry: () => setState(() {
+                                  _animeList = _animeService.fetchAnime(
+                                    queryText: _searchController.text,
+                                  );
+                                }),
+                              )
+                            else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                              ListEmptyView(
+                                isSearching: _isSearching,
+                                onClearSearch: () {
+                                  _searchController.clear();
+                                  _toggleSearch();
+                                },
+                              )
+                            else
+                              ListGrid(animeList: snapshot.data!),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 130), // Space for the bottom search bar
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),

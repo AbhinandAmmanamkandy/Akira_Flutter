@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../settings_page/settings_page.dart';
 import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
@@ -111,6 +112,10 @@ class ListAppBar extends StatelessWidget {
                           ? GlassContainer(
                               borderRadius: 16,
                               opacity: 0.1,
+                              border: Border.all(
+                                color: colorScheme.primary.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
                               child: IconButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -144,6 +149,10 @@ class ListAppBar extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
+                                side: BorderSide(
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                  width: 1.5,
+                                ),
                               ),
                               icon: Icon(
                                 Icons.bookmark_rounded,
@@ -156,6 +165,10 @@ class ListAppBar extends StatelessWidget {
                           ? GlassContainer(
                               borderRadius: 16,
                               opacity: 0.1,
+                              border: Border.all(
+                                color: colorScheme.primary.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
                               child: IconButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -188,6 +201,10 @@ class ListAppBar extends StatelessWidget {
                                 padding: const EdgeInsets.all(12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
+                                ),
+                                side: BorderSide(
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                  width: 1.5,
                                 ),
                               ),
                               icon: Icon(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -10,6 +11,7 @@ import 'ui/anime_list_page/anime_list_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+  await ThemeService().init();
   await HistoryService().init();
 
   SystemChrome.setSystemUIOverlayStyle(
@@ -37,9 +39,12 @@ class AkiraApp extends StatelessWidget {
             ColorScheme lightColorScheme;
             ColorScheme darkColorScheme;
 
-            if (lightDynamic != null &&
-                themeService.useSystemAccent &&
-                themeService.isMaterialUI) {
+            bool shouldUseDynamic = themeService.useSystemAccent && themeService.isMaterialUI;
+            
+            if (shouldUseDynamic && lightDynamic != null) {
+              // Save the color for next launch to avoid flicker
+              themeService.saveSystemAccentColor(lightDynamic.primary);
+              
               Color seedColor;
               switch (themeService.accentShade) {
                 case 1:
@@ -60,13 +65,25 @@ class AkiraApp extends StatelessWidget {
                 seedColor: seedColor,
                 brightness: Brightness.dark,
               );
-            } else {
+            } else if (shouldUseDynamic && themeService.lastSystemAccentColor != null) {
+              // Use cached color while waiting for DynamicColorBuilder
+              final cachedColor = Color(themeService.lastSystemAccentColor!);
               lightColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.red,
+                seedColor: cachedColor,
                 brightness: Brightness.light,
               );
               darkColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.red,
+                seedColor: cachedColor,
+                brightness: Brightness.dark,
+              );
+            } else {
+              // Default fallback
+              lightColorScheme = ColorScheme.fromSeed(
+                seedColor: const Color(0xFFE53935), // Akira Red
+                brightness: Brightness.light,
+              );
+              darkColorScheme = ColorScheme.fromSeed(
+                seedColor: const Color(0xFFE53935), // Akira Red
                 brightness: Brightness.dark,
               );
             }
@@ -81,6 +98,16 @@ class AkiraApp extends StatelessWidget {
                 fontFamily: themeService.isMaterialUI
                     ? null
                     : GoogleFonts.poppins().fontFamily,
+                pageTransitionsTheme: PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: themeService.useOverscrollToClose
+                        ? const ZoomPageTransitionsBuilder()
+                        : const CupertinoPageTransitionsBuilder(),
+                    TargetPlatform.iOS: themeService.useOverscrollToClose
+                        ? const ZoomPageTransitionsBuilder()
+                        : const CupertinoPageTransitionsBuilder(),
+                  },
+                ),
               ),
               darkTheme: ThemeData(
                 colorScheme: darkColorScheme,
@@ -91,6 +118,16 @@ class AkiraApp extends StatelessWidget {
                 textTheme: themeService.isMaterialUI
                     ? null
                     : GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+                pageTransitionsTheme: PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: themeService.useOverscrollToClose
+                        ? const ZoomPageTransitionsBuilder()
+                        : const CupertinoPageTransitionsBuilder(),
+                    TargetPlatform.iOS: themeService.useOverscrollToClose
+                        ? const ZoomPageTransitionsBuilder()
+                        : const CupertinoPageTransitionsBuilder(),
+                  },
+                ),
               ),
               home: const AnimeListPage(),
             );

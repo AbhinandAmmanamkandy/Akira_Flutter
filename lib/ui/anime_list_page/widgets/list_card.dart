@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../models/anime.dart';
 import '../../anime_detail_page/anime_detail_page.dart';
 import 'list_card_badge.dart';
@@ -15,16 +16,8 @@ class ListCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                AnimeDetailPage(anime: anime),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 300),
+          MaterialPageRoute(
+            builder: (context) => AnimeDetailPage(anime: anime),
           ),
         );
       },
