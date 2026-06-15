@@ -35,6 +35,14 @@ class VideoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // We only show the resume button if we have a position, a callback, no error,
+    // and critically: we are NOT loading and NOT buffering.
+    final showResumeButton = resumePosition != null && 
+                             onResume != null && 
+                             errorMessage == null && 
+                             !isLoading && 
+                             !isBuffering;
+
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: Container(
@@ -72,37 +80,30 @@ class VideoSection extends StatelessWidget {
               ),
 
             // Resume Button Overlay
-            if (resumePosition != null && onResume != null && errorMessage == null)
-              Positioned(
-                bottom: 20, // Moved up slightly from bottom
-                child: AnimatedScale(
-                  scale: isLoading ? 0.0 : 1.0,
+            Positioned(
+              bottom: 20,
+              child: AnimatedScale(
+                scale: showResumeButton ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutBack,
+                child: AnimatedOpacity(
+                  opacity: showResumeButton ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 300),
                   child: FilledButton.icon(
-                    onPressed: isBuffering ? null : onResume,
-                    icon: isBuffering 
-                        ? const SizedBox(
-                            width: 16, 
-                            height: 16, 
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
-                          )
-                        : const Icon(Icons.fast_forward_rounded, size: 18),
+                    onPressed: onResume,
+                    icon: const Icon(Icons.fast_forward_rounded, size: 18),
                     label: Text(
-                      isBuffering 
-                          ? 'Buffering...' 
-                          : 'Continue from ${_formatDuration(resumePosition!)}',
+                      resumePosition != null ? 'Continue from ${_formatDuration(resumePosition!)}' : '',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.black.withValues(alpha: 0.8),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.black45,
-                      disabledForegroundColor: Colors.white60,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
-                          color: isBuffering ? Colors.white24 : colorScheme.primary,
+                          color: colorScheme.primary,
                           width: 1.5,
                         ),
                       ),
@@ -110,6 +111,7 @@ class VideoSection extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
 
             Positioned(
               top: 8,

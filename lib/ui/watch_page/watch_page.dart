@@ -83,9 +83,20 @@ class _WatchPageState extends State<WatchPage> {
 
       _bufferingSubscription = _player!.stream.buffering.listen((buffering) {
         if (mounted) {
+          final wasBuffering = _isBuffering;
           setState(() {
             _isBuffering = buffering;
           });
+
+          // If we just finished buffering and the resume overlay is pending,
+          // start the timer to hide it.
+          if (wasBuffering && !buffering && _showResumeOverlay) {
+            Future.delayed(const Duration(seconds: 8), () {
+              if (mounted && _showResumeOverlay) {
+                setState(() => _showResumeOverlay = false);
+              }
+            });
+          }
         }
       });
     }
