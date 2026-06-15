@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -6,6 +7,7 @@ import '../../models/anime.dart';
 import '../../models/anime_details.dart';
 import '../../services/anime_stream_service.dart';
 import '../../services/theme_service.dart';
+import '../../services/history_service.dart';
 import '../widgets/glass_container.dart';
 import 'widgets/video_section.dart';
 import 'widgets/watch_header.dart';
@@ -35,18 +37,57 @@ class _WatchPageState extends State<WatchPage> {
   VideoController? _controller;
   bool _isLoadingVideo = false;
   String? _videoError;
+  bool _isFirstLoad = true;
+  bool _isSeekingToHistory = false;
+  StreamSubscription? _positionSubscription;
+  StreamSubscription? _bufferingSubscription;
+  Duration? _historyToResume;
+  bool _showResumeOverlay = false;
+  bool _isBuffering = false;
 
   @override
   void initState() {
     super.initState();
+    _loadInitialHistory();
     _createPlayerIfNeeded();
     _loadVideo();
+  }
+
+  void _loadInitialHistory() {
+    final history = HistoryService().getHistory(widget.anime.id);
+    if (history != null) {
+      _selectedEpisode = history.episode;
+      _selectedRangeIndex = (history.episode - 1) ~/ 50;
+    }
   }
 
   void _createPlayerIfNeeded() {
     if (_player == null) {
       _player = Player();
       _controller = VideoController(_player!);
+
+      // Listen to position updates to save history
+      _positionSubscription = _player!.stream.position.listen((position) {
+        // ONLY save if: 
+        // 1. We are playing
+        // 2. We are NOT currently in the middle of a resume-seek operation
+        // 3. The position is significantly far enough (to avoid initial 0:00 resets)
+        if (_player!.state.playing && !_isSeekingToHistory && position.inSeconds > 2) {
+          HistoryService().saveHistory(
+            widget.anime.id,
+            _selectedEpisode,
+            position,
+          );
+        }
+      });
+
+      _bufferingSubscription = _player!.stream.buffering.listen((buffering) {
+        if (mounted) {
+          setState(() {
+            _isBuffering = buffering;
+          });
+        }
+      });
     }
   }
 
@@ -58,6 +99,7 @@ class _WatchPageState extends State<WatchPage> {
     setState(() {
       _isLoadingVideo = true;
       _videoError = null;
+      _isBuffering = true; // Mark as buffering initially
     });
 
     try {
@@ -67,15 +109,29 @@ class _WatchPageState extends State<WatchPage> {
         throw Exception('No playable video URL found for this episode.');
       }
 
+      // Check history
+      final history = HistoryService().getHistory(widget.anime.id);
+      final bool hasHistory = history != null && history.episode == _selectedEpisode && history.position.inSeconds > 2;
+      
+      debugPrint('WatchPage: History check - Has history: $hasHistory, Position: ${history?.position}');
+
+      setState(() {
+        _historyToResume = hasHistory ? history.position : null;
+        _showResumeOverlay = hasHistory;
+      });
+
+      // Open Media
       await _player!.open(
         Media(
-          videoUrl,
-          httpHeaders: const {
-            'Referer': 'https://allanime.day/',
-            'User-Agent': 'Mozilla/5.0',
+          videoUrl, 
+          httpHeaders: {
+            'Referer': 'https://allanime.day/', 
+            'User-Agent': 'Mozilla/5.0'
           },
         ),
+        play: true,
       );
+
     } catch (e) {
       _videoError = e.toString();
       debugPrint('WatchPage: video load error: $_videoError');
@@ -90,6 +146,16 @@ class _WatchPageState extends State<WatchPage> {
 
   @override
   void dispose() {
+    // Save history on close
+    if (_player != null) {
+      HistoryService().saveHistory(
+        widget.anime.id,
+        _selectedEpisode,
+        _player!.state.position,
+      );
+    }
+    _positionSubscription?.cancel();
+    _bufferingSubscription?.cancel();
     _player?.dispose();
     super.dispose();
   }
@@ -139,9 +205,17 @@ class _WatchPageState extends State<WatchPage> {
                     VideoSection(
                       controller: _controller,
                       isLoading: _isLoadingVideo,
+                      isBuffering: _isBuffering,
                       errorMessage: _videoError,
                       onRetry: _loadVideo,
                       onBack: () => Navigator.pop(context),
+                      resumePosition: _showResumeOverlay ? _historyToResume : null,
+                      onResume: () async {
+                        if (_historyToResume != null && !_isBuffering) {
+                          setState(() => _showResumeOverlay = false);
+                          await _player!.seek(_historyToResume!);
+                        }
+                      },
                     ),
                     Expanded(
                       child: Container(

@@ -6,12 +6,14 @@ class DetailActionRow extends StatelessWidget {
   final VoidCallback onWatchNow;
   final VoidCallback onBookmark;
   final bool isBookmarked;
+  final String watchLabel;
 
   const DetailActionRow({
     super.key,
     required this.onWatchNow,
     required this.onBookmark,
     this.isBookmarked = false,
+    this.watchLabel = 'Watch Now',
   });
 
   @override
@@ -42,7 +44,7 @@ class DetailActionRow extends StatelessWidget {
                           Icon(Icons.play_arrow_rounded, color: colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Watch Now',
+                            watchLabel,
                             style: TextStyle(
                               color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
@@ -56,7 +58,7 @@ class DetailActionRow extends StatelessWidget {
               : FilledButton.icon(
                   onPressed: onWatchNow,
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Watch Now'),
+                  label: Text(watchLabel),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

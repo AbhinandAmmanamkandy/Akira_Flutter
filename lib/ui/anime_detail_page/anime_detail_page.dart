@@ -3,6 +3,7 @@ import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/favorite_service.dart';
+import '../../services/history_service.dart';
 import '../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
 import '../widgets/glass_container.dart';
@@ -68,6 +69,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
       listenable: Listenable.merge([
         ThemeService(),
         FavoriteService(),
+        HistoryService(),
       ]),
       builder: (context, _) {
         final animeData = _details ?? widget.anime;
@@ -149,6 +151,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
             else if (_details != null) ...[
               DetailActionRow(
                 isBookmarked: FavoriteService().isFavorite(animeData.id),
+                watchLabel: HistoryService().getHistory(animeData.id) != null
+                    ? 'Resume EP ${HistoryService().getHistory(animeData.id)!.episode}'
+                    : 'Watch Now',
                 onWatchNow: () {
                   Navigator.push(
                     context,
