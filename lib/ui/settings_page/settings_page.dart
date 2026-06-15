@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'widgets/settings_components.dart';
+import 'widgets/accent_shade_button.dart';
+import 'widgets/settings_background.dart';
 import '../../services/theme_service.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -14,17 +16,7 @@ class SettingsPage extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
 
         return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  colorScheme.surface,
-                ],
-              ),
-            ),
+          body: SettingsBackground(
             child: CustomScrollView(
               slivers: [
                 SliverAppBar(
@@ -120,17 +112,17 @@ class SettingsPage extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                _AccentShadeButton(
+                                AccentShadeButton(
                                   label: 'Primary',
                                   isSelected: themeService.accentShade == 0,
                                   onTap: () => themeService.setAccentShade(0),
                                 ),
-                                _AccentShadeButton(
+                                AccentShadeButton(
                                   label: 'Secondary',
                                   isSelected: themeService.accentShade == 1,
                                   onTap: () => themeService.setAccentShade(1),
                                 ),
-                                _AccentShadeButton(
+                                AccentShadeButton(
                                   label: 'Tertiary',
                                   isSelected: themeService.accentShade == 2,
                                   onTap: () => themeService.setAccentShade(2),
@@ -221,34 +213,6 @@ class SettingsPage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _AccentShadeButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _AccentShadeButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
-      selectedColor: colorScheme.primaryContainer,
-      labelStyle: TextStyle(
-        color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
     );
   }
 }

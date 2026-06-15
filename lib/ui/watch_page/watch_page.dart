@@ -5,7 +5,11 @@ import 'package:media_kit_video/media_kit_video.dart';
 import '../../models/anime.dart';
 import '../../models/anime_details.dart';
 import '../../services/anime_stream_service.dart';
-import 'widgets/episode_card.dart';
+import 'widgets/video_section.dart';
+import 'widgets/watch_header.dart';
+import 'widgets/episode_controls_header.dart';
+import 'widgets/episode_range_selector.dart';
+import 'widgets/episode_grid.dart';
 
 class WatchPage extends StatefulWidget {
   final Anime anime;
@@ -91,53 +95,21 @@ class _WatchPageState extends State<WatchPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
+    final totalEpisodes = _parseLastEpisode(widget.anime.lastEpisode);
+    
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           children: [
-            // Video Player Placeholder
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Container(
-                color: Colors.grey[900],
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (_isLoadingVideo)
-                      const CircularProgressIndicator(color: Colors.white)
-                    else if (_videoError != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          _videoError!,
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    else if (_controller != null)
-                      Video(controller: _controller!)
-                    else
-                      IconButton(
-                        icon: const Icon(Icons.play_circle_filled, size: 64, color: Colors.white),
-                        onPressed: _loadVideo,
-                      ),
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            VideoSection(
+              controller: _controller,
+              isLoading: _isLoadingVideo,
+              errorMessage: _videoError,
+              onRetry: _loadVideo,
+              onBack: () => Navigator.pop(context),
             ),
 
-            // Content
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -147,69 +119,39 @@ class _WatchPageState extends State<WatchPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.anime.englishName ?? widget.anime.name,
-                            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Episode $_selectedEpisode',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                    WatchHeader(
+                      title: widget.anime.englishName ?? widget.anime.name,
+                      currentEpisode: _selectedEpisode,
                     ),
 
                     const SizedBox(height: 24),
                     
-                    // Episodes Header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Episodes',
-                            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: Icon(_isReversed ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
-                            onPressed: () => setState(() => _isReversed = !_isReversed),
-                            tooltip: 'Reverse Order',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.bolt_rounded, size: 24),
-                            onPressed: () => _showJumpToEpisodeDialog(context, _parseLastEpisode(widget.anime.lastEpisode)),
-                            tooltip: 'Jump to Episode',
-                          ),
-                          Text(
-                            widget.anime.lastEpisode != null ? '${widget.anime.lastEpisode} Total' : '',
-                            style: textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
+                    EpisodeControlsHeader(
+                      totalEpisodes: widget.anime.lastEpisode,
+                      isReversed: _isReversed,
+                      onToggleSort: () => setState(() => _isReversed = !_isReversed),
+                      onJumpToEpisode: () => _showJumpToEpisodeDialog(context, totalEpisodes),
                     ),
                     
                     const SizedBox(height: 8),
 
-                    // Range Selector
-                    _buildRangeSelector(context, _parseLastEpisode(widget.anime.lastEpisode)),
+                    EpisodeRangeSelector(
+                      totalEpisodes: totalEpisodes,
+                      selectedRangeIndex: _selectedRangeIndex,
+                      onRangeSelected: (index) => setState(() => _selectedRangeIndex = index),
+                    ),
 
                     const SizedBox(height: 12),
 
-                    // Episode List
                     Expanded(
-                      child: _buildEpisodeList(_parseLastEpisode(widget.anime.lastEpisode)),
+                      child: EpisodeGrid(
+                        episodes: _getEpisodesForRange(totalEpisodes),
+                        selectedEpisode: _selectedEpisode,
+                        onEpisodeSelected: (ep) {
+                          setState(() => _selectedEpisode = ep);
+                          _loadVideo();
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -221,52 +163,7 @@ class _WatchPageState extends State<WatchPage> {
     );
   }
 
-  Widget _buildRangeSelector(BuildContext context, int totalEpisodes) {
-    if (totalEpisodes <= 50) return const SizedBox.shrink();
-
-    final colorScheme = Theme.of(context).colorScheme;
-    final int chunks = (totalEpisodes / 50).ceil();
-
-    return Container(
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: chunks,
-        itemBuilder: (context, index) {
-          final start = (index * 50) + 1;
-          final end = ((index + 1) * 50).clamp(1, totalEpisodes);
-          final isSelected = _selectedRangeIndex == index;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text('$start - $end'),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) setState(() => _selectedRangeIndex = index);
-              },
-              showCheckmark: false,
-              selectedColor: colorScheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              side: BorderSide(
-                color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEpisodeList(int totalEpisodes) {
+  List<int> _getEpisodesForRange(int totalEpisodes) {
     final startEpisode = (_selectedRangeIndex * 50) + 1;
     final endEpisode = ((_selectedRangeIndex + 1) * 50).clamp(1, totalEpisodes);
     
@@ -278,32 +175,11 @@ class _WatchPageState extends State<WatchPage> {
     if (_isReversed) {
       episodes.sort((a, b) => b.compareTo(a));
     }
-
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 5,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1,
-      ),
-      itemCount: episodes.length,
-      itemBuilder: (context, index) {
-        final episodeNum = episodes[index];
-        return EpisodeCard(
-          episodeNum: episodeNum,
-          isSelected: _selectedEpisode == episodeNum,
-          onTap: () {
-            setState(() => _selectedEpisode = episodeNum);
-            _loadVideo();
-          },
-        );
-      },
-    );
+    return episodes;
   }
 
   int _parseLastEpisode(String? lastEpisode) {
-    if (lastEpisode == null) return 12; // Default fallback
+    if (lastEpisode == null) return 12;
     return int.tryParse(lastEpisode) ?? 12;
   }
 
