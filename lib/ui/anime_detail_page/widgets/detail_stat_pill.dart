@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glass_container.dart';
 
 class DetailStatPill extends StatelessWidget {
   final IconData icon;
@@ -16,15 +17,10 @@ class DetailStatPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
-      child: Container(
+      child: GlassContainer(
+        borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-          ),
-        ),
+        opacity: 0.05,
         child: Row(
           children: [
             Icon(icon, size: 18, color: colorScheme.primary),

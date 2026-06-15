@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import '../../widgets/glass_container.dart';
 
 class DetailDescriptionSection extends StatelessWidget {
   final String? description;
@@ -49,12 +50,18 @@ class DetailDescriptionSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        HtmlWidget(
-          description!,
-          textStyle: textTheme.bodyLarge?.copyWith(
-            height: 1.6,
-            color: colorScheme.onSurfaceVariant,
-            letterSpacing: 0.2,
+        GlassContainer(
+          borderRadius: 20,
+          padding: const EdgeInsets.all(16),
+          opacity: 0.05,
+          withBlur: true,
+          child: HtmlWidget(
+            description!,
+            textStyle: textTheme.bodyLarge?.copyWith(
+              height: 1.6,
+              color: colorScheme.onSurfaceVariant,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ],

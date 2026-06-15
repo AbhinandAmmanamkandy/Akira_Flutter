@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glass_container.dart';
 
 class DetailGenreTag extends StatelessWidget {
   final String label;
@@ -7,16 +8,20 @@ class DetailGenreTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return GlassContainer(
+      borderRadius: 20,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(20),
+      opacity: 0.1,
+      border: Border.all(
+        color: colorScheme.primary.withValues(alpha: 0.2),
+        width: 1,
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
+          color: colorScheme.primary,
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),

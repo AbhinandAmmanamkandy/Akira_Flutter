@@ -23,6 +23,14 @@ class ThemeService extends ChangeNotifier {
   bool _allowUnknown = false;
   bool get allowUnknown => _allowUnknown;
 
+  bool _useGlassTheme = false;
+  bool get useGlassTheme => _useGlassTheme;
+
+  void toggleGlassTheme() {
+    _useGlassTheme = !_useGlassTheme;
+    notifyListeners();
+  }
+
   void toggleMaterialUI() {
     _isMaterialUI = !_isMaterialUI;
     if (!_isMaterialUI) {

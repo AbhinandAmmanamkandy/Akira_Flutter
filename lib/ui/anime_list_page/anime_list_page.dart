@@ -4,6 +4,7 @@ import 'widgets/list_grid.dart';
 import 'widgets/list_state_views.dart';
 import 'package:flutter/material.dart';
 import '../../services/anime_service.dart';
+import '../../services/theme_service.dart';
 import 'widgets/list_app_bar.dart';
 
 class AnimeListPage extends StatefulWidget {
@@ -65,80 +66,114 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: !_isSearching,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        if (_isSearching) {
-          _toggleSearch();
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBody: true,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                Theme.of(context).colorScheme.surface,
-              ],
+    return ListenableBuilder(
+      listenable: ThemeService(),
+      builder: (context, _) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final useGlass = ThemeService().useGlassTheme;
+
+        return PopScope(
+          canPop: !_isSearching,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (_isSearching) {
+              _toggleSearch();
+            }
+          },
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            extendBody: true,
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    colorScheme.surface,
+                  ],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  if (useGlass) ...[
+                    Positioned(
+                      top: 200,
+                      left: -100,
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colorScheme.primary.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: -50,
+                      right: -50,
+                      child: Container(
+                        width: 250,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colorScheme.secondary.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                  ],
+                  FutureBuilder<List<Anime>>(
+                    future: _animeList,
+                    builder: (context, snapshot) {
+                      return CustomScrollView(
+                        controller: _scrollController,
+                        slivers: [
+                          ListAppBar(appBarOpacity: _appBarOpacity),
+                          if (snapshot.connectionState == ConnectionState.waiting)
+                            const SliverFillRemaining(
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (snapshot.hasError)
+                            ListErrorView(
+                              error: snapshot.error,
+                              onRetry: () => setState(() {
+                                _animeList = _animeService.fetchAnime(
+                                  queryText: _searchController.text,
+                                );
+                              }),
+                            )
+                          else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                            ListEmptyView(
+                              isSearching: _isSearching,
+                              onClearSearch: () {
+                                _searchController.clear();
+                                _toggleSearch();
+                              },
+                            )
+                          else
+                            ListGrid(animeList: snapshot.data!),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 130), // Space for the bottom search bar
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  ListSearchBar(
+                    controller: _searchController,
+                    onSearch: _onSearch,
+                    onChanged: (value) {
+                      setState(() {
+                        _isSearching = value.isNotEmpty;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-          child: Stack(
-            children: [
-              FutureBuilder<List<Anime>>(
-                future: _animeList,
-                builder: (context, snapshot) {
-                  return CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      ListAppBar(appBarOpacity: _appBarOpacity),
-                      if (snapshot.connectionState == ConnectionState.waiting)
-                        const SliverFillRemaining(
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (snapshot.hasError)
-                        ListErrorView(
-                          error: snapshot.error,
-                          onRetry: () => setState(() {
-                            _animeList = _animeService.fetchAnime(
-                              queryText: _searchController.text,
-                            );
-                          }),
-                        )
-                      else if (!snapshot.hasData || snapshot.data!.isEmpty)
-                        ListEmptyView(
-                          isSearching: _isSearching,
-                          onClearSearch: () {
-                            _searchController.clear();
-                            _toggleSearch();
-                          },
-                        )
-                      else
-                        ListGrid(animeList: snapshot.data!),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 130), // Space for the bottom search bar
-                      ),
-                    ],
-                  );
-                },
-              ),
-              ListSearchBar(
-                controller: _searchController,
-                onSearch: _onSearch,
-                onChanged: (value) {
-                  setState(() {
-                    _isSearching = value.isNotEmpty;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

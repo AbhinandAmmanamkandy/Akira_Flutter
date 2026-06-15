@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
+import '../widgets/glass_container.dart';
 import '../../services/theme_service.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -14,6 +15,7 @@ class SettingsPage extends StatelessWidget {
       builder: (context, child) {
         final themeService = ThemeService();
         final colorScheme = Theme.of(context).colorScheme;
+        final useGlass = themeService.useGlassTheme;
 
         return Scaffold(
           body: SettingsBackground(
@@ -22,13 +24,21 @@ class SettingsPage extends StatelessWidget {
                 SliverAppBar(
                   floating: true,
                   pinned: true,
+                  backgroundColor: useGlass ? Colors.transparent : colorScheme.surface.withValues(alpha: 0.8),
+                  surfaceTintColor: Colors.transparent,
+                  flexibleSpace: useGlass 
+                    ? const GlassContainer(
+                        borderRadius: 0,
+                        withBlur: true,
+                        opacity: 0.05,
+                        child: FlexibleSpaceBar(),
+                      )
+                    : null,
                   title: const Text(
                     'Settings',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   centerTitle: true,
-                  backgroundColor: colorScheme.surface.withValues(alpha: 0.8),
-                  surfaceTintColor: Colors.transparent,
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate([
@@ -88,6 +98,17 @@ class SettingsPage extends StatelessWidget {
                           trailing: Switch(
                             value: themeService.isMaterialUI,
                             onChanged: (_) => themeService.toggleMaterialUI(),
+                            activeThumbColor: colorScheme.primary,
+                          ),
+                        ),
+                        const SettingsDivider(),
+                        SettingsTile(
+                          icon: Icons.blur_on_rounded,
+                          title: 'Glass Theme',
+                          subtitle: 'Apply frosted glass effects',
+                          trailing: Switch(
+                            value: themeService.useGlassTheme,
+                            onChanged: (_) => themeService.toggleGlassTheme(),
                             activeThumbColor: colorScheme.primary,
                           ),
                         ),

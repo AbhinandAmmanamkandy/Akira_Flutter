@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glass_container.dart';
 
 class SettingsSectionHeader extends StatelessWidget {
   final String title;
@@ -29,16 +30,13 @@ class SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.2),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: GlassContainer(
+        borderRadius: 20,
+        withBlur: true,
+        child: Column(children: children),
       ),
-      child: Column(children: children),
     );
   }
 }
@@ -78,51 +76,54 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
-      enabled: enabled,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: enabled
-              ? colorScheme.primaryContainer.withValues(alpha: 0.2)
-              : colorScheme.onSurface.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        enabled: enabled,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: enabled
+                ? colorScheme.primaryContainer.withValues(alpha: 0.2)
+                : colorScheme.onSurface.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: enabled ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.3),
+            size: 20,
+          ),
         ),
-        child: Icon(
-          icon,
-          color: enabled ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.3),
-          size: 20,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: enabled ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.3),
+          ),
         ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle!,
+                style: TextStyle(
+                  color: enabled
+                      ? colorScheme.onSurfaceVariant
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                  fontSize: 13,
+                ),
+              )
+            : null,
+        trailing: trailing ??
+            (onTap != null
+                ? Icon(
+                    Icons.chevron_right_rounded,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  )
+                : null),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-          color: enabled ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.3),
-        ),
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle!,
-              style: TextStyle(
-                color: enabled
-                    ? colorScheme.onSurfaceVariant
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                fontSize: 13,
-              ),
-            )
-          : null,
-      trailing: trailing ??
-          (onTap != null
-              ? Icon(
-                  Icons.chevron_right_rounded,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                )
-              : null),
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 }

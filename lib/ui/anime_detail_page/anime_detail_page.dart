@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
+import '../../services/theme_service.dart';
 import '../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
 import 'widgets/detail_app_bar.dart';
@@ -61,30 +62,67 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final animeData = _details ?? widget.anime;
-    
-    return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is ScrollUpdateNotification) {
-            if (notification.metrics.pixels < -80 && notification.dragDetails != null) {
-              Navigator.of(context).pop();
-              return true;
-            }
-          }
-          return false;
-        },
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
+    return ListenableBuilder(
+      listenable: ThemeService(),
+      builder: (context, _) {
+        final animeData = _details ?? widget.anime;
+        final colorScheme = Theme.of(context).colorScheme;
+        final useGlass = ThemeService().useGlassTheme;
+
+        return Scaffold(
+          body: Stack(
+            children: [
+              if (useGlass) ...[
+                Positioned(
+                  top: 300,
+                  right: -50,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 600,
+                  left: -50,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.secondary.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+              ],
+              NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is ScrollUpdateNotification) {
+                    if (notification.metrics.pixels < -80 && notification.dragDetails != null) {
+                      Navigator.of(context).pop();
+                      return true;
+                    }
+                  }
+                  return false;
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    DetailAppBar(anime: animeData),
+                    _buildContent(context, animeData),
+                  ],
+                ),
+              ),
+            ],
           ),
-          slivers: [
-            DetailAppBar(anime: animeData),
-            _buildContent(context, animeData),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 

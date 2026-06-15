@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glass_container.dart';
 
 class DetailInfoBadge extends StatelessWidget {
   final String text;
@@ -14,11 +15,13 @@ class DetailInfoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassContainer(
+      borderRadius: 8,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+      opacity: 0.15,
+      border: Border.all(
+        color: bgColor.withValues(alpha: 0.3),
+        width: 1,
       ),
       child: Text(
         text,
