@@ -1,4 +1,5 @@
 import '../../models/anime.dart';
+import '../bookmarks_page/bookmarks_page.dart';
 import 'widgets/list_search_bar.dart';
 import 'widgets/list_grid.dart';
 import 'widgets/list_state_views.dart';
@@ -126,7 +127,22 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   FutureBuilder<List<Anime>>(
                     future: _animeList,
                     builder: (context, snapshot) {
-                      return OverscrollPopHandler(
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          if (ThemeService().useOverscrollToClose &&
+                              notification is ScrollUpdateNotification &&
+                              notification.metrics.pixels < -100 &&
+                              notification.dragDetails != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BookmarksPage(),
+                              ),
+                            );
+                            return true;
+                          }
+                          return false;
+                        },
                         child: CustomScrollView(
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(
