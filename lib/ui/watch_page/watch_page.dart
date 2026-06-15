@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
-import '../../models/EpisodeSource.dart';
 import '../../models/anime.dart';
 import '../../models/anime_details.dart';
 import '../../services/anime_stream_service.dart';
@@ -25,7 +22,6 @@ class WatchPage extends StatefulWidget {
 }
 
 class _WatchPageState extends State<WatchPage> {
-  final AllAnimeApi _animeStreamService = AllAnimeApi();
   int _selectedEpisode = 1;
   Player? _player;
   VideoController? _controller;
@@ -57,20 +53,12 @@ class _WatchPageState extends State<WatchPage> {
     });
 
     try {
-      var videoUrl = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp44";
-
-      videoUrl = 'https://tools.fast4speed.rsvp/media9/videos/Gcou36nB8su3KWXrr/sub/1_1775983352880?Authorization=3_20260614122223_4ffa0a7b5636c163db749135_03785ff46dd0c873f7ec236bd81d84c8b9bf99f6_000_20260617122223_0055_dnld, decodedUrl=https://tools.fast4speed.rsvp/media9/videos/Gcou36nB8su3KWXrr/sub/1_1775983352880?Authorization';
-
-      videoUrl = 'https://tools.fast4speed.rsvp/media9/videos/Gcou36nB8su3KWXrr/sub/1_1775983352880?Authorization=3_20260614122223_4ffa0a7b5636c163db749135_03785ff46dd0c873f7ec236bd81d84c8b9bf99f6_000_20260617122223_0055_dnld';
-
-      // videoUrl = 'https://tools.fast4speed.rsvp/media9/videos/Gcou36nB8su3KWXrr/sub/1_1775983352880?Authorization';
-
+      final videoUrl = await AllAnimeApi().getEpisodeVideoUrl(widget.anime.id, _selectedEpisode.toString());
 
       if (videoUrl == null) {
         throw Exception('No playable video URL found for this episode.');
       }
 
-      debugPrint('WatchPage: opening media URL in player');
       await _player!.open(
         Media(
           videoUrl,

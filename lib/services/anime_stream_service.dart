@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
 
@@ -93,64 +92,12 @@ class AllAnimeApi {
     if (sources.isEmpty) return null;
 
     for (final parsedSource in sources) {
-      final decodedSourceUrl = decodeProvider(parsedSource.url);
-      debugPrint('AllAnimeApi: parsed source name=${parsedSource.name}, originalUrl=${parsedSource.url}, decodedUrl=$decodedSourceUrl');
-    }
-
-    for (final parsedSource in sources) {
-      final sourceResponse = await getSource(parsedSource.url);
-      final json = jsonDecode(sourceResponse);
-      final links = json['links'] as List?;
-      if (links == null || links.isEmpty) {
-        continue;
-      }
-
-      final first = links.first as Map<String, dynamic>;
-      final rawUrls = first['rawUrls'] as Map<String, dynamic>?;
-      if (rawUrls == null) {
-        continue;
-      }
-
-      final vids = rawUrls['vids'] as List?;
-      if (vids != null && vids.isNotEmpty) {
-        final videoUrl = _extractPlayableUrl(vids.first);
-        if (videoUrl != null) {
-          return videoUrl;
-        }
-      }
-
-      final audios = rawUrls['audios'] as List?;
-      if (audios != null && audios.isNotEmpty) {
-        final audioUrl = _extractPlayableUrl(audios.first);
-        if (audioUrl != null) {
-          return audioUrl;
-        }
+      String decodedUrl = decodeProvider(parsedSource.url);
+      if (decodedUrl.contains("fast4speed")) {
+        return decodedUrl;
       }
     }
 
-    return null;
-  }
-
-  static String? _extractPlayableUrl(dynamic item) {
-    if (item is String && item.startsWith('http')) {
-      return item;
-    }
-    if (item is Map<String, dynamic>) {
-      for (final key in ['url', 'file', 'src', 'source']) {
-        final value = item[key];
-        if (value is String && value.startsWith('http')) {
-          return value;
-        }
-      }
-      if (item['url'] is List) {
-        final urls = item['url'] as List;
-        for (final url in urls) {
-          if (url is String && url.startsWith('http')) {
-            return url;
-          }
-        }
-      }
-    }
     return null;
   }
 
@@ -171,54 +118,8 @@ class AllAnimeApi {
       buffer.writeCharCode(code);
     }
 
-    return 'https://allanime.day' + buffer.toString().replaceAll('clock', 'clock.json');
+    return 'https://allanime.day${buffer.toString().replaceAll('clock', 'clock.json')}';
   }
 
-  static String normalizeUrl(String url) {
-    final decoded = decodeProvider(url);
-
-    if (decoded.startsWith('http')) {
-      return decoded;
-    }
-
-    return 'https://allanime.day$decoded';
-  }
-
-  Future<void> inspectSource(
-      String name,
-      String url,
-      ) async {
-    try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': _agent,
-          'Referer': _referer,
-        },
-      );
-
-      print('========');
-      print(name);
-      print(response.statusCode);
-      print(response.body);
-      print('========');
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<String> getSource(String url) async {
-    final normalizedUrl = normalizeUrl(url);
-
-    final response = await http.get(
-      Uri.parse(normalizedUrl),
-      headers: {
-        'User-Agent': _agent,
-        'Referer': _referer,
-      },
-    );
-
-    return response.body;
-  }
 
 }

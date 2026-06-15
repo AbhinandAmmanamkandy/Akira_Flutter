@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'services/theme_service.dart';
 import 'package:media_kit/media_kit.dart';
-import 'services/anime_stream_service.dart';
 import 'ui/anime_list_page/anime_list_page.dart';
 
 Future<void> main() async {
@@ -17,18 +16,6 @@ Future<void> main() async {
       statusBarIconBrightness: Brightness.light,
     ),
   );
-
-  try {
-    debugPrint('Main: testing getEpisodeVideoUrl');
-    final videoUrl = await AllAnimeApi().getEpisodeVideoUrl(
-      'Gcou36nB8su3KWXrr',
-      '1',
-    );
-    debugPrint('Main: getEpisodeVideoUrl result: $videoUrl');
-  } catch (e, st) {
-    debugPrint('Main: getEpisodeVideoUrl error: $e');
-    debugPrint('Main: stack trace: $st');
-  }
 
   runApp(const AkiraApp());
 }
