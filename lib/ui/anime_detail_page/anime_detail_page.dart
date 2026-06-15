@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../../models/anime.dart';
 import '../../services/anime_service.dart';
 import '../../models/anime_details.dart';
@@ -243,9 +244,10 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(
+                // Using HtmlWidget for description (equivalent to Android's Html.fromHtml)
+                HtmlWidget(
                   _details!.description!,
-                  style: textTheme.bodyLarge?.copyWith(
+                  textStyle: textTheme.bodyLarge?.copyWith(
                     height: 1.6,
                     color: colorScheme.onSurfaceVariant,
                     letterSpacing: 0.2,
