@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/glass_container.dart';
+import 'glass_container.dart';
 
 class CommonChip extends StatelessWidget {
   final String label;
