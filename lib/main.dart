@@ -18,7 +18,6 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
     ),
   );
 
@@ -99,6 +98,19 @@ class AkiraApp extends StatelessWidget {
               theme: ThemeData(
                 colorScheme: lightColorScheme,
                 useMaterial3: themeService.isMaterialUI,
+                appBarTheme: AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: lightColorScheme.onSurface,
+                  elevation: 0,
+                  centerTitle: true,
+                  iconTheme: IconThemeData(color: lightColorScheme.onSurface),
+                  titleTextStyle: TextStyle(
+                    color: lightColorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: themeService.isMaterialUI ? null : GoogleFonts.poppins().fontFamily,
+                  ),
+                ),
                 fontFamily: themeService.isMaterialUI
                     ? null
                     : GoogleFonts.poppins().fontFamily,
@@ -116,6 +128,19 @@ class AkiraApp extends StatelessWidget {
               darkTheme: ThemeData(
                 colorScheme: darkColorScheme,
                 useMaterial3: themeService.isMaterialUI,
+                appBarTheme: AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: darkColorScheme.onSurface,
+                  elevation: 0,
+                  centerTitle: true,
+                  iconTheme: IconThemeData(color: darkColorScheme.onSurface),
+                  titleTextStyle: TextStyle(
+                    color: darkColorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: themeService.isMaterialUI ? null : GoogleFonts.poppins().fontFamily,
+                  ),
+                ),
                 fontFamily: themeService.isMaterialUI
                     ? null
                     : GoogleFonts.poppins().fontFamily,

@@ -31,6 +31,9 @@ class SettingsPage extends StatelessWidget {
                     pinned: true,
                     backgroundColor: useGlass ? Colors.transparent : colorScheme.surface.withValues(alpha: 0.8),
                     surfaceTintColor: Colors.transparent,
+                    foregroundColor: colorScheme.onSurface,
+                    elevation: 0,
+                    iconTheme: IconThemeData(color: colorScheme.onSurface),
                     flexibleSpace: useGlass 
                       ? const GlassContainer(
                           borderRadius: 0,
@@ -39,9 +42,12 @@ class SettingsPage extends StatelessWidget {
                           child: FlexibleSpaceBar(),
                         )
                       : null,
-                    title: const Text(
+                    title: Text(
                       'Settings',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     centerTitle: true,
                   ),

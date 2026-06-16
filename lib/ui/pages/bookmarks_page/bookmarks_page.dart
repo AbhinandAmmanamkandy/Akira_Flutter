@@ -67,6 +67,9 @@ class BookmarksPage extends StatelessWidget {
                             ? Colors.transparent
                             : colorScheme.surface.withValues(alpha: 0.8),
                         surfaceTintColor: Colors.transparent,
+                        foregroundColor: colorScheme.onSurface,
+                        elevation: 0,
+                        iconTheme: IconThemeData(color: colorScheme.onSurface),
                         flexibleSpace: useGlass
                             ? const GlassContainer(
                                 borderRadius: 0,
@@ -75,9 +78,12 @@ class BookmarksPage extends StatelessWidget {
                                 child: FlexibleSpaceBar(),
                               )
                             : null,
-                        title: const Text(
+                        title: Text(
                           'Senpai\'s Picks',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
                         ),
                         centerTitle: true,
                       ),

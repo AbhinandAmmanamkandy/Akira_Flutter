@@ -31,9 +31,9 @@ class SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: GlassContainer(
-        borderRadius: 20,
+        borderRadius: 24,
         withBlur: true,
         child: Column(children: children),
       ),
@@ -46,11 +46,15 @@ class SettingsDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Divider(
       height: 1,
       indent: 56,
       endIndent: 16,
-      color: Colors.white.withValues(alpha: 0.05),
+      color: isLight 
+          ? colorScheme.outlineVariant.withValues(alpha: 0.5)
+          : Colors.white.withValues(alpha: 0.05),
     );
   }
 }
@@ -76,53 +80,73 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Material(
       color: Colors.transparent,
-      child: ListTile(
-        enabled: enabled,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: enabled
-                ? colorScheme.primaryContainer.withValues(alpha: 0.2)
-                : colorScheme.onSurface.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: enabled ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.3),
-            size: 20,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 15,
-            color: enabled ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-        ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle!,
-                style: TextStyle(
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
                   color: enabled
-                      ? colorScheme.onSurfaceVariant
-                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                  fontSize: 13,
+                      ? colorScheme.primary.withValues(alpha: isLight ? 0.1 : 0.15)
+                      : colorScheme.onSurface.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: isLight && enabled
+                      ? Border.all(color: colorScheme.primary.withValues(alpha: 0.1), width: 1)
+                      : null,
                 ),
-              )
-            : null,
-        trailing: trailing ??
-            (onTap != null
-                ? Icon(
-                    Icons.chevron_right_rounded,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  )
-                : null),
-        onTap: onTap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: Icon(
+                  icon,
+                  color: enabled ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.3),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: enabled ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          color: enabled
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null)
+                trailing!
+              else if (onTap != null)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
