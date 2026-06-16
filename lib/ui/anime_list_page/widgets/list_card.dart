@@ -56,10 +56,10 @@ class ListCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 4),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Text(
                 (anime.englishName != null && anime.englishName!.isNotEmpty)
                     ? anime.englishName!
@@ -67,9 +67,11 @@ class ListCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
-                      height: 1.2,
+                      fontSize: 15,
+                      letterSpacing: -0.3,
+                      height: 1.1,
                     ),
               ),
             ),

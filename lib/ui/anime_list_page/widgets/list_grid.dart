@@ -10,14 +10,18 @@ class ListGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Calculate columns based on width, minimum 2 columns
+    final crossAxisCount = (screenWidth / 180).floor().clamp(2, 6);
+
     return SliverPadding(
       padding: const EdgeInsets.all(16),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.6,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: 0.58,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {

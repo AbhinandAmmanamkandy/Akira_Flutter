@@ -21,9 +21,7 @@ class ListAppBar extends StatelessWidget {
       expandedHeight: 170.0,
       pinned: true,
       stretch: true,
-      backgroundColor: useGlass 
-          ? appBarColor.withValues(alpha: (appBarOpacity * 0.9).clamp(0, 0.9)) 
-          : appBarColor,
+      backgroundColor: appBarColor.withValues(alpha: (appBarOpacity * 0.9).clamp(0, 0.9)),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
@@ -72,7 +70,7 @@ class ListAppBar extends StatelessWidget {
             withBlur: useGlass,
             border: const Border(),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(30, 0, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -90,9 +88,9 @@ class ListAppBar extends StatelessWidget {
                               style: TextStyle(
                                 color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 42,
-                                height: 1.0,
-                                letterSpacing: -2.0,
+                                fontSize: 44,
+                                height: 0.9,
+                                letterSpacing: -2.5,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -101,19 +99,19 @@ class ListAppBar extends StatelessWidget {
                               style: TextStyle(
                                 color: colorScheme.primary,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 16,
+                                fontSize: 18,
                                 letterSpacing: 0.5,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 0),
                         Text(
                           'YOUR ULTIMATE ANIME DESTINATION',
                           style: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                            color: colorScheme.onSurface.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 9,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -121,7 +119,7 @@ class ListAppBar extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
                         useGlass
