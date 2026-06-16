@@ -23,14 +23,7 @@ class BookmarksPage extends StatelessWidget {
         return Scaffold(
           body: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  colorScheme.surface,
-                ],
-              ),
+              color: Color.lerp(colorScheme.surface, colorScheme.onSurface, 0.05),
             ),
             child: Stack(
               children: [

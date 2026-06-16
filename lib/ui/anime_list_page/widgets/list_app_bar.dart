@@ -15,19 +15,25 @@ class ListAppBar extends StatelessWidget {
     final useGlass = ThemeService().useGlassTheme;
     final currentRadius = 32.0 * (1.0 - appBarOpacity);
 
+    final appBarColor = Color.lerp(colorScheme.surfaceContainerHighest, Colors.black, 0.03)!;
+
     return SliverAppBar(
       expandedHeight: 170.0,
       pinned: true,
       stretch: true,
       backgroundColor: useGlass 
-          ? colorScheme.surface.withValues(alpha: (appBarOpacity * 0.7).clamp(0, 0.7)) 
-          : colorScheme.surface,
+          ? appBarColor.withValues(alpha: (appBarOpacity * 0.9).clamp(0, 0.9)) 
+          : appBarColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(currentRadius),
+        ),
+        side: BorderSide(
+          color: colorScheme.onSurface.withValues(alpha: 0.05),
+          width: 1,
         ),
       ),
       automaticallyImplyLeading: false,
@@ -39,7 +45,7 @@ class ListAppBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: useGlass ? BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.3),
+            color: colorScheme.onSurface.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ) : null,
           child: Text(
@@ -60,7 +66,8 @@ class ListAppBar extends StatelessWidget {
           ),
           child: GlassContainer(
             borderRadius: 0,
-            opacity: useGlass ? 0.05 : 1.0,
+            opacity: useGlass ? 0.4 : 1.0,
+            color: appBarColor,
             blur: 15,
             withBlur: useGlass,
             border: const Border(),

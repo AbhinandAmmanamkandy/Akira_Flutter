@@ -47,7 +47,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
     final colorScheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final expandedWidth = screenWidth - 40;
-    const collapsedWidth = 60.0;
+    const collapsedWidth = 130.0;
 
     return Positioned(
       bottom: MediaQuery.of(context).viewInsets.bottom + 32,
@@ -61,13 +61,24 @@ class _ListSearchBarState extends State<ListSearchBar> {
             curve: Curves.fastOutSlowIn,
             width: widget.isExpanded ? expandedWidth : collapsedWidth,
             height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: widget.isExpanded ? 0.08 : 0.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: GlassContainer(
               borderRadius: 30,
               blur: 20,
-              opacity: 0.2,
+              opacity: 0.85,
+              color: colorScheme.surfaceContainerHighest,
               withBlur: true,
               border: Border.all(
-                color: colorScheme.primary.withValues(alpha: 0.5),
+                color: colorScheme.primary.withValues(alpha: widget.isExpanded ? 0.5 : 0.8),
                 width: 2.0,
               ),
               child: AnimatedSwitcher(
@@ -78,13 +89,15 @@ class _ListSearchBarState extends State<ListSearchBar> {
                         focusNode: _focusNode,
                         controller: widget.controller,
                         style: TextStyle(
-                          color: colorScheme.onSurface,
+                          color: colorScheme.primary,
                           fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
+                        cursorColor: colorScheme.primary,
                         decoration: InputDecoration(
                           hintText: 'Search for anime...',
                           hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                            color: colorScheme.primary.withValues(alpha: 0.6),
                           ),
                           border: InputBorder.none,
                           prefixIcon: IconButton(
@@ -96,7 +109,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
                           ),
                           suffixIcon: widget.controller.text.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.close_rounded, size: 20),
+                                  icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
                                   onPressed: () {
                                     widget.controller.clear();
                                     widget.onSearch('');
@@ -108,14 +121,30 @@ class _ListSearchBarState extends State<ListSearchBar> {
                         onSubmitted: widget.onSearch,
                         onChanged: widget.onChanged,
                       )
-                    : IconButton(
+                    : InkWell(
                         key: const ValueKey('collapsed'),
-                        icon: Icon(
-                          Icons.search_rounded,
-                          color: colorScheme.primary,
-                          size: 28,
+                        onTap: widget.onExpand,
+                        borderRadius: BorderRadius.circular(30),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'SEARCH',
+                              style: TextStyle(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.search_rounded,
+                              color: colorScheme.primary.withValues(alpha: 0.7),
+                              size: 24,
+                            ),
+                          ],
                         ),
-                        onPressed: widget.onExpand,
                       ),
               ),
             ),
