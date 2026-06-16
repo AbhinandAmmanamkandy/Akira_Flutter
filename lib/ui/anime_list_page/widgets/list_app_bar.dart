@@ -1,27 +1,62 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../settings_page/settings_page.dart';
 import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
 import '../../widgets/glass_container.dart';
 
-class ListAppBar extends StatelessWidget {
+class ListAppBar extends StatefulWidget {
   final double appBarOpacity;
 
   const ListAppBar({super.key, required this.appBarOpacity});
 
   @override
+  State<ListAppBar> createState() => _ListAppBarState();
+}
+
+class _ListAppBarState extends State<ListAppBar> {
+  bool _showHint = false;
+  String _hintText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    
+    final hints = [
+      'Swipe Down For Magic',
+      'Draw an S on the screen',
+    ];
+    _hintText = hints[Random().nextInt(hints.length)];
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() => _showHint = true);
+      }
+    });
+    
+    Future.delayed(const Duration(seconds: 7), () {
+      if (mounted) {
+        setState(() => _showHint = false);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
-    final currentRadius = 32.0 * (1.0 - appBarOpacity);
-
+    final currentRadius = 32.0 * (1.0 - widget.appBarOpacity);
     final appBarColor = Color.lerp(colorScheme.surfaceContainerHighest, Colors.black, 0.03)!;
 
+    // Calculate visibility based on both timer and scroll position
+    final bool isVisible = _showHint && widget.appBarOpacity < 0.1;
+    final double hintOpacity = isVisible ? 1.0 : 0.0;
+
     return SliverAppBar(
-      expandedHeight: 170.0,
+      expandedHeight: _showHint ? 210.0 : 170.0,
       pinned: true,
       stretch: true,
-      backgroundColor: appBarColor.withValues(alpha: (appBarOpacity * 0.9).clamp(0, 0.9)),
+      backgroundColor: appBarColor.withValues(alpha: (widget.appBarOpacity * 0.9).clamp(0, 0.9)),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
@@ -38,7 +73,7 @@ class ListAppBar extends StatelessWidget {
       toolbarHeight: 70,
       centerTitle: false,
       title: AnimatedOpacity(
-        opacity: appBarOpacity > 0.8 ? 1.0 : 0.0,
+        opacity: widget.appBarOpacity > 0.8 ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -75,162 +110,144 @@ class ListAppBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              'AKIRA',
-                              style: TextStyle(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 44,
-                                height: 0.9,
-                                letterSpacing: -2.5,
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                'AKIRA',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 44,
+                                  height: 0.9,
+                                  letterSpacing: -2.5,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'HUB',
-                              style: TextStyle(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 18,
-                                letterSpacing: 0.5,
+                              const SizedBox(width: 8),
+                              Text(
+                                'HUB',
+                                style: TextStyle(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 0),
-                        Text(
-                          'YOUR ULTIMATE ANIME DESTINATION',
-                          style: TextStyle(
-                            color: colorScheme.onSurface.withValues(alpha: 0.8),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 9,
-                            letterSpacing: 1.2,
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 0),
+                          Text(
+                            'YOUR ULTIMATE ANIME DESTINATION',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.8),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 9,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 500),
+                            height: isVisible ? 42 : 0,
+                            clipBehavior: Clip.hardEdge,
+                            curve: Curves.fastOutSlowIn,
+                            margin: EdgeInsets.only(top: isVisible ? 12 : 0),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  colorScheme.primary.withValues(alpha: 0.25 * hintOpacity),
+                                  colorScheme.primary.withValues(alpha: 0.05 * hintOpacity),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: colorScheme.primary.withValues(alpha: 0.4 * hintOpacity),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colorScheme.primary.withValues(alpha: 0.15 * hintOpacity),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.2 * hintOpacity),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 14,
+                                    color: colorScheme.primary.withValues(alpha: hintOpacity),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Flexible(
+                                  child: Text(
+                                    _hintText.toUpperCase(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: colorScheme.primary.withValues(alpha: hintOpacity),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.1,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        useGlass
-                            ? GlassContainer(
-                                borderRadius: 16,
-                                opacity: 0.1,
-                                border: Border.all(
-                                  color: colorScheme.primary.withValues(alpha: 0.5),
-                                  width: 1.5,
-                                ),
-                                child: IconButton(
-                                  tooltip: 'Senpai\'s Picks',
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const BookmarksPage()),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    Icons.bookmark_rounded,
-                                    size: 24,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                              )
-                            : IconButton(
-                                tooltip: 'Senpai\'s Picks',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const BookmarksPage()),
-                                  );
-                                },
-                                style: IconButton.styleFrom(
-                                  backgroundColor: colorScheme
-                                      .surfaceContainerHighest
-                                      .withValues(alpha: 0.3),
-                                  padding: const EdgeInsets.all(12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  side: BorderSide(
-                                    color: colorScheme.primary.withValues(alpha: 0.5),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                icon: Icon(
-                                  Icons.bookmark_rounded,
-                                  size: 24,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
+                        IconButton(
+                          tooltip: 'Senpai\'s Picks',
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage())),
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            padding: const EdgeInsets.all(12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
+                          ),
+                          icon: Icon(Icons.bookmark_rounded, size: 24, color: colorScheme.onSurface),
+                        ),
                         const SizedBox(width: 8),
-                        useGlass
-                            ? GlassContainer(
-                                borderRadius: 16,
-                                opacity: 0.1,
-                                border: Border.all(
-                                  color: colorScheme.primary.withValues(alpha: 0.5),
-                                  width: 1.5,
-                                ),
-                                child: IconButton(
-                                  onPressed: () {
-                                    FocusScope.of(context).unfocus();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SettingsPage()),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    Icons.settings_rounded,
-                                    size: 24,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                              )
-                            : IconButton(
-                                onPressed: () {
-                                  FocusScope.of(context).unfocus();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SettingsPage()),
-                                  );
-                                },
-                                style: IconButton.styleFrom(
-                                  backgroundColor: colorScheme
-                                      .surfaceContainerHighest
-                                      .withValues(alpha: 0.3),
-                                  padding: const EdgeInsets.all(12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  side: BorderSide(
-                                    color: colorScheme.primary.withValues(alpha: 0.5),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                icon: Icon(
-                                  Icons.settings_rounded,
-                                  size: 24,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
+                        IconButton(
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                          },
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            padding: const EdgeInsets.all(12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
+                          ),
+                          icon: Icon(Icons.settings_rounded, size: 24, color: colorScheme.onSurface),
+                        ),
                       ],
                     ),
                   ),

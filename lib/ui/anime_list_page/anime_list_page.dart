@@ -144,6 +144,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
             }
           },
           child: Listener(
+            behavior: HitTestBehavior.translucent,
             onPointerDown: (event) => _gesturePoints = [event.localPosition],
             onPointerMove: (event) => _gesturePoints.add(event.localPosition),
             onPointerUp: (event) {
@@ -153,6 +154,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   HapticFeedback.mediumImpact();
                 }
               }
+              _gesturePoints = [];
             },
             child: Scaffold(
               resizeToAvoidBottomInset: false,
