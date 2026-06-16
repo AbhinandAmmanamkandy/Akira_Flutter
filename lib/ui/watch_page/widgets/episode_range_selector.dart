@@ -17,6 +17,7 @@ class EpisodeRangeSelector extends StatelessWidget {
     if (totalEpisodes <= 50) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final int chunks = (totalEpisodes / 50).ceil();
 
     return Container(
@@ -41,7 +42,7 @@ class EpisodeRangeSelector extends StatelessWidget {
               },
               showCheckmark: false,
               selectedColor: colorScheme.primary,
-              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
               labelStyle: TextStyle(
                 color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,

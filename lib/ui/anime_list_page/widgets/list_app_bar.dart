@@ -51,6 +51,7 @@ class _ListAppBarState extends State<ListAppBar> {
     // Calculate visibility based on both timer and scroll position
     final bool isVisible = _showHint && widget.appBarOpacity < 0.1;
     final double hintOpacity = isVisible ? 1.0 : 0.0;
+    final bool isLight = Theme.of(context).brightness == Brightness.light;
 
     return SliverAppBar(
       expandedHeight: _showHint ? 210.0 : 170.0,
@@ -166,18 +167,20 @@ class _ListAppBarState extends State<ListAppBar> {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  colorScheme.primary.withValues(alpha: 0.25 * hintOpacity),
-                                  colorScheme.primary.withValues(alpha: 0.05 * hintOpacity),
+                                  (isLight ? colorScheme.primaryContainer : colorScheme.primary)
+                                      .withValues(alpha: (isLight ? 0.8 : 0.25) * hintOpacity),
+                                  (isLight ? colorScheme.primaryContainer : colorScheme.primary)
+                                      .withValues(alpha: (isLight ? 0.4 : 0.05) * hintOpacity),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(25),
                               border: Border.all(
-                                color: colorScheme.primary.withValues(alpha: 0.4 * hintOpacity),
+                                color: colorScheme.primary.withValues(alpha: (isLight ? 0.2 : 0.4) * hintOpacity),
                                 width: 1.2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: 0.15 * hintOpacity),
+                                  color: colorScheme.primary.withValues(alpha: (isLight ? 0.1 : 0.15) * hintOpacity),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -189,13 +192,14 @@ class _ListAppBarState extends State<ListAppBar> {
                                 Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.primary.withValues(alpha: 0.2 * hintOpacity),
+                                    color: (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
+                                        .withValues(alpha: (isLight ? 1.0 : 0.2) * hintOpacity),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     Icons.auto_awesome_rounded,
                                     size: 14,
-                                    color: colorScheme.primary.withValues(alpha: hintOpacity),
+                                    color: isLight ? colorScheme.onPrimary : colorScheme.primary.withValues(alpha: hintOpacity),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -205,7 +209,7 @@ class _ListAppBarState extends State<ListAppBar> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: colorScheme.primary.withValues(alpha: hintOpacity),
+                                      color: isLight ? colorScheme.onPrimaryContainer : colorScheme.primary.withValues(alpha: hintOpacity),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 1.1,

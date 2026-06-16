@@ -71,9 +71,12 @@ class _HeaderButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Material(
-      color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      color: isSelected 
+          ? colorScheme.primary 
+          : colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,

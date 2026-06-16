@@ -18,15 +18,16 @@ class EpisodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     if (useGlass) {
       return GlassContainer(
         borderRadius: 16,
-        opacity: isSelected ? 0.25 : 0.05,
+        opacity: isSelected ? 0.25 : (isLight ? 0.08 : 0.05),
         border: Border.all(
           color: isSelected 
               ? colorScheme.primary 
-              : colorScheme.onSurface.withValues(alpha: 0.1),
+              : colorScheme.onSurface.withValues(alpha: isLight ? 0.15 : 0.1),
           width: isSelected ? 2.0 : 1.0,
         ),
         child: InkWell(
@@ -52,7 +53,7 @@ class EpisodeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected 
             ? colorScheme.primary 
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            : colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(

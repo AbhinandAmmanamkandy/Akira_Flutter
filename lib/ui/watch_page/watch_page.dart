@@ -176,9 +176,12 @@ class _WatchPageState extends State<WatchPage> {
         final colorScheme = Theme.of(context).colorScheme;
         final useGlass = ThemeService().useGlassTheme;
         final totalEpisodes = _parseLastEpisode(widget.anime.lastEpisode);
+        final isLight = Theme.of(context).brightness == Brightness.light;
+
+        final bgColor = Color.lerp(colorScheme.surface, colorScheme.onSurface, 0.05)!;
 
         return Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: bgColor,
           body: Stack(
             children: [
               // Background Gradient
@@ -189,8 +192,8 @@ class _WatchPageState extends State<WatchPage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        colorScheme.surface.withValues(alpha: 0.1),
-                        Colors.black,
+                        colorScheme.primary.withValues(alpha: isLight ? 0.05 : 0.1),
+                        bgColor,
                       ],
                     ),
                   ),

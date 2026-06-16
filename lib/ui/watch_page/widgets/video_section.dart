@@ -149,14 +149,14 @@ class VideoSection extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.fast_forward_rounded, size: 20, color: Colors.white),
+                              Icon(Icons.fast_forward_rounded, size: 20, color: colorScheme.onPrimary),
                               const SizedBox(width: 8),
                               Text(
                                 resumePosition != null ? 'Resume from ${_formatDuration(resumePosition!)}' : '',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14, 
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                 ),
                               ),
                             ],
