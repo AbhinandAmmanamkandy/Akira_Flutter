@@ -22,61 +22,81 @@ class ListCard extends StatelessWidget {
           ),
         );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 0.7,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+      child: AspectRatio(
+        aspectRatio: 0.7,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ListCardThumbnail(
-                      imageUrl: anime.thumbnail,
-                      heroTag: 'anime_${anime.id}',
-                    ),
-                  ),
-                  if (anime.lastEpisode != null && anime.lastEpisode!.isNotEmpty)
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: ListCardBadge(text: 'EP ${anime.lastEpisode}'),
-                    ),
-                ],
-              ),
-            ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Text(
-                (anime.englishName != null && anime.englishName!.isNotEmpty)
-                    ? anime.englishName!
-                    : anime.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ListCardThumbnail(
+                    imageUrl: anime.thumbnail,
+                    heroTag: 'anime_${anime.id}',
+                  ),
+                ),
+                // Gradient for text readability
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.6, 1.0],
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (anime.lastEpisode != null && anime.lastEpisode!.isNotEmpty)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: ListCardBadge(text: 'EP ${anime.lastEpisode}'),
+                  ),
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
+                  child: Text(
+                    (anime.englishName != null && anime.englishName!.isNotEmpty)
+                        ? anime.englishName!
+                        : anime.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
                       letterSpacing: -0.3,
                       height: 1.1,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
