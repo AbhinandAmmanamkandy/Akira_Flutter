@@ -31,52 +31,42 @@ class AnimeService {
 
   Future<List<Anime>> fetchAnime({
     String queryText = '',
+    List<String>? genres,
     int limit = 40,
     int page = 1,
   }) async {
-    final bool isSearch = queryText.isNotEmpty;
+    const String queryTypes =
+        r'$search: SearchInput, $limit: Int, $page: Int, $translationType: VaildTranslationTypeEnumType, $countryOrigin: VaildCountryOriginEnumType';
 
-    final String queryTypes = isSearch
-        ? r'$search: SearchInput!'
-        : r'$search: SearchInput, $limit: Int, $page: Int, $translationType: VaildTranslationTypeEnumType, $countryOrigin: VaildCountryOriginEnumType';
+    const String queryFields =
+        'shows(search: \$search, limit: \$limit, page: \$page, translationType: \$translationType, countryOrigin: \$countryOrigin)';
 
-    final String queryFields = isSearch
-        ? 'shows(search: \$search)'
-        : 'shows(search: \$search, limit: \$limit, page: \$page, translationType: \$translationType, countryOrigin: \$countryOrigin)';
-
-    final String query = '''
+    const String query = '''
       query($queryTypes) {
         $queryFields {
           edges {
             _id
             name
             englishName
-            thumbnails
+            thumbnail
             lastEpisodeInfo
           }
         }
       }
     ''';
 
-    final Map<String, dynamic> variables = isSearch
-        ? {
-            'search': {
-              'allowAdult': _settings.allowAdult,
-              'allowUnknown': _settings.allowUnknown,
-              'query': queryText,
-            },
-          }
-        : {
-            'search': {
-              'allowAdult': _settings.allowAdult,
-              'allowUnknown': _settings.allowUnknown,
-              'query': '',
-            },
-            'limit': limit,
-            'page': page,
-            'translationType': 'sub',
-            'countryOrigin': 'ALL',
-          };
+    final Map<String, dynamic> variables = {
+      'search': {
+        'allowAdult': _settings.allowAdult,
+        'allowUnknown': _settings.allowUnknown,
+        'query': queryText,
+        if (genres != null && genres.isNotEmpty) 'genres': genres,
+      },
+      'limit': limit,
+      'page': page,
+      'translationType': 'sub',
+      'countryOrigin': 'ALL',
+    };
 
     try {
       final response = await _post(
@@ -106,7 +96,7 @@ class AnimeService {
           _id
           name
           englishName
-          thumbnails
+          thumbnail
           description
           lastEpisodeInfo
           season
@@ -135,6 +125,51 @@ class AnimeService {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<List<Anime>> fetchPopularAnime({int size = 20}) async {
+    const String query = r'''
+      query($type: VaildPopularTypeEnumType!, $size: Int!, $dateRange: Int) {
+        queryPopular(type: $type, size: $size, dateRange: $dateRange) {
+          recommendations {
+            anyCard {
+              _id
+              name
+              englishName
+              thumbnail
+              lastEpisodeInfo
+            }
+          }
+        }
+      }
+    ''';
+
+    final Map<String, dynamic> variables = {
+      'type': 'anime',
+      'size': size,
+      'dateRange': 1,
+    };
+
+    try {
+      final response = await _post(query, variables: variables);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] == null || data['data']['queryPopular'] == null) {
+          return [];
+        }
+        final List recommendations =
+            data['data']['queryPopular']['recommendations'];
+        return recommendations
+            .where((e) => e['anyCard'] != null)
+            .map((e) => Anime.fromJson(e['anyCard']))
+            .toList();
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      return [];
     }
   }
 }

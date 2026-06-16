@@ -49,8 +49,14 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   void _onSearch(String query) {
     setState(() {
+      final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
+      
       if (query.isEmpty) {
         _animeList = _homeAnimeList;
+      } else if (query.toLowerCase() == 'trending') {
+        _animeList = _animeService.fetchPopularAnime();
+      } else if (genres.contains(query)) {
+        _animeList = _animeService.fetchAnime(genres: [query]);
       } else {
         _animeList = _animeService.fetchAnime(queryText: query);
       }
@@ -162,11 +168,22 @@ class _AnimeListPageState extends State<AnimeListPage> {
                               ListErrorView(
                                 error: snapshot.error,
                                 onRetry: () => setState(() {
-                                  final future = _animeService.fetchAnime(
-                                    queryText: _searchController.text,
-                                  );
+                                  final queryText = _searchController.text;
+                                  final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
+                                  final Future<List<Anime>> future;
+                                  
+                                  if (queryText.toLowerCase() == 'trending') {
+                                    future = _animeService.fetchPopularAnime();
+                                  } else if (genres.contains(queryText)) {
+                                    future = _animeService.fetchAnime(genres: [queryText]);
+                                  } else {
+                                    future = _animeService.fetchAnime(
+                                      queryText: queryText,
+                                    );
+                                  }
+                                  
                                   _animeList = future;
-                                  if (_searchController.text.isEmpty) {
+                                  if (queryText.isEmpty) {
                                     _homeAnimeList = future;
                                   }
                                 }),

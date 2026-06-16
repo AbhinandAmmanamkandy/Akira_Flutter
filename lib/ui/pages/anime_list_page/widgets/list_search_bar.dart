@@ -70,7 +70,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn,
             width: widget.isExpanded ? expandedWidth : collapsedWidth,
-            height: widget.isExpanded ? 120 : 60,
+            height: widget.isExpanded ? 140 : 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(widget.isExpanded ? 24 : 30),
               boxShadow: [
@@ -94,63 +94,88 @@ class _ListSearchBarState extends State<ListSearchBar> {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: widget.isExpanded
-                    ? Column(
+                    ? OverflowBox(
                         key: const ValueKey('expanded'),
-                        children: [
-                          TextField(
-                            focusNode: _focusNode,
-                            controller: widget.controller,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            cursorColor: colorScheme.primary,
-                            decoration: InputDecoration(
-                              hintText: 'Search for anime...',
-                              hintStyle: TextStyle(
-                                color: colorScheme.primary.withValues(alpha: 0.6),
+                        alignment: Alignment.topCenter,
+                        minHeight: 0,
+                        maxHeight: 140,
+                        child: SizedBox(
+                          height: 140,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    focusNode: _focusNode,
+                                    controller: widget.controller,
+                                    style: TextStyle(
+                                      color: colorScheme.primary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    cursorColor: colorScheme.primary,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search for anime...',
+                                      hintStyle: TextStyle(
+                                        color: colorScheme.primary.withValues(alpha: 0.6),
+                                      ),
+                                      border: InputBorder.none,
+                                      prefixIcon: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: Icon(
+                                          Icons.arrow_back_rounded,
+                                          color: colorScheme.primary,
+                                        ),
+                                        onPressed: widget.onExpand,
+                                      ),
+                                      suffixIcon: widget.controller.text.isNotEmpty
+                                          ? IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
+                                              onPressed: () {
+                                                widget.controller.clear();
+                                                widget.onSearch('');
+                                              },
+                                            )
+                                          : null,
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                    ),
+                                    onSubmitted: widget.onSearch,
+                                    onChanged: widget.onChanged,
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
+                                    indent: 16,
+                                    endIndent: 16,
+                                  ),
+                                ],
                               ),
-                              border: InputBorder.none,
-                              prefixIcon: IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back_rounded,
-                                  color: colorScheme.primary,
-                                ),
-                                onPressed: widget.onExpand,
-                              ),
-                              suffixIcon: widget.controller.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
-                                      onPressed: () {
-                                        widget.controller.clear();
-                                        widget.onSearch('');
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                child: Row(
+                                  children: _quickSearches.map((data) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: CommonChip(
+                                      label: data['label'],
+                                      icon: data['icon'],
+                                      onTap: () {
+                                        widget.controller.text = data['label'];
+                                        widget.onSearch(data['label']);
                                       },
-                                    )
-                                  : null,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                            ),
-                            onSubmitted: widget.onSearch,
-                            onChanged: widget.onChanged,
-                          ),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: _quickSearches.map((data) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: CommonChip(
-                                  label: data['label'],
-                                  icon: data['icon'],
-                                  onTap: () {
-                                    widget.controller.text = data['label'];
-                                    widget.onSearch(data['label']);
-                                  },
+                                    ),
+                                  )).toList(),
                                 ),
-                              )).toList(),
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       )
                     : InkWell(
                         key: const ValueKey('collapsed'),
