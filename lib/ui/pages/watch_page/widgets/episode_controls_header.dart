@@ -51,6 +51,7 @@ class EpisodeControlsHeader extends StatelessWidget {
           _HeaderButton(
             icon: Icons.bolt_rounded,
             onTap: onJumpToEpisode,
+            isAccent: true,
           ),
         ],
       ),
@@ -62,11 +63,13 @@ class _HeaderButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool isSelected;
+  final bool isAccent;
 
   const _HeaderButton({
     required this.icon,
     required this.onTap,
     this.isSelected = false,
+    this.isAccent = false,
   });
 
   @override
@@ -74,20 +77,33 @@ class _HeaderButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
 
+    Color bgColor = AkiraColors.getComponentColor(colorScheme, isLight);
+    Color iconColor = colorScheme.onSurface;
+
+    if (isSelected) {
+      bgColor = colorScheme.primary;
+      iconColor = colorScheme.onPrimary;
+    } else if (isAccent) {
+      bgColor = colorScheme.primary.withValues(alpha: 0.1);
+      iconColor = colorScheme.primary;
+    }
+
     return Material(
-      color: isSelected 
-          ? colorScheme.primary 
-          : AkiraColors.getComponentColor(colorScheme, isLight),
+      color: bgColor,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.all(8),
+          decoration: isAccent ? BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+          ) : null,
           child: Icon(
             icon,
             size: 20,
-            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+            color: iconColor,
           ),
         ),
       ),

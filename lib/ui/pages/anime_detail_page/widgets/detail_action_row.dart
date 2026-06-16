@@ -5,11 +5,13 @@ import '../../../../services/theme_service.dart';
 class DetailActionRow extends StatelessWidget {
   final VoidCallback onPlayTap;
   final String watchLabel;
+  final int? continueEpisode;
 
   const DetailActionRow({
     super.key,
     required this.onPlayTap,
     this.watchLabel = 'Watch Now',
+    this.continueEpisode,
   });
 
   @override
@@ -17,6 +19,10 @@ class DetailActionRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
+
+    final label = continueEpisode != null 
+        ? 'Continue Episode $continueEpisode' 
+        : watchLabel;
 
     // Redesign: Distinct styles for Light and Dark modes
     if (isLight) {
@@ -43,7 +49,7 @@ class DetailActionRow extends StatelessWidget {
             padding: EdgeInsets.zero,
           ),
           child: _ButtonContent(
-            label: watchLabel,
+            label: label,
             textColor: colorScheme.onPrimary,
           ),
         ),
@@ -76,7 +82,7 @@ class DetailActionRow extends StatelessWidget {
             onTap: onPlayTap,
             borderRadius: BorderRadius.circular(16),
             child: _ButtonContent(
-              label: watchLabel,
+              label: label,
               textColor: colorScheme.primary,
             ),
           ),

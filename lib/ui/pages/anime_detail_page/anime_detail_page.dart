@@ -3,6 +3,7 @@ import 'package:akira/models/anime.dart';
 import 'package:akira/services/anime_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/favorite_service.dart';
+import 'package:akira/services/history_service.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/ui/pages/watch_page/watch_page.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
@@ -28,11 +29,13 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   late Future<AnimeDetails?> _detailsFuture;
   final AnimeService _animeService = AnimeService();
   final FavoriteService _favoriteService = FavoriteService();
+  final HistoryService _historyService = HistoryService();
 
   @override
   void initState() {
     super.initState();
     _detailsFuture = _animeService.fetchAnimeDetails(widget.anime.id);
+    _historyService.init();
   }
 
   @override
@@ -41,10 +44,11 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     final themeService = ThemeService();
 
     return ListenableBuilder(
-      listenable: Listenable.merge([themeService, _favoriteService]),
+      listenable: Listenable.merge([themeService, _favoriteService, _historyService]),
       builder: (context, _) {
         final useGlass = themeService.useGlassTheme;
         final isFavorite = _favoriteService.isFavorite(widget.anime.id);
+        final history = _historyService.getHistory(widget.anime.id);
 
         return Scaffold(
           body: Stack(
@@ -120,6 +124,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                   ),
                                   const SizedBox(height: 24),
                                   DetailActionRow(
+                                    continueEpisode: history?.episode,
                                     onPlayTap: () {
                                       Navigator.push(
                                         context,
