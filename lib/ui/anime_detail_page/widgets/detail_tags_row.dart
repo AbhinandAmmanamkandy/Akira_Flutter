@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/anime_details.dart';
-import 'detail_info_badge.dart';
-import 'detail_genre_tag.dart';
+import '../../common_widgets/common_chip.dart';
 
 class DetailTagsRow extends StatelessWidget {
   final AnimeDetails details;
@@ -41,18 +40,18 @@ class DetailTagsRow extends StatelessWidget {
             ),
           ),
         if (details.status != null)
-          DetailInfoBadge(
-            text: details.status!.toUpperCase(),
-            bgColor: colorScheme.tertiaryContainer,
-            textColor: colorScheme.onTertiaryContainer,
+          CommonChip(
+            label: details.status!.toUpperCase(),
+            color: colorScheme.tertiary,
+            borderRadius: 8,
           ),
         if (details.rating != null)
-          DetailInfoBadge(
-            text: details.rating!,
-            bgColor: colorScheme.secondaryContainer,
-            textColor: colorScheme.onSecondaryContainer,
+          CommonChip(
+            label: details.rating!,
+            color: colorScheme.secondary,
+            borderRadius: 8,
           ),
-        ...details.genres.map((g) => DetailGenreTag(label: g)),
+        ...details.genres.map((g) => CommonChip(label: g)),
       ],
     );
   }

@@ -1,18 +1,39 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'theme_service.dart';
-import 'api_client.dart';
 import '../models/anime.dart';
 import '../models/anime_details.dart';
 
 class AnimeService {
   final ThemeService _settings = ThemeService();
+  static const String _baseUrl = 'https://api.allanime.day/api';
+
+  Map<String, String> _headers() => {
+        'Content-Type': 'application/json',
+        'Referer': 'https://allmanga.to',
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      };
+
+  Future<http.Response> _post(
+    String query, {
+    Map<String, dynamic>? variables,
+  }) async {
+    return await http.post(
+      Uri.parse(_baseUrl),
+      headers: _headers(),
+      body: jsonEncode({
+        'variables': variables,
+        'query': query,
+      }),
+    );
+  }
 
   Future<List<Anime>> fetchAnime({
     String queryText = '',
     int limit = 40,
     int page = 1,
   }) async {
-    // Determine query and variables based on whether it's a search or a generic fetch
     final bool isSearch = queryText.isNotEmpty;
 
     final String queryTypes = isSearch
@@ -58,7 +79,7 @@ class AnimeService {
           };
 
     try {
-      final response = await ApiClient.post(
+      final response = await _post(
         query,
         variables: variables,
       );
@@ -99,7 +120,7 @@ class AnimeService {
     ''' ;
 
     try {
-      final response = await ApiClient.post(
+      final response = await _post(
         query,
         variables: {'id': id},
       );

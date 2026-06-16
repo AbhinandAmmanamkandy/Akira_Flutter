@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../theme/akira_colors.dart';
 import '../../widgets/glass_container.dart';
+import '../../common_widgets/common_chip.dart';
 
 class ListSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -24,6 +25,13 @@ class ListSearchBar extends StatefulWidget {
 
 class _ListSearchBarState extends State<ListSearchBar> {
   final FocusNode _focusNode = FocusNode();
+  static final List<Map<String, dynamic>> _quickSearches = [
+    {'label': 'Trending', 'icon': Icons.trending_up_rounded},
+    {'label': 'Action', 'icon': Icons.local_fire_department_rounded},
+    {'label': 'Comedy', 'icon': Icons.emoji_emotions_rounded},
+    {'label': 'Romance', 'icon': Icons.favorite_rounded},
+    {'label': 'Fantasy', 'icon': Icons.auto_awesome_rounded},
+  ];
 
   @override
   void didUpdateWidget(ListSearchBar oldWidget) {
@@ -62,9 +70,9 @@ class _ListSearchBarState extends State<ListSearchBar> {
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn,
             width: widget.isExpanded ? expandedWidth : collapsedWidth,
-            height: 60,
+            height: widget.isExpanded ? 120 : 60,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(widget.isExpanded ? 24 : 30),
               boxShadow: [
                 BoxShadow(
                   color: colorScheme.primary.withValues(alpha: widget.isExpanded ? 0.08 : 0.18),
@@ -74,7 +82,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
               ],
             ),
             child: GlassContainer(
-              borderRadius: 30,
+              borderRadius: widget.isExpanded ? 24 : 30,
               blur: 20,
               opacity: 0.85,
               color: AkiraColors.getFloatingColor(colorScheme, isLight),
@@ -86,42 +94,63 @@ class _ListSearchBarState extends State<ListSearchBar> {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: widget.isExpanded
-                    ? TextField(
+                    ? Column(
                         key: const ValueKey('expanded'),
-                        focusNode: _focusNode,
-                        controller: widget.controller,
-                        style: TextStyle(
-                          color: colorScheme.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        cursorColor: colorScheme.primary,
-                        decoration: InputDecoration(
-                          hintText: 'Search for anime...',
-                          hintStyle: TextStyle(
-                            color: colorScheme.primary.withValues(alpha: 0.6),
-                          ),
-                          border: InputBorder.none,
-                          prefixIcon: IconButton(
-                            icon: Icon(
-                              Icons.arrow_back_rounded,
+                        children: [
+                          TextField(
+                            focusNode: _focusNode,
+                            controller: widget.controller,
+                            style: TextStyle(
                               color: colorScheme.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                            onPressed: widget.onExpand,
+                            cursorColor: colorScheme.primary,
+                            decoration: InputDecoration(
+                              hintText: 'Search for anime...',
+                              hintStyle: TextStyle(
+                                color: colorScheme.primary.withValues(alpha: 0.6),
+                              ),
+                              border: InputBorder.none,
+                              prefixIcon: IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back_rounded,
+                                  color: colorScheme.primary,
+                                ),
+                                onPressed: widget.onExpand,
+                              ),
+                              suffixIcon: widget.controller.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
+                                      onPressed: () {
+                                        widget.controller.clear();
+                                        widget.onSearch('');
+                                      },
+                                    )
+                                  : null,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                            ),
+                            onSubmitted: widget.onSearch,
+                            onChanged: widget.onChanged,
                           ),
-                          suffixIcon: widget.controller.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
-                                  onPressed: () {
-                                    widget.controller.clear();
-                                    widget.onSearch('');
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: _quickSearches.map((data) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: CommonChip(
+                                  label: data['label'],
+                                  icon: data['icon'],
+                                  onTap: () {
+                                    widget.controller.text = data['label'];
+                                    widget.onSearch(data['label']);
                                   },
-                                )
-                              : null,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                        ),
-                        onSubmitted: widget.onSearch,
-                        onChanged: widget.onChanged,
+                                ),
+                              )).toList(),
+                            ),
+                          ),
+                        ],
                       )
                     : InkWell(
                         key: const ValueKey('collapsed'),

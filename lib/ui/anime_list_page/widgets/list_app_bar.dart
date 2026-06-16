@@ -4,6 +4,7 @@ import '../../settings_page/settings_page.dart';
 import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
 import '../../../theme/akira_colors.dart';
+import '../../common_widgets/common_chip.dart';
 import '../../widgets/glass_container.dart';
 
 class ListAppBar extends StatefulWidget {
@@ -156,69 +157,19 @@ class _ListAppBarState extends State<ListAppBar> {
                               letterSpacing: 1.2,
                             ),
                           ),
-                          AnimatedContainer(
+                          AnimatedSize(
                             duration: const Duration(milliseconds: 500),
-                            height: isVisible ? 42 : 0,
-                            clipBehavior: Clip.hardEdge,
                             curve: Curves.fastOutSlowIn,
-                            margin: EdgeInsets.only(top: isVisible ? 12 : 0),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  (isLight ? colorScheme.primaryContainer : colorScheme.primary)
-                                      .withValues(alpha: (isLight ? 0.8 : 0.25) * hintOpacity),
-                                  (isLight ? colorScheme.primaryContainer : colorScheme.primary)
-                                      .withValues(alpha: (isLight ? 0.4 : 0.05) * hintOpacity),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(
-                                color: colorScheme.primary.withValues(alpha: (isLight ? 0.2 : 0.4) * hintOpacity),
-                                width: 1.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: (isLight ? 0.1 : 0.15) * hintOpacity),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
-                                        .withValues(alpha: (isLight ? 1.0 : 0.2) * hintOpacity),
-                                    shape: BoxShape.circle,
+                            child: isVisible 
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: CommonChip(
+                                    label: _hintText.toUpperCase(),
+                                    icon: Icons.auto_awesome_rounded,
+                                    borderRadius: 25,
                                   ),
-                                  child: Icon(
-                                    Icons.auto_awesome_rounded,
-                                    size: 14,
-                                    color: isLight ? colorScheme.onPrimary : colorScheme.primary.withValues(alpha: hintOpacity),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Flexible(
-                                  child: Text(
-                                    _hintText.toUpperCase(),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: isLight ? colorScheme.onPrimaryContainer : colorScheme.primary.withValues(alpha: hintOpacity),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.1,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                )
+                              : const SizedBox.shrink(),
                           ),
                         ],
                       ),

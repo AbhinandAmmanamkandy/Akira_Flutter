@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../models/anime.dart';
 import '../../anime_detail_page/anime_detail_page.dart';
 import '../../../theme/akira_colors.dart';
-import 'list_card_badge.dart';
+import '../../common_widgets/common_chip.dart';
 import 'list_card_thumbnail.dart';
 
 class ListCard extends StatelessWidget {
@@ -66,7 +66,9 @@ class ListCard extends StatelessWidget {
                   Positioned(
                     top: 10,
                     right: 10,
-                    child: ListCardBadge(text: 'EP ${anime.lastEpisode}'),
+                    child: CommonChip(
+                      label: 'EP ${anime.lastEpisode}',
+                    ),
                   ),
                 Positioned(
                   bottom: 12,
