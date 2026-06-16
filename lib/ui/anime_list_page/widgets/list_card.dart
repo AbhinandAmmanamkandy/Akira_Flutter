@@ -6,13 +6,15 @@ import 'list_card_thumbnail.dart';
 
 class ListCard extends StatelessWidget {
   final Anime anime;
+  final VoidCallback? onTap;
 
-  const ListCard({super.key, required this.anime});
+  const ListCard({super.key, required this.anime, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: onTap ?? () {
+        FocusScope.of(context).unfocus();
         Navigator.push(
           context,
           MaterialPageRoute(

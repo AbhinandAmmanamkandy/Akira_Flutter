@@ -1,75 +1,123 @@
 import 'package:flutter/material.dart';
 import '../../widgets/glass_container.dart';
 
-class ListSearchBar extends StatelessWidget {
+class ListSearchBar extends StatefulWidget {
   final TextEditingController controller;
+  final bool isExpanded;
+  final VoidCallback onExpand;
   final Function(String) onSearch;
   final Function(String) onChanged;
 
   const ListSearchBar({
     super.key,
     required this.controller,
+    required this.isExpanded,
+    required this.onExpand,
     required this.onSearch,
     required this.onChanged,
   });
 
   @override
+  State<ListSearchBar> createState() => _ListSearchBarState();
+}
+
+class _ListSearchBarState extends State<ListSearchBar> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void didUpdateWidget(ListSearchBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded && !oldWidget.isExpanded) {
+      if (ModalRoute.of(context)?.isCurrent ?? false) {
+        _focusNode.requestFocus();
+      }
+    } else if (!widget.isExpanded && oldWidget.isExpanded) {
+      _focusNode.unfocus();
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final expandedWidth = screenWidth - 40;
+    const collapsedWidth = 60.0;
+
     return Positioned(
       bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-      left: 20,
       right: 20,
       child: Hero(
         tag: 'search_bar',
         child: Material(
           color: Colors.transparent,
-          child: GlassContainer(
-            borderRadius: 28,
-            blur: 20,
-            opacity: 0.2,
-            withBlur: true,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-              width: 2.0,
-            ),
-            child: TextField(
-              controller: controller,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 16,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.fastOutSlowIn,
+            width: widget.isExpanded ? expandedWidth : collapsedWidth,
+            height: 60,
+            child: GlassContainer(
+              borderRadius: 30,
+              blur: 20,
+              opacity: 0.2,
+              withBlur: true,
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.5),
+                width: 2.0,
               ),
-              decoration: InputDecoration(
-                hintText: 'Search for anime...',
-                hintStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                ),
-                border: InputBorder.none,
-                prefixIcon: Container(
-                  margin: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.search_rounded,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                suffixIcon: controller.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                        onPressed: () {
-                          controller.clear();
-                          onSearch('');
-                          FocusScope.of(context).unfocus();
-                        },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: widget.isExpanded
+                    ? TextField(
+                        key: const ValueKey('expanded'),
+                        focusNode: _focusNode,
+                        controller: widget.controller,
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontSize: 16,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search for anime...',
+                          hintStyle: TextStyle(
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          ),
+                          border: InputBorder.none,
+                          prefixIcon: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: colorScheme.primary,
+                            ),
+                            onPressed: widget.onExpand,
+                          ),
+                          suffixIcon: widget.controller.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.close_rounded, size: 20),
+                                  onPressed: () {
+                                    widget.controller.clear();
+                                    widget.onSearch('');
+                                  },
+                                )
+                              : null,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                        ),
+                        onSubmitted: widget.onSearch,
+                        onChanged: widget.onChanged,
                       )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    : IconButton(
+                        key: const ValueKey('collapsed'),
+                        icon: Icon(
+                          Icons.search_rounded,
+                          color: colorScheme.primary,
+                          size: 28,
+                        ),
+                        onPressed: widget.onExpand,
+                      ),
               ),
-              onSubmitted: onSearch,
-              onChanged: onChanged,
             ),
           ),
         ),

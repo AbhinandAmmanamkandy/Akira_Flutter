@@ -4,8 +4,9 @@ import 'list_card.dart';
 
 class ListGrid extends StatelessWidget {
   final List<Anime> animeList;
+  final Function(Anime)? onAnimeTap;
 
-  const ListGrid({super.key, required this.animeList});
+  const ListGrid({super.key, required this.animeList, this.onAnimeTap});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,13 @@ class ListGrid extends StatelessWidget {
           mainAxisSpacing: 16,
         ),
         delegate: SliverChildBuilderDelegate(
-          (context, index) => ListCard(anime: animeList[index]),
+          (context, index) {
+            final anime = animeList[index];
+            return ListCard(
+              anime: anime,
+              onTap: onAnimeTap != null ? () => onAnimeTap!(anime) : null,
+            );
+          },
           childCount: animeList.length,
         ),
       ),

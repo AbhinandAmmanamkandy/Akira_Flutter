@@ -1,9 +1,11 @@
 import '../../models/anime.dart';
 import '../bookmarks_page/bookmarks_page.dart';
+import '../anime_detail_page/anime_detail_page.dart';
 import 'widgets/list_search_bar.dart';
 import 'widgets/list_grid.dart';
 import 'widgets/list_state_views.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
 import 'widgets/list_app_bar.dart';
@@ -18,6 +20,7 @@ class AnimeListPage extends StatefulWidget {
 class _AnimeListPageState extends State<AnimeListPage> {
   bool _isSearching = false;
   double _appBarOpacity = 0.0;
+  late Future<List<Anime>> _homeAnimeList;
   late Future<List<Anime>> _animeList;
   final AnimeService _animeService = AnimeService();
   final ScrollController _scrollController = ScrollController();
@@ -26,7 +29,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
   @override
   void initState() {
     super.initState();
-    _animeList = _animeService.fetchAnime();
+    _homeAnimeList = _animeService.fetchAnime();
+    _animeList = _homeAnimeList;
     _scrollController.addListener(_onScroll);
   }
 
@@ -42,7 +46,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   void _onSearch(String query) {
     setState(() {
-      _animeList = _animeService.fetchAnime(queryText: query);
+      if (query.isEmpty) {
+        _animeList = _homeAnimeList;
+      } else {
+        _animeList = _animeService.fetchAnime(queryText: query);
+      }
     });
   }
 
@@ -51,7 +59,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
       if (_isSearching) {
         _isSearching = false;
         _searchController.clear();
-        _animeList = _animeService.fetchAnime();
+        _animeList = _homeAnimeList;
       } else {
         _isSearching = true;
       }
@@ -74,11 +82,12 @@ class _AnimeListPageState extends State<AnimeListPage> {
         final useGlass = ThemeService().useGlassTheme;
 
         return PopScope(
-          canPop: !_isSearching,
+          canPop: false,
           onPopInvokedWithResult: (didPop, result) {
-            if (didPop) return;
             if (_isSearching) {
               _toggleSearch();
+            } else {
+              SystemNavigator.pop();
             }
           },
           child: Scaffold(
@@ -132,6 +141,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                               notification is ScrollUpdateNotification &&
                               notification.metrics.pixels < -100 &&
                               notification.dragDetails != null) {
+                            FocusScope.of(context).unfocus();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -157,9 +167,13 @@ class _AnimeListPageState extends State<AnimeListPage> {
                               ListErrorView(
                                 error: snapshot.error,
                                 onRetry: () => setState(() {
-                                  _animeList = _animeService.fetchAnime(
+                                  final future = _animeService.fetchAnime(
                                     queryText: _searchController.text,
                                   );
+                                  _animeList = future;
+                                  if (_searchController.text.isEmpty) {
+                                    _homeAnimeList = future;
+                                  }
                                 }),
                               )
                             else if (!snapshot.hasData || snapshot.data!.isEmpty)
@@ -171,7 +185,28 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                 },
                               )
                             else
-                              ListGrid(animeList: snapshot.data!),
+                              ListGrid(
+                                animeList: snapshot.data!,
+                                onAnimeTap: (anime) async {
+                                  if (_isSearching) {
+                                    FocusScope.of(context).unfocus();
+                                    _toggleSearch();
+                                    // Give the animation a head start to avoid the "oval" glitch
+                                    await Future.delayed(const Duration(milliseconds: 100));
+                                  } else {
+                                    FocusScope.of(context).unfocus();
+                                  }
+                                  
+                                  if (!mounted) return;
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AnimeDetailPage(anime: anime),
+                                    ),
+                                  );
+                                },
+                              ),
                             const SliverToBoxAdapter(
                               child: SizedBox(height: 130), // Space for the bottom search bar
                             ),
@@ -182,11 +217,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   ),
                   ListSearchBar(
                     controller: _searchController,
+                    isExpanded: _isSearching,
+                    onExpand: _toggleSearch,
                     onSearch: _onSearch,
                     onChanged: (value) {
-                      setState(() {
-                        _isSearching = value.isNotEmpty;
-                      });
+                      setState(() {});
                     },
                   ),
                 ],
