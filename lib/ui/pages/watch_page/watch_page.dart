@@ -8,7 +8,6 @@ import 'package:akira/models/anime.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/services/anime_stream_service.dart';
 import 'package:akira/services/theme_service.dart';
-import 'package:akira/services/history_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'widgets/video_section.dart';
@@ -79,7 +78,7 @@ class _WatchPageState extends State<WatchPage> {
         _isLoading = false;
       });
 
-      await player.open(Media(url));
+      await player.open(Media(url, httpHeaders: {'Referer': 'https://youtu-chan.com'}));
     } catch (e) {
       setState(() {
         _isLoading = false;
