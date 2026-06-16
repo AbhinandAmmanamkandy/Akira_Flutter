@@ -7,7 +7,7 @@ import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'package:media_kit/media_kit.dart';
 import 'theme/akira_colors.dart';
-import 'ui/anime_list_page/anime_list_page.dart';
+import 'ui/pages/anime_list_page/anime_list_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
