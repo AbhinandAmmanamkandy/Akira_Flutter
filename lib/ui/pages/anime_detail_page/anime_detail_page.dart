@@ -13,6 +13,7 @@ import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
 import 'widgets/detail_description_section.dart';
 import 'widgets/detail_tags_row.dart';
+import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
@@ -57,15 +58,10 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
               SearchSymbolGesture(
                 onSymbolDetected: () {
                   _favoriteService.toggleFavorite(widget.anime);
-                  final isFav = _favoriteService.isFavorite(widget.anime.id);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(isFav ? 'Added to favorites' : 'Removed from favorites'),
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                      width: 200,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                  CustomStatusIndicator.show(
+                    context,
+                    isFavorite ? 'Removed from favorites' : 'Added to favorites',
+                    isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
                   );
                 },
                 child: OverscrollDismissGesture(
@@ -79,6 +75,11 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                         isFavorite: isFavorite,
                         onFavoriteTap: () {
                           _favoriteService.toggleFavorite(widget.anime);
+                          CustomStatusIndicator.show(
+                            context,
+                            isFavorite ? 'Removed from favorites' : 'Added to favorites',
+                            isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
+                          );
                         },
                       ),
                       SliverToBoxAdapter(
