@@ -6,6 +6,7 @@ import 'package:akira/services/favorite_service.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/ui/pages/watch_page/watch_page.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
+import 'package:akira/gestures/search_symbol_gesture.dart';
 import 'package:akira/ui/pages/anime_list_page/anime_list_page.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
@@ -53,81 +54,96 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                     color: colorScheme.surface,
                   ),
                 ),
-              OverscrollDismissGesture(
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  slivers: [
-                    DetailAppBar(
-                      anime: widget.anime,
-                      isFavorite: isFavorite,
-                      onFavoriteTap: () {
-                        _favoriteService.toggleFavorite(widget.anime);
-                      },
+              SearchSymbolGesture(
+                onSymbolDetected: () {
+                  _favoriteService.toggleFavorite(widget.anime);
+                  final isFav = _favoriteService.isFavorite(widget.anime.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(isFav ? 'Added to favorites' : 'Removed from favorites'),
+                      duration: const Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                      width: 200,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    SliverToBoxAdapter(
-                      child: FutureBuilder<AnimeDetails?>(
-                        future: _detailsFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const SizedBox(
-                              height: 300,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-
-                          if (snapshot.hasError || !snapshot.hasData) {
-                            return const SizedBox(
-                              height: 300,
-                              child: Center(child: Text('Failed to load details')),
-                            );
-                          }
-
-                          final details = snapshot.data!;
-
-                          return Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                DetailTagsRow(
-                                  details: details,
-                                  onTagTap: (tag) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AnimeListPage(initialSearch: tag),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 24),
-                                DetailActionRow(
-                                  onPlayTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => WatchPage(
-                                          anime: widget.anime,
-                                          details: details,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 24),
-                                DetailMetadataBar(details: details),
-                                const SizedBox(height: 24),
-                                DetailDescriptionSection(description: details.description),
-                                const SizedBox(height: 100),
-                              ],
-                            ),
-                          );
+                  );
+                },
+                child: OverscrollDismissGesture(
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    slivers: [
+                      DetailAppBar(
+                        anime: widget.anime,
+                        isFavorite: isFavorite,
+                        onFavoriteTap: () {
+                          _favoriteService.toggleFavorite(widget.anime);
                         },
                       ),
-                    ),
-                  ],
+                      SliverToBoxAdapter(
+                        child: FutureBuilder<AnimeDetails?>(
+                          future: _detailsFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const SizedBox(
+                                height: 300,
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+
+                            if (snapshot.hasError || !snapshot.hasData) {
+                              return const SizedBox(
+                                height: 300,
+                                child: Center(child: Text('Failed to load details')),
+                              );
+                            }
+
+                            final details = snapshot.data!;
+
+                            return Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DetailTagsRow(
+                                    details: details,
+                                    onTagTap: (tag) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AnimeListPage(initialSearch: tag),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  DetailActionRow(
+                                    onPlayTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => WatchPage(
+                                            anime: widget.anime,
+                                            details: details,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  DetailMetadataBar(details: details),
+                                  const SizedBox(height: 24),
+                                  DetailDescriptionSection(description: details.description),
+                                  const SizedBox(height: 100),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

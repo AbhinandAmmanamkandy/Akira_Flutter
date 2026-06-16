@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:akira/models/anime.dart';
 import 'package:akira/ui/pages/bookmarks_page/bookmarks_page.dart';
 import 'package:akira/ui/pages/anime_detail_page/anime_detail_page.dart';
@@ -11,7 +12,9 @@ import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/search_symbol_gesture.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
+import 'package:akira/ui/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
+import 'widgets/hint_banner.dart';
 
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
@@ -31,6 +34,9 @@ class _AnimeListPageState extends State<AnimeListPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
+  bool _showHint = false;
+  String _hintText = '';
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +51,28 @@ class _AnimeListPageState extends State<AnimeListPage> {
     }
     
     _scrollController.addListener(_onScroll);
+    _initHint();
+  }
+
+  void _initHint() {
+    final hints = [
+      'Swipe down to summon your Waifu Vault',
+      'Unleash your Search Jutsu with an S',
+      'Seal your love: Draw an S in details',
+    ];
+    _hintText = hints[Random().nextInt(hints.length)];
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() => _showHint = true);
+      }
+    });
+    
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted) {
+        setState(() => _showHint = false);
+      }
+    });
   }
 
   void _onScroll() {
@@ -173,6 +201,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
                           ),
                           slivers: [
                             ListAppBar(appBarOpacity: _appBarOpacity),
+                            
+                            // Tooltip Hint Banner
+                            SliverToBoxAdapter(
+                              child: ScaleFadeVisibility(
+                                isVisible: _showHint && _appBarOpacity < 0.1,
+                                child: HintBanner(text: _hintText),
+                              ),
+                            ),
+
                             if (snapshot.connectionState == ConnectionState.waiting)
                               const SliverFillRemaining(
                                 child: Center(child: CircularProgressIndicator()),
@@ -181,24 +218,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                               ListErrorView(
                                 error: snapshot.error,
                                 onRetry: () => setState(() {
-                                  final queryText = _searchController.text;
-                                  final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
-                                  final Future<List<Anime>> future;
-                                  
-                                  if (queryText.toLowerCase() == 'trending') {
-                                    future = _animeService.fetchPopularAnime();
-                                  } else if (genres.contains(queryText)) {
-                                    future = _animeService.fetchAnime(genres: [queryText]);
-                                  } else {
-                                    future = _animeService.fetchAnime(
-                                      queryText: queryText,
-                                    );
-                                  }
-                                  
-                                  _animeList = future;
-                                  if (queryText.isEmpty) {
-                                    _homeAnimeList = future;
-                                  }
+                                  _animeList = _fetchByQuery(_searchController.text);
                                 }),
                               )
                             else if (!snapshot.hasData || snapshot.data!.isEmpty)
@@ -216,7 +236,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                   if (_isSearching) {
                                     FocusScope.of(context).unfocus();
                                     _toggleSearch();
-                                    // Give the animation a head start to avoid the "oval" glitch
                                     await Future.delayed(const Duration(milliseconds: 100));
                                   } else {
                                     FocusScope.of(context).unfocus();
