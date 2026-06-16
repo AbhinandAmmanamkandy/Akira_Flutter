@@ -6,6 +6,18 @@ class AkiraColors {
   static const Color black = Color(0xFF121212);
   static const Color white = Color(0xFFF8F9FA);
 
+  // Purple-themed Palette for non-Material You
+  static const Map<String, Color> palette = {
+    'Electric Purple': Color(0xFFD500F9),
+    'Deep Violet': Color(0xFF6200EA),
+    'Royal Purple': Color(0xFF7B1FA2),
+    'Amethyst': Color(0xFF9C27B0),
+    'Lavender': Color(0xFFB39DDB),
+    'Grape': Color(0xFF673AB7),
+    'Indigo': Color(0xFF3F51B5),
+    'Soft Orchid': Color(0xFFCE93D8),
+  };
+
   // Surface & Backgrounds
   static Color getBackground(ColorScheme colorScheme, bool isLight) {
     return Color.lerp(

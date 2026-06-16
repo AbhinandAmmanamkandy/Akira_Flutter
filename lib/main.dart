@@ -78,13 +78,16 @@ class AkiraApp extends StatelessWidget {
                 brightness: Brightness.dark,
               );
             } else {
-              // Default fallback
+              // Use selected color from AkiraColors palette
+              final paletteColors = AkiraColors.palette.values.toList();
+              final selectedColor = paletteColors[themeService.customColorIndex % paletteColors.length];
+              
               lightColorScheme = ColorScheme.fromSeed(
-                seedColor: AkiraColors.red,
+                seedColor: selectedColor,
                 brightness: Brightness.light,
               );
               darkColorScheme = ColorScheme.fromSeed(
-                seedColor: AkiraColors.red,
+                seedColor: selectedColor,
                 brightness: Brightness.dark,
               );
             }

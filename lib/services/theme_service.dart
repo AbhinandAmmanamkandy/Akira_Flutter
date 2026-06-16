@@ -17,6 +17,9 @@ class ThemeService extends ChangeNotifier {
   int _accentShade = 0; // 0: Primary, 1: Secondary, 2: Tertiary
   int get accentShade => _accentShade;
 
+  int _customColorIndex = 0;
+  int get customColorIndex => _customColorIndex;
+
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
@@ -40,6 +43,7 @@ class ThemeService extends ChangeNotifier {
     _isMaterialUI = _prefs.getBool('isMaterialUI') ?? true;
     _useSystemAccent = _prefs.getBool('useSystemAccent') ?? true;
     _accentShade = _prefs.getInt('accentShade') ?? 0;
+    _customColorIndex = _prefs.getInt('customColorIndex') ?? 0;
     _allowAdult = _prefs.getBool('allowAdult') ?? false;
     _allowUnknown = _prefs.getBool('allowUnknown') ?? false;
     _useGlassTheme = _prefs.getBool('useGlassTheme') ?? false;
@@ -96,6 +100,12 @@ class ThemeService extends ChangeNotifier {
   void setAccentShade(int shade) {
     _accentShade = shade;
     _prefs.setInt('accentShade', shade);
+    notifyListeners();
+  }
+
+  void setCustomColorIndex(int index) {
+    _customColorIndex = index;
+    _prefs.setInt('customColorIndex', index);
     notifyListeners();
   }
 
