@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../theme/akira_colors.dart';
 
 class HintBanner extends StatelessWidget {
   final String text;
@@ -11,98 +12,72 @@ class HintBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-        child: IntrinsicWidth(
-          child: Stack(
-            children: [
-              // HUD Brackets (Corners)
-              Positioned(top: 0, left: 0, child: _HUDCorner(isTop: true, isLeft: true, color: colorScheme.primary)),
-              Positioned(top: 0, right: 0, child: _HUDCorner(isTop: true, isLeft: false, color: colorScheme.primary)),
-              Positioned(bottom: 0, left: 0, child: _HUDCorner(isTop: false, isLeft: true, color: colorScheme.primary)),
-              Positioned(bottom: 0, right: 0, child: _HUDCorner(isTop: false, isLeft: false, color: colorScheme.primary)),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 36),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // System Label
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 1.5,
-                          color: colorScheme.primary.withValues(alpha: 0.4),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'SYSTEM ADVISORY',
-                          style: TextStyle(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 9,
-                            letterSpacing: 2.5,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 6,
-                          height: 1.5,
-                          color: colorScheme.primary.withValues(alpha: 0.4),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Main Hint Text
-                    Text(
-                      text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.1,
-                        height: 1.2,
-                      ),
-                    ),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Soft Icon that feels like an ambient light
+            Icon(
+              Icons.auto_awesome_rounded,
+              color: AkiraColors.getHintIconColor(colorScheme, isLight),
+              size: 24,
+            ),
+            const SizedBox(height: 16),
+            
+            // "Projected" text effect
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AkiraColors.getHintTextColor(colorScheme, isLight),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                height: 1.3,
+                shadows: [
+                  Shadow(
+                    color: AkiraColors.getHintShadowColor(colorScheme, isLight),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Fading Horizon Line
+            Container(
+              width: 120,
+              height: 1.2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    AkiraColors.getHintDividerColor(colorScheme, isLight),
+                    Colors.transparent,
                   ],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HUDCorner extends StatelessWidget {
-  final bool isTop;
-  final bool isLeft;
-  final Color color;
-
-  const _HUDCorner({
-    required this.isTop, 
-    required this.isLeft, 
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 12,
-      height: 12,
-      decoration: BoxDecoration(
-        border: Border(
-          top: isTop ? BorderSide(color: color, width: 2.0) : BorderSide.none,
-          bottom: !isTop ? BorderSide(color: color, width: 2.0) : BorderSide.none,
-          left: isLeft ? BorderSide(color: color, width: 2.0) : BorderSide.none,
-          right: !isLeft ? BorderSide(color: color, width: 2.0) : BorderSide.none,
+            ),
+            
+            const SizedBox(height: 10),
+            
+            // Minimalist status bit
+            Text(
+              "ADVISORY_ACTIVE",
+              style: TextStyle(
+                color: AkiraColors.getHintSubtextColor(colorScheme, isLight),
+                fontWeight: FontWeight.w900,
+                fontSize: 10,
+                letterSpacing: 4,
+              ),
+            ),
+          ],
         ),
       ),
     );

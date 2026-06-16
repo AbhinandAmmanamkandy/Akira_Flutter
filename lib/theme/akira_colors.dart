@@ -38,4 +38,25 @@ class AkiraColors {
   static Color getShadowColor(ColorScheme colorScheme) {
     return Colors.black.withValues(alpha: 0.2);
   }
+
+  // Hint Banner Colors
+  static Color getHintIconColor(ColorScheme colorScheme, bool isLight) {
+    return colorScheme.primary.withValues(alpha: isLight ? 0.8 : 0.6);
+  }
+
+  static Color getHintTextColor(ColorScheme colorScheme, bool isLight) {
+    return colorScheme.onSurface.withValues(alpha: isLight ? 0.9 : 0.9);
+  }
+
+  static Color getHintShadowColor(ColorScheme colorScheme, bool isLight) {
+    return colorScheme.primary.withValues(alpha: isLight ? 0.15 : 0.2);
+  }
+
+  static Color getHintDividerColor(ColorScheme colorScheme, bool isLight) {
+    return colorScheme.primary.withValues(alpha: isLight ? 0.4 : 0.5);
+  }
+
+  static Color getHintSubtextColor(ColorScheme colorScheme, bool isLight) {
+    return colorScheme.primary.withValues(alpha: isLight ? 0.6 : 0.5);
+  }
 }

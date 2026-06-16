@@ -26,6 +26,7 @@ class AnimeListPage extends StatefulWidget {
 }
 
 class _AnimeListPageState extends State<AnimeListPage> {
+  static bool _hasShownSessionHint = false;
   bool _isSearching = false;
   double _appBarOpacity = 0.0;
   late Future<List<Anime>> _homeAnimeList;
@@ -55,21 +56,28 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   void _initHint() {
+    if (_hasShownSessionHint || widget.initialSearch != null) return;
+
     final hints = [
-      'Swipe down to summon your Waifu Vault',
-      'Unleash your Search Jutsu with an S',
-      'Seal your love: Draw an S in details',
+      'TIP: Swipe down to summon your Bookmarks',
+      'TIP: Draw an S to initiate global search',
+      'TIP: Draw an S in details to save to favorites',
+      'TIP: Tap on tags to explore similar worlds',
+      'TIP: Scroll down to hide this System Advisory',
     ];
     _hintText = hints[Random().nextInt(hints.length)];
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
-        setState(() => _showHint = true);
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted && !_hasShownSessionHint) {
+        setState(() {
+          _showHint = true;
+          _hasShownSessionHint = true;
+        });
       }
     });
-    
+
     Future.delayed(const Duration(seconds: 8), () {
-      if (mounted) {
+      if (mounted && _showHint) {
         setState(() => _showHint = false);
       }
     });
@@ -77,6 +85,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   void _onScroll() {
     final offset = _scrollController.offset;
+
+    if (offset > 20 && _showHint) {
+      setState(() => _showHint = false);
+    }
+
     final newOpacity = (offset / 120).clamp(0.0, 1.0);
     if (newOpacity != _appBarOpacity) {
       setState(() {
@@ -100,12 +113,14 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   void _onSearch(String query) {
     setState(() {
+      _showHint = false;
       _animeList = _fetchByQuery(query);
     });
   }
 
   void _toggleSearch() {
     setState(() {
+      _showHint = false;
       if (_isSearching) {
         _isSearching = false;
         _searchController.clear();
