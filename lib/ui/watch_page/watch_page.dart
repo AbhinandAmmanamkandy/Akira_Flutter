@@ -9,6 +9,7 @@ import '../../models/anime_details.dart';
 import '../../services/anime_stream_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/history_service.dart';
+import '../../theme/akira_colors.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/overscroll_pop_handler.dart';
 import 'widgets/video_section.dart';
@@ -177,8 +178,7 @@ class _WatchPageState extends State<WatchPage> {
         final useGlass = ThemeService().useGlassTheme;
         final totalEpisodes = _parseLastEpisode(widget.anime.lastEpisode);
         final isLight = Theme.of(context).brightness == Brightness.light;
-
-        final bgColor = Color.lerp(colorScheme.surface, colorScheme.onSurface, 0.05)!;
+        final bgColor = AkiraColors.getBackground(colorScheme, isLight);
 
         return Scaffold(
           backgroundColor: bgColor,

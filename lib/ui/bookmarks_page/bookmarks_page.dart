@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/favorite_service.dart';
 import '../../services/theme_service.dart';
+import '../../theme/akira_colors.dart';
 import '../anime_list_page/widgets/list_grid.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/overscroll_pop_handler.dart';
@@ -23,7 +24,7 @@ class BookmarksPage extends StatelessWidget {
         return Scaffold(
           body: Container(
             decoration: BoxDecoration(
-              color: Color.lerp(colorScheme.surface, colorScheme.onSurface, 0.05),
+              color: AkiraColors.getBackground(colorScheme, Theme.of(context).brightness == Brightness.light),
             ),
             child: Stack(
               children: [

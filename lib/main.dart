@@ -6,6 +6,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'package:media_kit/media_kit.dart';
+import 'theme/akira_colors.dart';
 import 'ui/anime_list_page/anime_list_page.dart';
 
 Future<void> main() async {
@@ -79,11 +80,11 @@ class AkiraApp extends StatelessWidget {
             } else {
               // Default fallback
               lightColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color(0xFFE53935), // Akira Red
+                seedColor: AkiraColors.red,
                 brightness: Brightness.light,
               );
               darkColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color(0xFFE53935), // Akira Red
+                seedColor: AkiraColors.red,
                 brightness: Brightness.dark,
               );
             }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/anime.dart';
 import '../../anime_detail_page/anime_detail_page.dart';
+import '../../../theme/akira_colors.dart';
 import 'list_card_badge.dart';
 import 'list_card_thumbnail.dart';
 
@@ -29,7 +30,7 @@ class ListCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: AkiraColors.getShadowColor(Theme.of(context).colorScheme),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

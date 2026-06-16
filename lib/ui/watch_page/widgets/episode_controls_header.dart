@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/akira_colors.dart';
 
 class EpisodeControlsHeader extends StatelessWidget {
   final String? totalEpisodes;
@@ -76,7 +77,7 @@ class _HeaderButton extends StatelessWidget {
     return Material(
       color: isSelected 
           ? colorScheme.primary 
-          : colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
+          : AkiraColors.getComponentColor(colorScheme, isLight),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,

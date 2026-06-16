@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
+import '../../theme/akira_colors.dart';
 import 'widgets/list_app_bar.dart';
 
 class AnimeListPage extends StatefulWidget {
@@ -161,7 +162,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
               extendBody: true,
               body: Container(
               decoration: BoxDecoration(
-                color: Color.lerp(colorScheme.surface, colorScheme.onSurface, 0.05),
+                color: AkiraColors.getBackground(colorScheme, Theme.of(context).brightness == Brightness.light),
               ),
               child: Stack(
                 children: [

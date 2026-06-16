@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/glass_container.dart';
 import '../../../services/theme_service.dart';
+import '../../../theme/akira_colors.dart';
 
 class EpisodeCard extends StatelessWidget {
   final int episodeNum;
@@ -53,7 +54,7 @@ class EpisodeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected 
             ? colorScheme.primary 
-            : colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
+            : AkiraColors.getComponentColor(colorScheme, isLight),
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(

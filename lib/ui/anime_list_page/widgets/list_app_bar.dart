@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../settings_page/settings_page.dart';
 import '../../bookmarks_page/bookmarks_page.dart';
 import '../../../services/theme_service.dart';
+import '../../../theme/akira_colors.dart';
 import '../../widgets/glass_container.dart';
 
 class ListAppBar extends StatefulWidget {
@@ -46,12 +47,12 @@ class _ListAppBarState extends State<ListAppBar> {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
     final currentRadius = 32.0 * (1.0 - widget.appBarOpacity);
-    final appBarColor = Color.lerp(colorScheme.surfaceContainerHighest, Colors.black, 0.03)!;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final appBarColor = AkiraColors.getHeaderColor(colorScheme, isLight);
 
     // Calculate visibility based on both timer and scroll position
     final bool isVisible = _showHint && widget.appBarOpacity < 0.1;
     final double hintOpacity = isVisible ? 1.0 : 0.0;
-    final bool isLight = Theme.of(context).brightness == Brightness.light;
 
     return SliverAppBar(
       expandedHeight: _showHint ? 210.0 : 170.0,
@@ -231,7 +232,7 @@ class _ListAppBarState extends State<ListAppBar> {
                           tooltip: 'Senpai\'s Picks',
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage())),
                           style: IconButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
                             padding: const EdgeInsets.all(12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
@@ -245,7 +246,7 @@ class _ListAppBarState extends State<ListAppBar> {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
                           },
                           style: IconButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
                             padding: const EdgeInsets.all(12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),

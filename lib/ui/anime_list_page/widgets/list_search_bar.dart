@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/akira_colors.dart';
 import '../../widgets/glass_container.dart';
 
 class ListSearchBar extends StatefulWidget {
@@ -45,6 +46,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final screenWidth = MediaQuery.of(context).size.width;
     final expandedWidth = screenWidth - 40;
     const collapsedWidth = 130.0;
@@ -75,7 +77,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
               borderRadius: 30,
               blur: 20,
               opacity: 0.85,
-              color: colorScheme.surfaceContainerHighest,
+              color: AkiraColors.getFloatingColor(colorScheme, isLight),
               withBlur: true,
               border: Border.all(
                 color: colorScheme.primary.withValues(alpha: widget.isExpanded ? 0.5 : 0.8),

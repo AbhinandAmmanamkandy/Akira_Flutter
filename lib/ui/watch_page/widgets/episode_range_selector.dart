@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/akira_colors.dart';
 
 class EpisodeRangeSelector extends StatelessWidget {
   final int totalEpisodes;
@@ -42,7 +43,7 @@ class EpisodeRangeSelector extends StatelessWidget {
               },
               showCheckmark: false,
               selectedColor: colorScheme.primary,
-              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: isLight ? 0.8 : 0.3),
+              backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
               labelStyle: TextStyle(
                 color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
