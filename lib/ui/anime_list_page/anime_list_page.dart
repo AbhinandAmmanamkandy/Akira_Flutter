@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import '../../services/anime_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/akira_colors.dart';
+import '../../gestures/search_symbol_gesture.dart';
+import '../../gestures/overscroll_dismiss_gesture.dart';
 import 'widgets/list_app_bar.dart';
 
 class AnimeListPage extends StatefulWidget {
@@ -26,7 +28,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
   final AnimeService _animeService = AnimeService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<Offset> _gesturePoints = [];
 
   @override
   void initState() {
@@ -34,58 +35,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
     _homeAnimeList = _animeService.fetchAnime();
     _animeList = _homeAnimeList;
     _scrollController.addListener(_onScroll);
-  }
-
-  bool _isSGesture(List<Offset> points) {
-    if (points.length < 15) return false;
-
-    double minX = points[0].dx;
-    double maxX = points[0].dx;
-    double minY = points[0].dy;
-    double maxY = points[0].dy;
-
-    for (var p in points) {
-      if (p.dx < minX) minX = p.dx;
-      if (p.dx > maxX) maxX = p.dx;
-      if (p.dy < minY) minY = p.dy;
-      if (p.dy > maxY) maxY = p.dy;
-    }
-
-    double width = maxX - minX;
-    double height = maxY - minY;
-
-    // Must have a reasonable size
-    if (width < 50 || height < 80) return false;
-
-    List<int> horizontalDirections = [];
-    for (int i = 1; i < points.length; i++) {
-      double diff = points[i].dx - points[i - 1].dx;
-      if (diff.abs() > 3) {
-        horizontalDirections.add(diff > 0 ? 1 : -1);
-      }
-    }
-
-    if (horizontalDirections.isEmpty) return false;
-
-    List<int> reduced = [horizontalDirections.first];
-    for (int i = 1; i < horizontalDirections.length; i++) {
-      if (horizontalDirections[i] != reduced.last) {
-        reduced.add(horizontalDirections[i]);
-      }
-    }
-
-    // Check for "Left -> Right -> Left" sequence for an 'S' shape
-    // Or "Right -> Left -> Right" for a mirrored 'S' or 'Z' shape
-    bool hasSSequence = false;
-    for (int i = 0; i <= reduced.length - 3; i++) {
-      if ((reduced[i] == -1 && reduced[i + 1] == 1 && reduced[i + 2] == -1) ||
-          (reduced[i] == 1 && reduced[i + 1] == -1 && reduced[i + 2] == 1)) {
-        hasSSequence = true;
-        break;
-      }
-    }
-
-    return hasSSequence && (height > width * 0.8);
   }
 
   void _onScroll() {
@@ -144,18 +93,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
               SystemNavigator.pop();
             }
           },
-          child: Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (event) => _gesturePoints = [event.localPosition],
-            onPointerMove: (event) => _gesturePoints.add(event.localPosition),
-            onPointerUp: (event) {
-              if (_isSGesture(_gesturePoints)) {
-                if (!_isSearching) {
-                  _toggleSearch();
-                  HapticFeedback.mediumImpact();
-                }
+          child: SearchSymbolGesture(
+            onSymbolDetected: () {
+              if (!_isSearching) {
+                _toggleSearch();
               }
-              _gesturePoints = [];
             },
             child: Scaffold(
               resizeToAvoidBottomInset: false,
@@ -195,22 +137,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   FutureBuilder<List<Anime>>(
                     future: _animeList,
                     builder: (context, snapshot) {
-                      return NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          if (ThemeService().useOverscrollToClose &&
-                              notification is ScrollUpdateNotification &&
-                              notification.metrics.pixels < -100 &&
-                              notification.dragDetails != null) {
-                            FocusScope.of(context).unfocus();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const BookmarksPage(),
-                              ),
-                            );
-                            return true;
-                          }
-                          return false;
+                      return OverscrollDismissGesture(
+                        onDismiss: () {
+                          FocusScope.of(context).unfocus();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BookmarksPage(),
+                            ),
+                          );
                         },
                         child: CustomScrollView(
                           controller: _scrollController,

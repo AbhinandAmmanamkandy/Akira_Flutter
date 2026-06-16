@@ -3,7 +3,7 @@ import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
 import '../widgets/glass_container.dart';
-import '../widgets/overscroll_pop_handler.dart';
+import '../../gestures/overscroll_dismiss_gesture.dart';
 import '../../services/theme_service.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -20,7 +20,7 @@ class SettingsPage extends StatelessWidget {
 
         return Scaffold(
           body: SettingsBackground(
-            child: OverscrollPopHandler(
+            child: OverscrollDismissGesture(
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),

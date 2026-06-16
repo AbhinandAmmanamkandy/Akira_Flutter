@@ -7,7 +7,7 @@ import '../../services/history_service.dart';
 import '../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
 import '../widgets/glass_container.dart';
-import '../widgets/overscroll_pop_handler.dart';
+import '../../gestures/overscroll_dismiss_gesture.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
@@ -193,7 +193,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   ),
                 ),
               ],
-              OverscrollPopHandler(
+              OverscrollDismissGesture(
                 child: CustomScrollView(
                   controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(

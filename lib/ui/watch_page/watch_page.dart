@@ -10,8 +10,8 @@ import '../../services/anime_stream_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/history_service.dart';
 import '../../theme/akira_colors.dart';
+import '../../gestures/overscroll_dismiss_gesture.dart';
 import '../widgets/glass_container.dart';
-import '../widgets/overscroll_pop_handler.dart';
 import 'widgets/video_section.dart';
 import 'widgets/watch_header.dart';
 import 'widgets/episode_controls_header.dart';
@@ -208,7 +208,7 @@ class _WatchPageState extends State<WatchPage> {
                 ),
 
               SafeArea(
-                child: OverscrollPopHandler(
+                child: OverscrollDismissGesture(
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),

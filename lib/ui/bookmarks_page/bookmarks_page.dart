@@ -4,7 +4,7 @@ import '../../services/theme_service.dart';
 import '../../theme/akira_colors.dart';
 import '../anime_list_page/widgets/list_grid.dart';
 import '../widgets/glass_container.dart';
-import '../widgets/overscroll_pop_handler.dart';
+import '../../gestures/overscroll_dismiss_gesture.dart';
 
 class BookmarksPage extends StatelessWidget {
   const BookmarksPage({super.key});
@@ -54,7 +54,7 @@ class BookmarksPage extends StatelessWidget {
                     ),
                   ),
                 ],
-                OverscrollPopHandler(
+                OverscrollDismissGesture(
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
