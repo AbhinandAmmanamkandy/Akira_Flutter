@@ -70,7 +70,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn,
             width: widget.isExpanded ? expandedWidth : collapsedWidth,
-            height: widget.isExpanded ? 140 : 60,
+            height: widget.isExpanded ? 120 : 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(widget.isExpanded ? 24 : 30),
               boxShadow: [
@@ -98,9 +98,9 @@ class _ListSearchBarState extends State<ListSearchBar> {
                         key: const ValueKey('expanded'),
                         alignment: Alignment.topCenter,
                         minHeight: 0,
-                        maxHeight: 140,
+                        maxHeight: 120,
                         child: SizedBox(
-                          height: 140,
+                          height: 120,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -142,7 +142,7 @@ class _ListSearchBarState extends State<ListSearchBar> {
                                               },
                                             )
                                           : null,
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                                     ),
                                     onSubmitted: widget.onSearch,
                                     onChanged: widget.onChanged,
