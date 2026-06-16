@@ -66,7 +66,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
         setState(() {
           _currentEpisode = history.episode;
           _resumePosition = history.position;
-          _selectedRangeIndex = (_currentEpisode - 1) ~/ 50;
+          _selectedRangeIndex = (_currentEpisode - 1) ~/ 25;
         });
       } else {
         setState(() {
@@ -88,7 +88,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
     final epInt = int.tryParse(ep) ?? 1;
     setState(() {
       _currentEpisode = epInt;
-      _selectedRangeIndex = (epInt - 1) ~/ 50;
+      _selectedRangeIndex = (epInt - 1) ~/ 25;
       _isLoading = true;
       _error = null;
       if (!initial) {
@@ -245,8 +245,8 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
 
   List<int> _getEpisodesForRange(int rangeIndex) {
     final int total = int.tryParse(widget.details.lastEpisode ?? '0') ?? 0;
-    final int start = (rangeIndex * 50) + 1;
-    final int end = ((rangeIndex + 1) * 50).clamp(1, total);
+    final int start = (rangeIndex * 25) + 1;
+    final int end = ((rangeIndex + 1) * 25).clamp(1, total);
     
     List<int> eps = [];
     for (int i = start; i <= end; i++) {

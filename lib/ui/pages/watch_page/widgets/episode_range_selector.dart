@@ -15,11 +15,11 @@ class EpisodeRangeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (totalEpisodes <= 50) return const SizedBox.shrink();
+    if (totalEpisodes <= 25) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final int chunks = (totalEpisodes / 50).ceil();
+    final int chunks = (totalEpisodes / 25).ceil();
 
     return Container(
       height: 48,
@@ -29,8 +29,8 @@ class EpisodeRangeSelector extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: chunks,
         itemBuilder: (context, index) {
-          final start = (index * 50) + 1;
-          final end = ((index + 1) * 50).clamp(1, totalEpisodes);
+          final start = (index * 25) + 1;
+          final end = ((index + 1) * 25).clamp(1, totalEpisodes);
           final isSelected = selectedRangeIndex == index;
 
           return Padding(

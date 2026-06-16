@@ -38,7 +38,7 @@ class WatchHeader extends StatelessWidget {
                     Icon(Icons.play_circle_filled_rounded, size: 12, color: colorScheme.primary),
                     const SizedBox(width: 4),
                     Text(
-                      'NOW PLAYING',
+                      'NOW PLAYING • EPISODE $currentEpisode',
                       style: textTheme.labelSmall?.copyWith(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -80,14 +80,6 @@ class WatchHeader extends StatelessWidget {
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Episode $currentEpisode',
-            style: textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ],
       ),
