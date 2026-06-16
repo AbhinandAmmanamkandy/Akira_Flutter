@@ -12,7 +12,7 @@ import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/search_symbol_gesture.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
-import 'package:akira/ui/animations/scale_fade_visibility.dart';
+import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
 

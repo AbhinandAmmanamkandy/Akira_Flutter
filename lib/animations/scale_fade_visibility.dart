@@ -61,7 +61,7 @@ class _ScaleFadeVisibilityState extends State<ScaleFadeVisibility> with SingleTi
     return SizeTransition(
       sizeFactor: _animation,
       axis: Axis.vertical,
-      axisAlignment: 0.0, // Center expansion
+      alignment: Alignment.center, // Center expansion
       child: widget.child,
     );
   }
