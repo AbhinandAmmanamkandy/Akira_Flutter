@@ -4,8 +4,9 @@ import '../../../widgets/common_chip.dart';
 
 class DetailTagsRow extends StatelessWidget {
   final AnimeDetails details;
+  final Function(String)? onTagTap;
 
-  const DetailTagsRow({super.key, required this.details});
+  const DetailTagsRow({super.key, required this.details, this.onTagTap});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,10 @@ class DetailTagsRow extends StatelessWidget {
             color: colorScheme.secondary,
             borderRadius: 8,
           ),
-        ...details.genres.map((g) => CommonChip(label: g)),
+        ...details.genres.map((g) => CommonChip(
+          label: g,
+          onTap: () => onTagTap?.call(g),
+        )),
       ],
     );
   }

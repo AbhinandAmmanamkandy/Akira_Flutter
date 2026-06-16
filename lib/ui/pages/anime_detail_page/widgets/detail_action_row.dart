@@ -4,84 +4,109 @@ import '../../../../services/theme_service.dart';
 
 class DetailActionRow extends StatelessWidget {
   final VoidCallback onPlayTap;
-  final VoidCallback onBookmark;
-  final bool isBookmarked;
   final String watchLabel;
 
   const DetailActionRow({
     super.key,
     required this.onPlayTap,
-    required this.onBookmark,
-    this.isBookmarked = false,
     this.watchLabel = 'Watch Now',
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
 
-    return Row(
-      children: [
-        Expanded(
-          child: useGlass
-              ? GlassContainer(
-                  borderRadius: 16,
-                  opacity: 0.2,
-                  blur: 10,
-                  border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                  child: InkWell(
-                    onTap: onPlayTap,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.play_arrow_rounded, color: colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            watchLabel,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              : FilledButton.icon(
-                  onPressed: onPlayTap,
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: Text(watchLabel),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
+    // Redesign: Distinct styles for Light and Dark modes
+    if (isLight) {
+      // Light Mode: Solid, bold, and clean
+      return Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        GlassContainer(
-          borderRadius: 16,
-          opacity: 0.1,
-          child: IconButton(
-            onPressed: onBookmark,
-            icon: Icon(
-                isBookmarked
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_border_rounded,
-                color: colorScheme.primary),
-            padding: const EdgeInsets.all(12),
+        child: FilledButton(
+          onPressed: onPlayTap,
+          style: FilledButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            padding: EdgeInsets.zero,
+          ),
+          child: _ButtonContent(
+            label: watchLabel,
+            textColor: colorScheme.onPrimary,
           ),
         ),
-      ],
+      );
+    } else {
+      // Dark Mode: Sleek, Glassy, and Glowing
+      return Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 0),
+            ),
+          ],
+        ),
+        child: GlassContainer(
+          borderRadius: 16,
+          opacity: 0.1,
+          blur: 10,
+          withBlur: useGlass,
+          border: Border.all(
+            color: colorScheme.primary.withValues(alpha: 0.5),
+            width: 2,
+          ),
+          child: InkWell(
+            onTap: onPlayTap,
+            borderRadius: BorderRadius.circular(16),
+            child: _ButtonContent(
+              label: watchLabel,
+              textColor: colorScheme.primary,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+}
+
+class _ButtonContent extends StatelessWidget {
+  final String label;
+  final Color textColor;
+
+  const _ButtonContent({
+    required this.label,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.8,
+          color: textColor,
+        ),
+      ),
     );
   }
 }

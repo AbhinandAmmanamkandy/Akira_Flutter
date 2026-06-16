@@ -185,7 +185,7 @@ class _ListAppBarState extends State<ListAppBar> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
                           ),
-                          icon: Icon(Icons.bookmark_rounded, size: 24, color: colorScheme.onSurface),
+                          icon: Icon(Icons.favorite_rounded, size: 24, color: colorScheme.onSurface),
                         ),
                         const SizedBox(width: 8),
                         IconButton(

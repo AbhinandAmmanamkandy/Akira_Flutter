@@ -3,10 +3,10 @@ import 'package:akira/models/anime.dart';
 import 'package:akira/services/anime_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/favorite_service.dart';
-import 'package:akira/services/history_service.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/ui/pages/watch_page/watch_page.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
+import 'package:akira/ui/pages/anime_list_page/anime_list_page.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
@@ -26,7 +26,6 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   late Future<AnimeDetails?> _detailsFuture;
   final AnimeService _animeService = AnimeService();
   final FavoriteService _favoriteService = FavoriteService();
-  final HistoryService _historyService = HistoryService();
 
   @override
   void initState() {
@@ -92,6 +91,18 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                DetailTagsRow(
+                                  details: details,
+                                  onTagTap: (tag) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AnimeListPage(initialSearch: tag),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 24),
                                 DetailActionRow(
                                   onPlayTap: () {
                                     Navigator.push(
@@ -104,17 +115,11 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                       ),
                                     );
                                   },
-                                  onBookmark: () {
-                                    // TODO: Implement bookmark toggle
-                                  },
-                                  isBookmarked: false, // TODO: Get from bookmark service
                                 ),
                                 const SizedBox(height: 24),
                                 DetailMetadataBar(details: details),
                                 const SizedBox(height: 24),
                                 DetailDescriptionSection(description: details.description),
-                                const SizedBox(height: 24),
-                                DetailTagsRow(details: details),
                                 const SizedBox(height: 100),
                               ],
                             ),

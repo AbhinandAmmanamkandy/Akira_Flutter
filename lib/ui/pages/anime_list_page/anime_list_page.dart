@@ -14,7 +14,9 @@ import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'widgets/list_app_bar.dart';
 
 class AnimeListPage extends StatefulWidget {
-  const AnimeListPage({super.key});
+  final String? initialSearch;
+
+  const AnimeListPage({super.key, this.initialSearch});
 
   @override
   State<AnimeListPage> createState() => _AnimeListPageState();
@@ -33,7 +35,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
   void initState() {
     super.initState();
     _homeAnimeList = _animeService.fetchAnime();
-    _animeList = _homeAnimeList;
+    
+    if (widget.initialSearch != null) {
+      _isSearching = true;
+      _searchController.text = widget.initialSearch!;
+      _animeList = _fetchByQuery(widget.initialSearch!);
+    } else {
+      _animeList = _homeAnimeList;
+    }
+    
     _scrollController.addListener(_onScroll);
   }
 
@@ -47,19 +57,22 @@ class _AnimeListPageState extends State<AnimeListPage> {
     }
   }
 
+  Future<List<Anime>> _fetchByQuery(String query) {
+    final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
+    if (query.isEmpty) {
+      return _homeAnimeList;
+    } else if (query.toLowerCase() == 'trending') {
+      return _animeService.fetchPopularAnime();
+    } else if (genres.contains(query)) {
+      return _animeService.fetchAnime(genres: [query]);
+    } else {
+      return _animeService.fetchAnime(queryText: query);
+    }
+  }
+
   void _onSearch(String query) {
     setState(() {
-      final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
-      
-      if (query.isEmpty) {
-        _animeList = _homeAnimeList;
-      } else if (query.toLowerCase() == 'trending') {
-        _animeList = _animeService.fetchPopularAnime();
-      } else if (genres.contains(query)) {
-        _animeList = _animeService.fetchAnime(genres: [query]);
-      } else {
-        _animeList = _animeService.fetchAnime(queryText: query);
-      }
+      _animeList = _fetchByQuery(query);
     });
   }
 

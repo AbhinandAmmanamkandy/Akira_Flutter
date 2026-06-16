@@ -14,19 +14,21 @@ class Anime {
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) {
-    String? thumbnail = json['thumbnail']?.toString();
-    
-    if (thumbnail == null) {
-      final List? thumbnails = json['thumbnails'];
-      if (thumbnails != null && thumbnails.isNotEmpty) {
-        for (var t in thumbnails) {
-          final str = t.toString();
-          if (str.startsWith('http')) {
-            thumbnail = str;
-            break;
-          }
+    String? thumbnail;
+    final List? thumbnails = json['thumbnails'];
+
+    if (thumbnails != null && thumbnails.isNotEmpty) {
+      for (var t in thumbnails) {
+        final str = t.toString();
+        if (str.startsWith('http')) {
+          thumbnail = str;
+          break;
         }
       }
+    }
+
+    if (thumbnail == null) {
+      thumbnail = json['thumbnail']?.toString();
     }
 
     final lastEpisodeInfo = json['lastEpisodeInfo'];
