@@ -26,7 +26,8 @@ class DetailAppBar extends StatelessWidget {
       backgroundColor: colorScheme.surface,
       leading: AnimatedOpacity(
         opacity: isCollapsed ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
         child: IgnorePointer(
           ignoring: isCollapsed,
           child: Padding(
@@ -41,7 +42,8 @@ class DetailAppBar extends StatelessWidget {
       actions: [
         AnimatedOpacity(
           opacity: isCollapsed ? 0.0 : 1.0,
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
           child: IgnorePointer(
             ignoring: isCollapsed,
             child: Padding(
