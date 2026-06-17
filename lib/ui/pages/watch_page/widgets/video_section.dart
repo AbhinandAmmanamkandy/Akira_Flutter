@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:akira/theme/akira_colors.dart';
 
@@ -42,19 +43,23 @@ class VideoSection extends StatefulWidget {
 
 class _VideoSectionState extends State<VideoSection> {
   double _brightness = 0.5;
+  double _volume = 0.5;
 
   @override
   void initState() {
     super.initState();
-    _loadBrightness();
+    _loadInitialValues();
   }
 
-  Future<void> _loadBrightness() async {
+  Future<void> _loadInitialValues() async {
     try {
       final brightness = await ScreenBrightness().current;
+      final volume = await FlutterVolumeController.getVolume();
+      await FlutterVolumeController.updateShowSystemUI(false);
       if (mounted) {
         setState(() {
           _brightness = brightness;
+          _volume = volume ?? 0.5;
         });
       }
     } catch (_) {}
@@ -150,6 +155,13 @@ class _VideoSectionState extends State<VideoSection> {
                   onBrightnessReset: () {
                     ScreenBrightness().resetScreenBrightness();
                   },
+                  initialVolume: _volume,
+                  onVolumeChanged: (value) {
+                    try {
+                      FlutterVolumeController.setVolume(value);
+                    } catch (_) {}
+                    widget.controller?.player.setVolume(value * 100);
+                  },
                   topButtonBar: [
                     MaterialCustomButton(
                       onPressed: widget.onBack,
@@ -227,6 +239,13 @@ class _VideoSectionState extends State<VideoSection> {
                   },
                   onBrightnessReset: () {
                     ScreenBrightness().resetScreenBrightness();
+                  },
+                  initialVolume: _volume,
+                  onVolumeChanged: (value) {
+                    try {
+                      FlutterVolumeController.setVolume(value);
+                    } catch (_) {}
+                    widget.controller?.player.setVolume(value * 100);
                   },
                   topButtonBar: [
                     const Spacer(),
