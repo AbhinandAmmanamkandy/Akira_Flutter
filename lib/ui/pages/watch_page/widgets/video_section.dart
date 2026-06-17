@@ -41,14 +41,56 @@ class VideoSection extends StatefulWidget {
   State<VideoSection> createState() => _VideoSectionState();
 }
 
-class _VideoSectionState extends State<VideoSection> {
+class _VideoSectionState extends State<VideoSection> with SingleTickerProviderStateMixin {
   double _brightness = 0.5;
   double _volume = 0.5;
+  late AnimationController _resumeTimerController;
+  bool _resumeTimerStarted = false;
+
+  bool get _shouldShowResume => widget.resumePosition != null && 
+                                widget.resumePosition!.inSeconds > 0 &&
+                                widget.onResume != null && 
+                                widget.errorMessage == null && 
+                                !widget.isLoading && 
+                                !widget.isBuffering &&
+                                widget.canShowResume;
 
   @override
   void initState() {
     super.initState();
     _loadInitialValues();
+    _resumeTimerController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          widget.onDismissResume?.call();
+        }
+      });
+
+    if (_shouldShowResume) {
+      _resumeTimerStarted = true;
+      _resumeTimerController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _resumeTimerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(VideoSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    if (_shouldShowResume && !_resumeTimerStarted) {
+      _resumeTimerStarted = true;
+      _resumeTimerController.forward(from: 0.0);
+    } else if (!_shouldShowResume && _resumeTimerStarted) {
+      _resumeTimerStarted = false;
+      _resumeTimerController.stop();
+    }
   }
 
   Future<void> _loadInitialValues() async {
@@ -77,13 +119,7 @@ class _VideoSectionState extends State<VideoSection> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final showResumeButton = widget.resumePosition != null && 
-                             widget.resumePosition!.inSeconds > 0 &&
-                             widget.onResume != null && 
-                             widget.errorMessage == null && 
-                             !widget.isLoading && 
-                             !widget.isBuffering &&
-                             widget.canShowResume;
+    final showResumeButton = _shouldShowResume;
 
     return AspectRatio(
       aspectRatio: 16 / 9,
@@ -371,21 +407,39 @@ class _VideoSectionState extends State<VideoSection> {
                         const SizedBox(width: 20),
                         // Action Button
                         Material(
-                          color: AkiraColors.getResumeAccentColor(colorScheme),
+                          color: AkiraColors.getResumeAccentColor(colorScheme).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
+                          clipBehavior: Clip.antiAlias,
                           child: InkWell(
                             onTap: widget.onResume,
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              child: Text(
-                                'Resume',
-                                style: TextStyle(
-                                  color: AkiraColors.getResumeOnAccentColor(colorScheme),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            child: AnimatedBuilder(
+                              animation: _resumeTimerController,
+                              builder: (context, child) {
+                                return Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: FractionallySizedBox(
+                                        alignment: Alignment.centerLeft,
+                                        widthFactor: _resumeTimerController.value,
+                                        child: Container(
+                                          color: AkiraColors.getResumeAccentColor(colorScheme),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      child: Text(
+                                        'Resume',
+                                        style: TextStyle(
+                                          color: AkiraColors.getResumeOnAccentColor(colorScheme),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ),

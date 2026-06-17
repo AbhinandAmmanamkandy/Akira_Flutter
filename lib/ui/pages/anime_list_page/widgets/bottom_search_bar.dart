@@ -44,13 +44,12 @@ class BottomSearchBar extends StatelessWidget {
           ),
           child: GlassContainer(
             borderRadius: 30,
-            blur: 20,
-            opacity: isLight ? 0.8 : 0.1,
-            color: AkiraColors.getFloatingColor(colorScheme, isLight),
+            blur: 8,
+            opacity: 0.15,
             withBlur: true,
             border: Border.all(
               color: colorScheme.primary.withValues(alpha: 0.2),
-              width: 1.5,
+              width: 1,
             ),
             child: TextField(
               controller: controller,
@@ -64,7 +63,7 @@ class BottomSearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search anime...',
                 hintStyle: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  color: AkiraColors.getHintSubtextColor(colorScheme, isLight),
                   fontWeight: FontWeight.normal,
                 ),
                 border: InputBorder.none,
