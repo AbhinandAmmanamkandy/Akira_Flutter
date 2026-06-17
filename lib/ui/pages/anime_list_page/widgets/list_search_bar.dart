@@ -23,8 +23,11 @@ class ListSearchBar extends StatefulWidget {
   State<ListSearchBar> createState() => _ListSearchBarState();
 }
 
-class _ListSearchBarState extends State<ListSearchBar> {
+class _ListSearchBarState extends State<ListSearchBar> with WidgetsBindingObserver {
   final FocusNode _focusNode = FocusNode();
+  bool _wasKeyboardVisible = false;
+  double _lastBottomInset = 0;
+
   static final List<Map<String, dynamic>> _quickSearches = [
     {'label': 'Trending', 'icon': Icons.trending_up_rounded},
     {'label': 'Action', 'icon': Icons.local_fire_department_rounded},
@@ -34,6 +37,27 @@ class _ListSearchBarState extends State<ListSearchBar> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!mounted) return;
+    if (!_focusNode.hasFocus && widget.isExpanded) {
+      handleClose();
+    }
+  }
+
+  void handleClose() {
+    if (!widget.isExpanded) return;
+    widget.controller.clear();
+    widget.onSearch('');
+    widget.onExpand();
+  }
+
+  @override
   void didUpdateWidget(ListSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isExpanded && !oldWidget.isExpanded) {
@@ -41,12 +65,16 @@ class _ListSearchBarState extends State<ListSearchBar> {
         _focusNode.requestFocus();
       }
     } else if (!widget.isExpanded && oldWidget.isExpanded) {
-      _focusNode.unfocus();
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
     super.dispose();
   }
@@ -59,8 +87,20 @@ class _ListSearchBarState extends State<ListSearchBar> {
     final expandedWidth = screenWidth - 40;
     const collapsedWidth = 130.0;
 
+    // Detect keyboard dismissal to trigger close in one step
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    
+    // If keyboard starts to hide (bottomInset decreasing), trigger close immediately
+    // so that the search bar contracts simultaneously with the keyboard.
+    if (widget.isExpanded && _wasKeyboardVisible && bottomInset < _lastBottomInset) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => handleClose());
+    }
+    
+    _wasKeyboardVisible = bottomInset > 0;
+    _lastBottomInset = bottomInset;
+
     return Positioned(
-      bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      bottom: bottomInset + 32,
       right: 20,
       child: Hero(
         tag: 'search_bar',
@@ -122,26 +162,16 @@ class _ListSearchBarState extends State<ListSearchBar> {
                                         color: colorScheme.primary.withValues(alpha: 0.6),
                                       ),
                                       border: InputBorder.none,
-                                      prefixIcon: IconButton(
+                                      prefixIcon: Icon(
+                                        Icons.search_rounded,
+                                        color: colorScheme.primary,
+                                      ),
+                                      suffixIcon: IconButton(
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
-                                        icon: Icon(
-                                          Icons.arrow_back_rounded,
-                                          color: colorScheme.primary,
-                                        ),
-                                        onPressed: widget.onExpand,
+                                        icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
+                                        onPressed: handleClose,
                                       ),
-                                      suffixIcon: widget.controller.text.isNotEmpty
-                                          ? IconButton(
-                                              padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
-                                              icon: Icon(Icons.close_rounded, size: 20, color: colorScheme.primary),
-                                              onPressed: () {
-                                                widget.controller.clear();
-                                                widget.onSearch('');
-                                              },
-                                            )
-                                          : null,
                                       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                                     ),
                                     onSubmitted: widget.onSearch,

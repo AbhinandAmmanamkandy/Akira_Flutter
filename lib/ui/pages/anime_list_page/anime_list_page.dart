@@ -147,12 +147,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
         final useGlass = ThemeService().useGlassTheme;
 
         return PopScope(
-          canPop: false,
+          canPop: !_isSearching,
           onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
             if (_isSearching) {
               _toggleSearch();
-            } else {
-              SystemNavigator.pop();
             }
           },
           child: SearchSymbolGesture(
@@ -249,8 +248,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                 animeList: snapshot.data!,
                                 onAnimeTap: (anime) async {
                                   if (_isSearching) {
-                                    FocusScope.of(context).unfocus();
                                     _toggleSearch();
+                                    FocusScope.of(context).unfocus();
                                     await Future.delayed(const Duration(milliseconds: 100));
                                   } else {
                                     FocusScope.of(context).unfocus();
