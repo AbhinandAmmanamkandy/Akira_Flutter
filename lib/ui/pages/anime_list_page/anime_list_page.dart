@@ -90,7 +90,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
       setState(() => _showHint = false);
     }
 
-    final newOpacity = (offset / 120).clamp(0.0, 1.0);
+    final newOpacity = (offset / 90).clamp(0.0, 1.0);
     if (newOpacity != _appBarOpacity) {
       setState(() {
         _appBarOpacity = newOpacity;

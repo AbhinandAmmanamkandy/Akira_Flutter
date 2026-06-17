@@ -14,7 +14,7 @@ class ListAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
-    final currentRadius = 32.0 * (1.0 - appBarOpacity);
+    final currentRadius = 40.0 * (1.0 - appBarOpacity);
     final isLight = Theme.of(context).brightness == Brightness.light;
     final appBarColor = AkiraColors.getHeaderColor(colorScheme, isLight);
 
@@ -22,17 +22,14 @@ class ListAppBar extends StatelessWidget {
       expandedHeight: 160.0,
       pinned: true,
       stretch: true,
-      backgroundColor: appBarColor.withValues(alpha: (appBarOpacity * 0.9).clamp(0, 0.9)),
+      backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(currentRadius),
-        ),
-        side: BorderSide(
-          color: colorScheme.onSurface.withValues(alpha: 0.05),
-          width: 1,
         ),
       ),
       automaticallyImplyLeading: false,
@@ -57,111 +54,173 @@ class ListAppBar extends StatelessWidget {
           ),
         ),
       ),
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground],
-        background: ClipRRect(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(currentRadius),
-          ),
-          child: GlassContainer(
-            borderRadius: 0,
-            opacity: useGlass ? 0.4 : 1.0,
-            color: appBarColor,
-            blur: 15,
-            withBlur: useGlass,
-            border: const Border(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                'AKIRA',
-                                style: TextStyle(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 44,
-                                  height: 0.9,
-                                  letterSpacing: -2.5,
+      flexibleSpace: ClipRRect(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(currentRadius),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Persistent background that doesn't parallax
+            GlassContainer(
+              borderRadius: 0,
+              opacity: useGlass ? (0.4 + appBarOpacity * 0.2).clamp(0, 0.6) : (0.9 + appBarOpacity * 0.1).clamp(0, 1.0),
+              color: appBarColor,
+              blur: 15,
+              withBlur: useGlass,
+              border: const Border(),
+              child: const SizedBox.expand(),
+            ),
+            FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground],
+              background: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  'AKIRA',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 44,
+                                    height: 0.9,
+                                    letterSpacing: -2.5,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'HUB',
-                                style: TextStyle(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 18,
-                                  letterSpacing: 0.5,
+                                const SizedBox(width: 8),
+                                Text(
+                                  'HUB',
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 0),
-                          Text(
-                            'YOUR ULTIMATE ANIME DESTINATION',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: colorScheme.onSurface.withValues(alpha: 0.8),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 9,
-                              letterSpacing: 1.2,
+                              ],
                             ),
+                            const SizedBox(height: 0),
+                            Text(
+                              'YOUR ULTIMATE ANIME DESTINATION',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            tooltip: 'Senpai\'s Picks',
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage())),
+                            style: IconButton.styleFrom(
+                              backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
+                              padding: const EdgeInsets.all(12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
+                            ),
+                            icon: Icon(Icons.favorite_rounded, size: 24, color: colorScheme.onSurface),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
+                              padding: const EdgeInsets.all(12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
+                            ),
+                            icon: Icon(Icons.settings_rounded, size: 24, color: colorScheme.onSurface),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'Senpai\'s Picks',
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage())),
-                          style: IconButton.styleFrom(
-                            backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
-                            padding: const EdgeInsets.all(12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
-                          ),
-                          icon: Icon(Icons.favorite_rounded, size: 24, color: colorScheme.onSurface),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: () {
-                            FocusScope.of(context).unfocus();
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
-                          },
-                          style: IconButton.styleFrom(
-                            backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
-                            padding: const EdgeInsets.all(12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
-                          ),
-                          icon: Icon(Icons.settings_rounded, size: 24, color: colorScheme.onSurface),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _BottomOutlinePainter(
+                  color: colorScheme.primary.withValues(alpha: 0.5),
+                  radius: currentRadius,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+}
+
+class _BottomOutlinePainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+
+  _BottomOutlinePainter({
+    required this.color,
+    required this.radius,
+    this.strokeWidth = 1.8,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    if (radius > 0) {
+      path.moveTo(0, size.height - radius);
+      path.arcToPoint(
+        Offset(radius, size.height),
+        radius: Radius.circular(radius),
+        clockwise: false,
+      );
+      path.lineTo(size.width - radius, size.height);
+      path.arcToPoint(
+        Offset(size.width, size.height - radius),
+        radius: Radius.circular(radius),
+        clockwise: false,
+      );
+    } else {
+      path.moveTo(0, size.height);
+      path.lineTo(size.width, size.height);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BottomOutlinePainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }
