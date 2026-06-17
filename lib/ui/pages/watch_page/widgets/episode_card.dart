@@ -24,12 +24,12 @@ class EpisodeCard extends StatelessWidget {
     if (useGlass) {
       return GlassContainer(
         borderRadius: 16,
-        opacity: isSelected ? 0.25 : (isLight ? 0.08 : 0.05),
+        opacity: isSelected ? 0.3 : (isLight ? 0.15 : 0.05),
         border: Border.all(
           color: isSelected 
               ? colorScheme.primary 
-              : colorScheme.onSurface.withValues(alpha: isLight ? 0.15 : 0.1),
-          width: isSelected ? 2.0 : 1.0,
+              : colorScheme.onSurface.withValues(alpha: isLight ? 0.3 : 0.1),
+          width: isSelected ? 2.0 : 1.5,
         ),
         child: InkWell(
           onTap: onTap,
@@ -39,7 +39,7 @@ class EpisodeCard extends StatelessWidget {
               '$episodeNum',
               style: TextStyle(
                 color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                 fontSize: 16,
               ),
             ),
@@ -54,8 +54,14 @@ class EpisodeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected 
             ? colorScheme.primary 
-            : AkiraColors.getComponentColor(colorScheme, isLight),
+            : AkiraColors.getComponentColor(colorScheme, isLight).withValues(alpha: isLight ? 1.0 : 0.3),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected 
+              ? colorScheme.primary 
+              : colorScheme.onSurface.withValues(alpha: isLight ? 0.1 : 0.0),
+          width: 1.5,
+        ),
       ),
       child: InkWell(
         onTap: onTap,

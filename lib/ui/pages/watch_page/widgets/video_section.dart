@@ -319,13 +319,6 @@ class VideoSection extends StatelessWidget {
                 ),
               ),
 
-            if (isBuffering && !isLoading)
-              const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: Colors.white,
-                ),
-              ),
           ],
         ),
       ),
