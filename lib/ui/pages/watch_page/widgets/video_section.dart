@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import '../../../widgets/glass_container.dart';
 
 class VideoSection extends StatelessWidget {
   final VideoController? controller;
@@ -10,6 +11,7 @@ class VideoSection extends StatelessWidget {
   final VoidCallback onBack;
   final Duration? resumePosition;
   final VoidCallback? onResume;
+  final VoidCallback? onDismissResume;
 
   const VideoSection({
     super.key,
@@ -21,6 +23,7 @@ class VideoSection extends StatelessWidget {
     required this.onBack,
     this.resumePosition,
     this.onResume,
+    this.onDismissResume,
   });
 
   String _formatDuration(Duration duration) {
@@ -35,8 +38,6 @@ class VideoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // We only show the resume button if we have a position, a callback, no error,
-    // and critically: we are NOT loading and NOT buffering.
     final showResumeButton = resumePosition != null && 
                              onResume != null && 
                              errorMessage == null && 
@@ -45,152 +46,222 @@ class VideoSection extends StatelessWidget {
 
     return AspectRatio(
       aspectRatio: 16 / 9,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          color: Colors.black,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (isLoading)
-                const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              else if (errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        errorMessage!,
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
-                        textAlign: TextAlign.center,
+      child: Container(
+        color: Colors.black,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (isLoading)
+              const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: Colors.white,
+                ),
+              )
+            else if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: onRetry,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try Again'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      const SizedBox(height: 24),
-                      FilledButton.icon(
-                        onPressed: onRetry,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Try Again'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (controller != null)
-                Video(
+                    ),
+                  ],
+                ),
+              )
+            else if (controller != null)
+              MaterialVideoControlsTheme(
+                normal: MaterialVideoControlsThemeData(
+                  visibleOnMount: true,
+                  backdropColor: Colors.black.withValues(alpha: 0.4),
+                  buttonBarButtonSize: 24.0,
+                  buttonBarButtonColor: Colors.white,
+                  seekBarPositionColor: colorScheme.primary,
+                  seekBarThumbColor: colorScheme.primary,
+                  seekBarHeight: 3.5,
+                  seekBarThumbSize: 14.0,
+                  seekBarMargin: const EdgeInsets.only(left: 48, right: 48, bottom: 20),
+                  bottomButtonBarMargin: const EdgeInsets.only(left: 48, right: 40, bottom: 12),
+                  topButtonBarMargin: const EdgeInsets.only(left: 40, right: 40, top: 8),
+                  seekOnDoubleTap: true,
+                  volumeGesture: true,
+                  brightnessGesture: true,
+                  topButtonBar: [
+                    MaterialCustomButton(
+                      onPressed: onBack,
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    ),
+                    const Spacer(),
+                  ],
+                  primaryButtonBar: [
+                    const Spacer(flex: 3),
+                    const MaterialSkipPreviousButton(iconSize: 36),
+                    const Spacer(),
+                    MaterialPlayOrPauseButton(iconSize: 72.0, iconColor: colorScheme.primary),
+                    const Spacer(),
+                    const MaterialSkipNextButton(iconSize: 36),
+                    const Spacer(flex: 3),
+                  ],
+                  bottomButtonBar: [
+                    const MaterialPositionIndicator(
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    const MaterialFullscreenButton(),
+                  ],
+                ),
+                fullscreen: MaterialVideoControlsThemeData(
+                  seekBarPositionColor: colorScheme.primary,
+                  seekBarThumbColor: colorScheme.primary,
+                  seekBarHeight: 4.5,
+                  seekBarThumbSize: 16.0,
+                  seekBarMargin: const EdgeInsets.only(left: 64, right: 64, bottom: 32),
+                  bottomButtonBarMargin: const EdgeInsets.only(left: 64, right: 56, bottom: 20),
+                  seekOnDoubleTap: true,
+                  volumeGesture: true,
+                  brightnessGesture: true,
+                  primaryButtonBar: [
+                    const Spacer(flex: 3),
+                    const MaterialSkipPreviousButton(iconSize: 48),
+                    const Spacer(),
+                    MaterialPlayOrPauseButton(iconSize: 84.0, iconColor: colorScheme.primary),
+                    const Spacer(),
+                    const MaterialSkipNextButton(iconSize: 48),
+                    const Spacer(flex: 3),
+                  ],
+                ),
+                child: Video(
                   controller: controller!,
-                  controls: (state) => const SizedBox.shrink(), // Custom controls can go here
-                )
-              else
-                IconButton(
-                  icon: const Icon(Icons.play_circle_filled, size: 64, color: Colors.white),
-                  onPressed: onRetry,
+                  controls: MaterialVideoControls,
                 ),
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.play_circle_filled, size: 64, color: Colors.white),
+                onPressed: onRetry,
+              ),
 
-              // Shadow overlay for controls
-              if (!isLoading && errorMessage == null)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.4),
-                            Colors.transparent,
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.4),
+            // Resume Overlay
+            Positioned(
+              bottom: 100,
+              child: AnimatedScale(
+                scale: showResumeButton ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.elasticOut,
+                child: AnimatedOpacity(
+                  opacity: showResumeButton ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Continue where you left off at ${_formatDuration(resumePosition ?? Duration.zero)}?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _ResumeButton(
+                              label: 'Yes',
+                              isPrimary: true,
+                              colorScheme: colorScheme,
+                              onTap: onResume ?? () {},
+                            ),
+                            const SizedBox(width: 8),
+                            _ResumeButton(
+                              label: 'No',
+                              isPrimary: false,
+                              colorScheme: colorScheme,
+                              onTap: onDismissResume ?? () {},
+                            ),
                           ],
-                          stops: const [0.0, 0.2, 0.8, 1.0],
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Resume Button Overlay
-              Positioned(
-                bottom: 16,
-                child: AnimatedScale(
-                  scale: showResumeButton ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.elasticOut,
-                  child: AnimatedOpacity(
-                    opacity: showResumeButton ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: onResume,
-                        borderRadius: BorderRadius.circular(32),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(32),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withValues(alpha: 0.4),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.fast_forward_rounded, size: 20, color: colorScheme.onPrimary),
-                              const SizedBox(width: 8),
-                              Text(
-                                resumePosition != null ? 'Resume from ${_formatDuration(resumePosition!)}' : '',
-                                style: TextStyle(
-                                  fontSize: 14, 
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.onPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
+            ),
 
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-                    onPressed: onBack,
-                  ),
+            if (isBuffering && !isLoading)
+              const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: Colors.white,
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              if (isBuffering && !isLoading)
-                const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-            ],
+class _ResumeButton extends StatelessWidget {
+  final String label;
+  final bool isPrimary;
+  final ColorScheme colorScheme;
+  final VoidCallback onTap;
+
+  const _ResumeButton({
+    required this.label,
+    required this.isPrimary,
+    required this.colorScheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isPrimary ? colorScheme.primary : Colors.white.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isPrimary ? colorScheme.onPrimary : Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

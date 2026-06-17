@@ -325,6 +325,9 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                               setState(() => _resumePosition = null);
                             }
                           },
+                          onDismissResume: () {
+                            setState(() => _resumePosition = null);
+                          },
                         ),
                       ),
 
