@@ -71,4 +71,24 @@ class AkiraColors {
   static Color getHintSubtextColor(ColorScheme colorScheme, bool isLight) {
     return colorScheme.primary.withValues(alpha: isLight ? 0.6 : 0.5);
   }
+
+  // Resume Toast Theme
+  static Color getResumeAccentColor(ColorScheme colorScheme) => red;
+  
+  static TextStyle getResumeTitleStyle(ColorScheme colorScheme) {
+    return const TextStyle(
+      color: Colors.white,
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.2,
+    );
+  }
+
+  static TextStyle getResumeSubstyle(ColorScheme colorScheme) {
+    return TextStyle(
+      color: Colors.white.withValues(alpha: 0.7),
+      fontSize: 10,
+      fontWeight: FontWeight.w500,
+    );
+  }
 }
