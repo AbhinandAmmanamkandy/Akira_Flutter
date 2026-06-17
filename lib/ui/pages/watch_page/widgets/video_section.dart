@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import '../../../widgets/glass_container.dart';
 import 'package:akira/theme/akira_colors.dart';
 
-class VideoSection extends StatelessWidget {
+class VideoSection extends StatefulWidget {
   final VideoController? controller;
   final GlobalKey<VideoState>? videoKey;
   final bool isLoading;
@@ -35,6 +36,30 @@ class VideoSection extends StatelessWidget {
     this.episodeNumber,
   });
 
+  @override
+  State<VideoSection> createState() => _VideoSectionState();
+}
+
+class _VideoSectionState extends State<VideoSection> {
+  double _brightness = 0.5;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBrightness();
+  }
+
+  Future<void> _loadBrightness() async {
+    try {
+      final brightness = await ScreenBrightness().current;
+      if (mounted) {
+        setState(() {
+          _brightness = brightness;
+        });
+      }
+    } catch (_) {}
+  }
+
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -47,13 +72,13 @@ class VideoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final showResumeButton = resumePosition != null && 
-                             resumePosition!.inSeconds > 0 &&
-                             onResume != null && 
-                             errorMessage == null && 
-                             !isLoading && 
-                             !isBuffering &&
-                             canShowResume;
+    final showResumeButton = widget.resumePosition != null && 
+                             widget.resumePosition!.inSeconds > 0 &&
+                             widget.onResume != null && 
+                             widget.errorMessage == null && 
+                             !widget.isLoading && 
+                             !widget.isBuffering &&
+                             widget.canShowResume;
 
     return AspectRatio(
       aspectRatio: 16 / 9,
@@ -62,14 +87,14 @@ class VideoSection extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            if (isLoading)
+            if (widget.isLoading)
               const Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
                   color: Colors.white,
                 ),
               )
-            else if (errorMessage != null)
+            else if (widget.errorMessage != null)
               Center(
                 child: GlassContainer(
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -82,13 +107,13 @@ class VideoSection extends StatelessWidget {
                       Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 48),
                       const SizedBox(height: 16),
                       Text(
-                        errorMessage!,
+                        widget.errorMessage!,
                         style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       FilledButton.icon(
-                        onPressed: onRetry,
+                        onPressed: widget.onRetry,
                         icon: const Icon(Icons.refresh_rounded),
                         label: const Text('Try Again'),
                         style: FilledButton.styleFrom(
@@ -101,7 +126,7 @@ class VideoSection extends StatelessWidget {
                   ),
                 ),
               )
-            else if (controller != null)
+            else if (widget.controller != null)
               MaterialVideoControlsTheme(
                 normal: MaterialVideoControlsThemeData(
                   visibleOnMount: true,
@@ -118,20 +143,27 @@ class VideoSection extends StatelessWidget {
                   seekOnDoubleTap: true,
                   volumeGesture: true,
                   brightnessGesture: true,
+                  initialBrightness: _brightness,
+                  onBrightnessChanged: (value) {
+                    ScreenBrightness().setScreenBrightness(value);
+                  },
+                  onBrightnessReset: () {
+                    ScreenBrightness().resetScreenBrightness();
+                  },
                   topButtonBar: [
                     MaterialCustomButton(
-                      onPressed: onBack,
+                      onPressed: widget.onBack,
                       icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                     ),
                     const SizedBox(width: 8),
-                    if (animeTitle != null)
+                    if (widget.animeTitle != null)
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              animeTitle!,
+                              widget.animeTitle!,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -139,9 +171,9 @@ class VideoSection extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (episodeNumber != null)
+                            if (widget.episodeNumber != null)
                               Text(
-                                'Episode $episodeNumber',
+                                'Episode ${widget.episodeNumber}',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 12,
@@ -189,6 +221,13 @@ class VideoSection extends StatelessWidget {
                   seekOnDoubleTap: true,
                   volumeGesture: true,
                   brightnessGesture: true,
+                  initialBrightness: _brightness,
+                  onBrightnessChanged: (value) {
+                    ScreenBrightness().setScreenBrightness(value);
+                  },
+                  onBrightnessReset: () {
+                    ScreenBrightness().resetScreenBrightness();
+                  },
                   topButtonBar: [
                     const Spacer(),
                     const MaterialFullscreenButton(),
@@ -210,8 +249,8 @@ class VideoSection extends StatelessWidget {
                   ],
                 ),
                 child: Video(
-                  key: videoKey,
-                  controller: controller!,
+                  key: widget.videoKey,
+                  controller: widget.controller!,
                   controls: (state) => Stack(
                     children: [
                       MaterialVideoControls(state),
@@ -246,7 +285,7 @@ class VideoSection extends StatelessWidget {
             else
               IconButton(
                 icon: const Icon(Icons.play_circle_filled, size: 64, color: Colors.white),
-                onPressed: onRetry,
+                onPressed: widget.onRetry,
               ),
 
             // Resume Overlay
@@ -305,7 +344,7 @@ class VideoSection extends StatelessWidget {
                               style: AkiraColors.getResumeTitleStyle(colorScheme),
                             ),
                             Text(
-                              'at ${_formatDuration(resumePosition ?? Duration.zero)}',
+                              'at ${_formatDuration(widget.resumePosition ?? Duration.zero)}',
                               style: AkiraColors.getResumeSubstyle(colorScheme),
                             ),
                           ],
@@ -316,7 +355,7 @@ class VideoSection extends StatelessWidget {
                           color: AkiraColors.getResumeAccentColor(colorScheme),
                           borderRadius: BorderRadius.circular(10),
                           child: InkWell(
-                            onTap: onResume,
+                            onTap: widget.onResume,
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -334,7 +373,7 @@ class VideoSection extends StatelessWidget {
                         const SizedBox(width: 4),
                         // Dismiss Icon
                         IconButton(
-                          onPressed: onDismissResume,
+                          onPressed: widget.onDismissResume,
                           icon: const Icon(Icons.close_rounded, size: 16),
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.all(4),
