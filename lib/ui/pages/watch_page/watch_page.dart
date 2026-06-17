@@ -42,13 +42,14 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
   final GlobalKey<VideoState> _videoKey = GlobalKey<VideoState>();
   StreamSubscription? _posSubscription;
 
-  String? _videoUrl;
   bool _isLoading = true;
   String? _error;
   int _currentEpisode = 1;
   int _selectedRangeIndex = 0;
   bool _isReversed = false;
   Duration? _resumePosition;
+  bool _isBuffering = false;
+  bool _playedOneSecond = false;
 
   @override
   void initState() {
@@ -78,9 +79,18 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
       _loadEpisode(_currentEpisode.toString(), initial: true);
     });
 
+    player.stream.buffering.listen((buffering) {
+      if (mounted) setState(() => _isBuffering = buffering);
+    });
+
     _posSubscription = player.stream.position.listen((pos) {
-      if (player.state.playing) {
-        HistoryService().saveHistory(widget.anime.id, _currentEpisode, pos);
+      if (mounted) {
+        if (!_playedOneSecond && pos.inSeconds >= 1) {
+          setState(() => _playedOneSecond = true);
+        }
+        if (player.state.playing) {
+          HistoryService().saveHistory(widget.anime.id, _currentEpisode, pos);
+        }
       }
     });
   }
@@ -92,6 +102,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
       _selectedRangeIndex = (epInt - 1) ~/ 25;
       _isLoading = true;
       _error = null;
+      _playedOneSecond = false;
       if (!initial) {
         _resumePosition = null;
       }
@@ -108,11 +119,10 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
       }
 
       setState(() {
-        _videoUrl = url;
         _isLoading = false;
       });
 
-      await player.open(Media(url, httpHeaders: {'Referer': 'https://youtu-chan.com'}));
+      await player.open(Media(url, httpHeaders: {'Referer': 'https://youtu-chan.com'}), play: true);
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -318,10 +328,12 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                           videoKey: _videoKey,
                           controller: controller,
                           isLoading: _isLoading,
+                          isBuffering: _isBuffering,
                           errorMessage: _error,
                           onRetry: () => _loadEpisode(_currentEpisode.toString()),
                           onBack: () => Navigator.pop(context),
                           resumePosition: _resumePosition,
+                          canShowResume: _playedOneSecond,
                           onResume: () {
                             if (_resumePosition != null) {
                               player.seek(_resumePosition!);
@@ -331,6 +343,8 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                           onDismissResume: () {
                             setState(() => _resumePosition = null);
                           },
+                          animeTitle: widget.anime.name,
+                          episodeNumber: _currentEpisode,
                         ),
                       ),
 

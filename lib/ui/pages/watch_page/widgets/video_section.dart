@@ -11,8 +11,11 @@ class VideoSection extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onBack;
   final Duration? resumePosition;
+  final bool canShowResume;
   final VoidCallback? onResume;
   final VoidCallback? onDismissResume;
+  final String? animeTitle;
+  final int? episodeNumber;
 
   const VideoSection({
     super.key,
@@ -24,8 +27,11 @@ class VideoSection extends StatelessWidget {
     required this.onRetry,
     required this.onBack,
     this.resumePosition,
+    this.canShowResume = false,
     this.onResume,
     this.onDismissResume,
+    this.animeTitle,
+    this.episodeNumber,
   });
 
   String _formatDuration(Duration duration) {
@@ -41,10 +47,12 @@ class VideoSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     final showResumeButton = resumePosition != null && 
+                             resumePosition!.inSeconds > 0 &&
                              onResume != null && 
                              errorMessage == null && 
                              !isLoading && 
-                             !isBuffering;
+                             !isBuffering &&
+                             canShowResume;
 
     return AspectRatio(
       aspectRatio: 16 / 9,
@@ -61,69 +69,111 @@ class VideoSection extends StatelessWidget {
                 ),
               )
             else if (errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      errorMessage!,
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: onRetry,
-                      icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Try Again'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Center(
+                child: GlassContainer(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  borderRadius: 24,
+                  opacity: 0.1,
+                  withBlur: true,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Try Again'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else if (controller != null)
               MaterialVideoControlsTheme(
                 normal: MaterialVideoControlsThemeData(
                   visibleOnMount: true,
-                  backdropColor: Colors.black.withValues(alpha: 0.4),
+                  backdropColor: Colors.black.withValues(alpha: 0.45),
                   buttonBarButtonSize: 24.0,
                   buttonBarButtonColor: Colors.white,
                   seekBarPositionColor: colorScheme.primary,
                   seekBarThumbColor: colorScheme.primary,
-                  seekBarHeight: 3.5,
+                  seekBarHeight: 4.0,
                   seekBarThumbSize: 14.0,
-                  seekBarMargin: const EdgeInsets.only(left: 48, right: 48, bottom: 20),
-                  bottomButtonBarMargin: const EdgeInsets.only(left: 48, right: 40, bottom: 12),
-                  topButtonBarMargin: const EdgeInsets.only(left: 40, right: 40, top: 8),
+                  seekBarMargin: const EdgeInsets.only(left: 48, right: 48, bottom: 24),
+                  bottomButtonBarMargin: const EdgeInsets.only(left: 48, right: 40, bottom: 16),
+                  topButtonBarMargin: const EdgeInsets.only(left: 24, right: 24, top: 12),
                   seekOnDoubleTap: true,
                   volumeGesture: true,
                   brightnessGesture: true,
                   topButtonBar: [
                     MaterialCustomButton(
                       onPressed: onBack,
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
+                    if (animeTitle != null)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              animeTitle!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (episodeNumber != null)
+                              Text(
+                                'Episode $episodeNumber',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        ),
+                      )
+                    else
+                      const Spacer(),
                     const MaterialFullscreenButton(),
                   ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
-                    const MaterialSkipPreviousButton(iconSize: 36),
+                    const MaterialSkipPreviousButton(iconSize: 32),
                     const Spacer(),
-                    MaterialPlayOrPauseButton(iconSize: 72.0, iconColor: colorScheme.primary),
+                    MaterialPlayOrPauseButton(
+                      iconSize: 64.0,
+                      iconColor: Colors.white,
+                    ),
                     const Spacer(),
-                    const MaterialSkipNextButton(iconSize: 36),
+                    const MaterialSkipNextButton(iconSize: 32),
                     const Spacer(flex: 3),
                   ],
                   bottomButtonBar: [
                     const MaterialPositionIndicator(
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
                     ),
                     const Spacer(),
                   ],
@@ -171,65 +221,79 @@ class VideoSection extends StatelessWidget {
               ),
 
             // Resume Overlay
-            Positioned(
-              bottom: 100,
-              child: AnimatedScale(
-                scale: showResumeButton ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.elasticOut,
-                child: AnimatedOpacity(
-                  opacity: showResumeButton ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
+            if (showResumeButton)
+              Positioned(
+                bottom: 60,
+                right: 24,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutBack,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Opacity(
+                        opacity: value.clamp(0.0, 1.0),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: GlassContainer(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                    borderRadius: 32,
+                    withBlur: true,
+                    blur: 15,
+                    opacity: 0.2,
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Continue where you left off at ${_formatDuration(resumePosition ?? Duration.zero)}?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _ResumeButton(
-                              label: 'Yes',
-                              isPrimary: true,
-                              colorScheme: colorScheme,
-                              onTap: onResume ?? () {},
+                            const Text(
+                              'Continue watching?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            const SizedBox(width: 8),
-                            _ResumeButton(
-                              label: 'No',
-                              isPrimary: false,
-                              colorScheme: colorScheme,
-                              onTap: onDismissResume ?? () {},
+                            Text(
+                              'at ${_formatDuration(resumePosition ?? Duration.zero)}',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
+                        ),
+                        const SizedBox(width: 16),
+                        Material(
+                          color: colorScheme.primary,
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: onResume,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          onPressed: onDismissResume,
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          visualDensity: VisualDensity.compact,
+                          color: Colors.white60,
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
 
             if (isBuffering && !isLoading)
               const Center(
