@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'package:akira/services/theme_service.dart';
+import 'package:akira/services/backup_service.dart';
 import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
@@ -204,6 +206,30 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SettingsSectionHeader(title: 'DATA'),
+                      SettingsCard(
+                        children: [
+                          SettingsTile(
+                            icon: Icons.backup_outlined,
+                            title: 'Export Data',
+                            subtitle: 'Copy backup JSON to clipboard',
+                            onTap: () {
+                              final data = BackupService.exportData();
+                              Clipboard.setData(ClipboardData(text: data));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Backup copied to clipboard')),
+                              );
+                            },
+                          ),
+                          const SettingsDivider(),
+                          SettingsTile(
+                            icon: Icons.restore_outlined,
+                            title: 'Import Data',
+                            subtitle: 'Restore from JSON string',
+                            onTap: () => _showImportDialog(context),
+                          ),
+                        ],
+                      ),
                       const SettingsSectionHeader(title: 'SUPPORT'),
                       SettingsCard(
                         children: [
@@ -259,6 +285,55 @@ class SettingsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showImportDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Data'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Paste your backup JSON below:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '{...}',
+              ),
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final success = await BackupService.importData(controller.text);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success 
+                      ? 'Data imported successfully!' 
+                      : 'Failed to import data. Invalid JSON?'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Import'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -68,6 +68,71 @@ class ThemeService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, dynamic> getSettings() {
+    return {
+      'isMaterialUI': _isMaterialUI,
+      'useSystemAccent': _useSystemAccent,
+      'accentShade': _accentShade,
+      'customColorIndex': _customColorIndex,
+      'themeMode': _themeMode.index,
+      'allowAdult': _allowAdult,
+      'allowUnknown': _allowUnknown,
+      'useGlassTheme': _useGlassTheme,
+      'useOverscrollToClose': _useOverscrollToClose,
+      'username': _username,
+      'gender': _gender,
+    };
+  }
+
+  Future<void> importSettings(Map<String, dynamic> settings) async {
+    if (settings.containsKey('isMaterialUI')) {
+      _isMaterialUI = settings['isMaterialUI'];
+      _prefs.setBool('isMaterialUI', _isMaterialUI);
+    }
+    if (settings.containsKey('useSystemAccent')) {
+      _useSystemAccent = settings['useSystemAccent'];
+      _prefs.setBool('useSystemAccent', _useSystemAccent);
+    }
+    if (settings.containsKey('accentShade')) {
+      _accentShade = settings['accentShade'];
+      _prefs.setInt('accentShade', _accentShade);
+    }
+    if (settings.containsKey('customColorIndex')) {
+      _customColorIndex = settings['customColorIndex'];
+      _prefs.setInt('customColorIndex', _customColorIndex);
+    }
+    if (settings.containsKey('themeMode')) {
+      final themeModeIndex = settings['themeMode'];
+      _themeMode = ThemeMode.values[themeModeIndex];
+      _prefs.setInt('themeMode', themeModeIndex);
+    }
+    if (settings.containsKey('allowAdult')) {
+      _allowAdult = settings['allowAdult'];
+      _prefs.setBool('allowAdult', _allowAdult);
+    }
+    if (settings.containsKey('allowUnknown')) {
+      _allowUnknown = settings['allowUnknown'];
+      _prefs.setBool('allowUnknown', _allowUnknown);
+    }
+    if (settings.containsKey('useGlassTheme')) {
+      _useGlassTheme = settings['useGlassTheme'];
+      _prefs.setBool('useGlassTheme', _useGlassTheme);
+    }
+    if (settings.containsKey('useOverscrollToClose')) {
+      _useOverscrollToClose = settings['useOverscrollToClose'];
+      _prefs.setBool('useOverscrollToClose', _useOverscrollToClose);
+    }
+    if (settings.containsKey('username')) {
+      _username = settings['username'];
+      _prefs.setString('username', _username);
+    }
+    if (settings.containsKey('gender')) {
+      _gender = settings['gender'];
+      _prefs.setString('gender', _gender);
+    }
+    notifyListeners();
+  }
+
   void completeFirstOpen(String name, String gender) {
     _isFirstOpen = false;
     _username = name;

@@ -50,6 +50,17 @@ class HistoryService extends ChangeNotifier {
     return _history[animeId];
   }
 
+  Map<String, WatchHistory> getAllHistory() {
+    return Map.unmodifiable(_history);
+  }
+
+  void setAllHistory(Map<String, WatchHistory> newHistory) {
+    _history.clear();
+    _history.addAll(newHistory);
+    _saveToDisk();
+    notifyListeners();
+  }
+
   void saveHistory(String animeId, int episode, Duration position) {
     // Only save if we have at least 1 second of progress
     if (position.inSeconds < 1) return;

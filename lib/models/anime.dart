@@ -42,4 +42,16 @@ class Anime {
       lastEpisode: lastEpisode,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'name': name,
+    'englishName': englishName,
+    'thumbnail': thumbnail,
+    // We don't necessarily need to store lastEpisodeInfo back as it was
+    // but for consistency we can store it in a simplified way or just store lastEpisode
+    'lastEpisodeInfo': {
+      'sub': {'episodeString': lastEpisode}
+    }
+  };
 }
