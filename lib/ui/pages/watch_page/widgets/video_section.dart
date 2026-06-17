@@ -161,7 +161,7 @@ class VideoSection extends StatelessWidget {
                     const Spacer(),
                     MaterialPlayOrPauseButton(
                       iconSize: 52.0,
-                      iconColor: Colors.white,
+                      iconColor: colorScheme.primary,
                     ),
                     const Spacer(),
                     const MaterialSkipNextButton(iconSize: 32),
@@ -292,10 +292,10 @@ class VideoSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              child: const Text(
+                              child: Text(
                                 'Resume',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AkiraColors.getResumeOnAccentColor(colorScheme),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),

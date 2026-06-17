@@ -73,7 +73,8 @@ class AkiraColors {
   }
 
   // Resume Toast Theme
-  static Color getResumeAccentColor(ColorScheme colorScheme) => red;
+  static Color getResumeAccentColor(ColorScheme colorScheme) => colorScheme.primary;
+  static Color getResumeOnAccentColor(ColorScheme colorScheme) => colorScheme.onPrimary;
   
   static TextStyle getResumeTitleStyle(ColorScheme colorScheme) {
     return const TextStyle(
