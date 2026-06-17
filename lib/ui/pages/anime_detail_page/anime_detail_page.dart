@@ -7,7 +7,7 @@ import 'package:akira/services/history_service.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/ui/pages/watch_page/watch_page.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
-import 'package:akira/gestures/search_symbol_gesture.dart';
+import 'package:akira/gestures/f_symbol_gesture.dart';
 import 'package:akira/ui/pages/anime_list_page/anime_list_page.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
@@ -59,7 +59,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                     color: colorScheme.surface,
                   ),
                 ),
-              SearchSymbolGesture(
+              FSymbolGesture(
                 onSymbolDetected: () {
                   _favoriteService.toggleFavorite(widget.anime);
                   CustomStatusIndicator.show(

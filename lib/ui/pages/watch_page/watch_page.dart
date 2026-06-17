@@ -9,9 +9,12 @@ import 'package:akira/models/anime_details.dart';
 import 'package:akira/services/anime_stream_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/history_service.dart';
+import 'package:akira/services/favorite_service.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
+import 'package:akira/ui/widgets/custom_status_indicator.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
+import 'package:akira/gestures/f_symbol_gesture.dart';
 import 'widgets/video_section.dart';
 import 'widgets/watch_header.dart';
 import 'widgets/episode_controls_header.dart';
@@ -38,6 +41,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
   late final VideoController controller;
   late final TabController _tabController;
   final AllAnimeApi _api = AllAnimeApi();
+  final FavoriteService _favoriteService = FavoriteService();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<VideoState> _videoKey = GlobalKey<VideoState>();
   StreamSubscription? _posSubscription;
@@ -284,14 +288,24 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
     final themeService = ThemeService();
 
     return ListenableBuilder(
-      listenable: themeService,
+      listenable: Listenable.merge([themeService, _favoriteService]),
       builder: (context, _) {
         final isLight = Theme.of(context).brightness == Brightness.light;
         final bgColor = AkiraColors.getBackground(colorScheme, isLight);
+        final isFavorite = _favoriteService.isFavorite(widget.anime.id);
 
-        return Scaffold(
-          backgroundColor: bgColor,
-          body: Stack(
+        return FSymbolGesture(
+          onSymbolDetected: () {
+            _favoriteService.toggleFavorite(widget.anime);
+            CustomStatusIndicator.show(
+              context,
+              isFavorite ? 'Removed from favorites' : 'Added to favorites',
+              isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
+            );
+          },
+          child: Scaffold(
+            backgroundColor: bgColor,
+            body: Stack(
             children: [
               // Background Image with Blur
               Positioned.fill(
@@ -426,6 +440,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
               ),
             ],
           ),
+        ),
         );
       },
     );

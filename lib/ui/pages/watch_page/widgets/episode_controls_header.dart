@@ -36,7 +36,7 @@ class EpisodeControlsHeader extends StatelessWidget {
           ],
           const Spacer(),
           _HeaderButton(
-            icon: isReversed ? Icons.sort_rounded : Icons.sort_rounded,
+            icon: isReversed ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
             onTap: onToggleSort,
             isSelected: isReversed,
           ),
@@ -76,9 +76,6 @@ class _HeaderButton extends StatelessWidget {
     if (isSelected) {
       bgColor = colorScheme.primary;
       iconColor = colorScheme.onPrimary;
-    } else if (isAccent) {
-      bgColor = colorScheme.primary.withValues(alpha: 0.1);
-      iconColor = colorScheme.primary;
     }
 
     return Material(
@@ -89,10 +86,15 @@ class _HeaderButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(8),
-          decoration: isAccent ? BoxDecoration(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
-          ) : null,
+            border: Border.all(
+              color: isSelected 
+                  ? colorScheme.primary 
+                  : colorScheme.onSurface.withValues(alpha: isLight ? 0.1 : 0.05),
+              width: 1.5,
+            ),
+          ),
           child: Icon(
             icon,
             size: 20,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../models/anime.dart';
 import '../../../../services/favorite_service.dart';
+import '../../../widgets/custom_status_indicator.dart';
 
 class WatchHeader extends StatelessWidget {
   final Anime anime;
@@ -54,7 +55,14 @@ class WatchHeader extends StatelessWidget {
                 builder: (context, _) {
                   final isFavorite = favoriteService.isFavorite(anime.id);
                   return IconButton(
-                    onPressed: () => favoriteService.toggleFavorite(anime),
+                    onPressed: () {
+                      favoriteService.toggleFavorite(anime);
+                      CustomStatusIndicator.show(
+                        context,
+                        isFavorite ? 'Removed from favorites' : 'Added to favorites',
+                        isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
+                      );
+                    },
                     icon: Icon(
                       isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                       color: isFavorite ? Colors.red : colorScheme.onSurfaceVariant,
