@@ -163,64 +163,9 @@ class ListAppBar extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _BottomOutlinePainter(
-                  color: colorScheme.primary.withValues(alpha: 0.5),
-                  radius: currentRadius,
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-}
-
-class _BottomOutlinePainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  final double strokeWidth;
-
-  _BottomOutlinePainter({
-    required this.color,
-    required this.radius,
-    this.strokeWidth = 1.8,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    if (radius > 0) {
-      path.moveTo(0, size.height - radius);
-      path.arcToPoint(
-        Offset(radius, size.height),
-        radius: Radius.circular(radius),
-        clockwise: false,
-      );
-      path.lineTo(size.width - radius, size.height);
-      path.arcToPoint(
-        Offset(size.width, size.height - radius),
-        radius: Radius.circular(radius),
-        clockwise: false,
-      );
-    } else {
-      path.moveTo(0, size.height);
-      path.lineTo(size.width, size.height);
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _BottomOutlinePainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }

@@ -34,9 +34,9 @@ class DetailActionRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: colorScheme.primary.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -61,13 +61,6 @@ class DetailActionRow extends StatelessWidget {
         height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 0),
-            ),
-          ],
         ),
         child: GlassContainer(
           borderRadius: 16,
@@ -75,8 +68,8 @@ class DetailActionRow extends StatelessWidget {
           blur: 10,
           withBlur: useGlass,
           border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.5),
-            width: 2,
+            color: colorScheme.primary.withValues(alpha: 0.2),
+            width: 1.5,
           ),
           child: InkWell(
             onTap: onPlayTap,
