@@ -79,6 +79,32 @@ class _ListSearchBarState extends State<ListSearchBar> with WidgetsBindingObserv
     super.dispose();
   }
 
+  Widget _buildSearchIcon(ColorScheme colorScheme, {double size = 20}) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.05),
+            blurRadius: 4,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Icon(
+        Icons.search_rounded,
+        color: colorScheme.primary,
+        size: size,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -162,9 +188,9 @@ class _ListSearchBarState extends State<ListSearchBar> with WidgetsBindingObserv
                                         color: colorScheme.primary.withValues(alpha: 0.6),
                                       ),
                                       border: InputBorder.none,
-                                      prefixIcon: Icon(
-                                        Icons.search_rounded,
-                                        color: colorScheme.primary,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: _buildSearchIcon(colorScheme, size: 16),
                                       ),
                                       suffixIcon: IconButton(
                                         padding: EdgeInsets.zero,
@@ -219,16 +245,12 @@ class _ListSearchBarState extends State<ListSearchBar> with WidgetsBindingObserv
                               style: TextStyle(
                                 color: colorScheme.primary,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 13,
-                                letterSpacing: 1.2,
+                                fontSize: 12,
+                                letterSpacing: 2.0,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.search_rounded,
-                              color: colorScheme.primary.withValues(alpha: 0.7),
-                              size: 24,
-                            ),
+                            const SizedBox(width: 12),
+                            _buildSearchIcon(colorScheme, size: 20),
                           ],
                         ),
                       ),

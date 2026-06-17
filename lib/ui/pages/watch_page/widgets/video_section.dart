@@ -212,7 +212,35 @@ class VideoSection extends StatelessWidget {
                 child: Video(
                   key: videoKey,
                   controller: controller!,
-                  controls: MaterialVideoControls,
+                  controls: (state) => Stack(
+                    children: [
+                      MaterialVideoControls(state),
+                      Positioned.fill(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Row(
+                              children: [
+                                const Spacer(flex: 3),
+                                Expanded(
+                                  flex: 4,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onVerticalDragEnd: (details) {
+                                      if (details.primaryVelocity != null &&
+                                          details.primaryVelocity!.abs() > 300) {
+                                        state.toggleFullscreen();
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const Spacer(flex: 3),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else

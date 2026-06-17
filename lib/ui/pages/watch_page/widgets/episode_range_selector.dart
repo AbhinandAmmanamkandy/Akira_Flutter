@@ -23,7 +23,7 @@ class EpisodeRangeSelector extends StatelessWidget {
 
     return Container(
       height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.only(top: 8, bottom: 20),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),

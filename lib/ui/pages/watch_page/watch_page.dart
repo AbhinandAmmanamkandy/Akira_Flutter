@@ -407,6 +407,8 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                         ),
                         ),
 
+                        const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
                         // Range Selector
                         SliverToBoxAdapter(
                           child: EpisodeRangeSelector(

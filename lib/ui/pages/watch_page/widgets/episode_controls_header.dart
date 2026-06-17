@@ -22,7 +22,7 @@ class EpisodeControlsHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
         children: [
           if (totalEpisodes != null) ...[
