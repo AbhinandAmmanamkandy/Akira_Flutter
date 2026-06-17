@@ -35,6 +35,15 @@ class ThemeService extends ChangeNotifier {
   bool _useOverscrollToClose = true;
   bool get useOverscrollToClose => _useOverscrollToClose;
   
+  bool _isFirstOpen = true;
+  bool get isFirstOpen => _isFirstOpen;
+
+  String _username = '';
+  String get username => _username;
+
+  String _gender = ''; // 'male', 'female', or ''
+  String get gender => _gender;
+  
   int? _lastSystemAccentColor;
   int? get lastSystemAccentColor => _lastSystemAccentColor;
 
@@ -48,11 +57,24 @@ class ThemeService extends ChangeNotifier {
     _allowUnknown = _prefs.getBool('allowUnknown') ?? false;
     _useGlassTheme = _prefs.getBool('useGlassTheme') ?? false;
     _useOverscrollToClose = _prefs.getBool('useOverscrollToClose') ?? true;
+    _isFirstOpen = _prefs.getBool('isFirstOpen') ?? true;
+    _username = _prefs.getString('username') ?? '';
+    _gender = _prefs.getString('gender') ?? '';
     _lastSystemAccentColor = _prefs.getInt('lastSystemAccentColor');
     
     final themeModeIndex = _prefs.getInt('themeMode') ?? 0;
     _themeMode = ThemeMode.values[themeModeIndex];
     
+    notifyListeners();
+  }
+
+  void completeFirstOpen(String name, String gender) {
+    _isFirstOpen = false;
+    _username = name;
+    _gender = gender;
+    _prefs.setBool('isFirstOpen', false);
+    _prefs.setString('username', name);
+    _prefs.setString('gender', gender);
     notifyListeners();
   }
 

@@ -60,7 +60,9 @@ class SettingsPage extends StatelessWidget {
                           SettingsTile(
                             icon: Icons.person_outline_rounded,
                             title: 'Profile',
-                            subtitle: 'Edit your profile info',
+                            subtitle: themeService.username.isNotEmpty 
+                                ? themeService.username 
+                                : 'Edit your profile info',
                             onTap: () {},
                           ),
                           const SettingsDivider(),
