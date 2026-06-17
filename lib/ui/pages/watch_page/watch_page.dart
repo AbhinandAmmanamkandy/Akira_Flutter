@@ -39,6 +39,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
   late final TabController _tabController;
   final AllAnimeApi _api = AllAnimeApi();
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey<VideoState> _videoKey = GlobalKey<VideoState>();
   StreamSubscription? _posSubscription;
 
   String? _videoUrl;
@@ -304,6 +305,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
 
               SafeArea(
                 child: OverscrollDismissGesture(
+                  onDismiss: () => _videoKey.currentState?.toggleFullscreen(),
                   child: CustomScrollView(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(
@@ -313,6 +315,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                       // Video Section
                       SliverToBoxAdapter(
                         child: VideoSection(
+                          videoKey: _videoKey,
                           controller: controller,
                           isLoading: _isLoading,
                           errorMessage: _error,

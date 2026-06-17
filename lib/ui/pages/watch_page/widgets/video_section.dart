@@ -4,6 +4,7 @@ import '../../../widgets/glass_container.dart';
 
 class VideoSection extends StatelessWidget {
   final VideoController? controller;
+  final GlobalKey<VideoState>? videoKey;
   final bool isLoading;
   final bool isBuffering;
   final String? errorMessage;
@@ -15,6 +16,7 @@ class VideoSection extends StatelessWidget {
 
   const VideoSection({
     super.key,
+    this.videoKey,
     required this.controller,
     required this.isLoading,
     this.isBuffering = false,
@@ -108,6 +110,7 @@ class VideoSection extends StatelessWidget {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     ),
                     const Spacer(),
+                    const MaterialFullscreenButton(),
                   ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
@@ -123,7 +126,6 @@ class VideoSection extends StatelessWidget {
                       style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
-                    const MaterialFullscreenButton(),
                   ],
                 ),
                 fullscreen: MaterialVideoControlsThemeData(
@@ -136,6 +138,16 @@ class VideoSection extends StatelessWidget {
                   seekOnDoubleTap: true,
                   volumeGesture: true,
                   brightnessGesture: true,
+                  topButtonBar: [
+                    const Spacer(),
+                    const MaterialFullscreenButton(),
+                  ],
+                  bottomButtonBar: [
+                    const MaterialPositionIndicator(
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                  ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
                     const MaterialSkipPreviousButton(iconSize: 48),
@@ -147,6 +159,7 @@ class VideoSection extends StatelessWidget {
                   ],
                 ),
                 child: Video(
+                  key: videoKey,
                   controller: controller!,
                   controls: MaterialVideoControls,
                 ),
