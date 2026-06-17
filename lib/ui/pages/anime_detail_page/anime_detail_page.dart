@@ -14,6 +14,7 @@ import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
 import 'widgets/detail_description_section.dart';
 import 'widgets/detail_tags_row.dart';
+import 'widgets/detail_related_section.dart';
 import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeDetailPage extends StatefulWidget {
@@ -141,6 +142,8 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                   DetailMetadataBar(details: details),
                                   const SizedBox(height: 24),
                                   DetailDescriptionSection(description: details.description),
+                                  const SizedBox(height: 24),
+                                  DetailRelatedSection(relatedShows: details.relatedShows),
                                   const SizedBox(height: 100),
                                 ],
                               ),
