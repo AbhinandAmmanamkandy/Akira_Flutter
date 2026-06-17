@@ -31,12 +31,36 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   final AnimeService _animeService = AnimeService();
   final FavoriteService _favoriteService = FavoriteService();
   final HistoryService _historyService = HistoryService();
+  final ScrollController _scrollController = ScrollController();
+  bool _isCollapsed = false;
 
   @override
   void initState() {
     super.initState();
     _detailsFuture = _animeService.fetchAnimeDetails(widget.anime.id);
     _historyService.init();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    
+    // expandedHeight (400) - toolbarHeight (56) - status bar height (~30-40)
+    final threshold = 400 - kToolbarHeight - MediaQuery.of(context).padding.top - 20;
+    final isCollapsed = _scrollController.offset > threshold;
+    
+    if (isCollapsed != _isCollapsed) {
+      setState(() {
+        _isCollapsed = isCollapsed;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,6 +95,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                 },
                 child: OverscrollDismissGesture(
                   child: CustomScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
                     ),
@@ -78,6 +103,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                       DetailAppBar(
                         anime: widget.anime,
                         isFavorite: isFavorite,
+                        isCollapsed: _isCollapsed,
                         onFavoriteTap: () {
                           _favoriteService.toggleFavorite(widget.anime);
                           CustomStatusIndicator.show(
