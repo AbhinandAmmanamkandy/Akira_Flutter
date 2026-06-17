@@ -61,7 +61,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
       'TIP: Draw an S to initiate global search',
-      'TIP: Draw an F to save to favorites',
+      'TIP: Draw an F to add anime to favorites',
       'TIP: Tap on tags to explore similar worlds',
       'TIP: Scroll down to hide this System Advisory',
     ];
