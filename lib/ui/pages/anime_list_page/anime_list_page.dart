@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:akira/models/anime.dart';
 import 'package:akira/ui/pages/bookmarks_page/bookmarks_page.dart';
 import 'package:akira/ui/pages/anime_detail_page/anime_detail_page.dart';
-import 'widgets/list_search_bar.dart';
+import 'widgets/bottom_search_bar.dart';
 import 'widgets/list_grid.dart';
 import 'widgets/list_state_views.dart';
 import 'package:flutter/material.dart';
@@ -10,11 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:akira/services/anime_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
-import 'package:akira/gestures/search_symbol_gesture.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
+import 'package:akira/ui/widgets/common_chip.dart';
 
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
@@ -34,6 +34,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
   final AnimeService _animeService = AnimeService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   bool _showHint = false;
   String _hintText = '';
@@ -42,7 +43,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
   void initState() {
     super.initState();
     _homeAnimeList = _animeService.fetchAnime();
-    
+
     if (widget.initialSearch != null) {
       _isSearching = true;
       _searchController.text = widget.initialSearch!;
@@ -50,7 +51,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
     } else {
       _animeList = _homeAnimeList;
     }
-    
+
     _scrollController.addListener(_onScroll);
     _initHint();
   }
@@ -60,7 +61,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
-      'TIP: Draw an S to initiate global search',
       'TIP: Draw an F to add anime to favorites',
       'TIP: Tap on tags to explore similar worlds',
       'TIP: Scroll down to hide this System Advisory',
@@ -99,7 +99,16 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   Future<List<Anime>> _fetchByQuery(String query) {
-    final List<String> genres = ['Action', 'Comedy', 'Romance', 'Fantasy'];
+    final List<String> genres = [
+      'Action',
+      'Comedy',
+      'Romance',
+      'Fantasy',
+      'Thriller',
+      'Horror',
+      'Sci-Fi',
+      'Mystery',
+    ];
     if (query.isEmpty) {
       return _homeAnimeList;
     } else if (query.toLowerCase() == 'trending') {
@@ -114,26 +123,16 @@ class _AnimeListPageState extends State<AnimeListPage> {
   void _onSearch(String query) {
     setState(() {
       _showHint = false;
+      _isSearching = query.isNotEmpty;
       _animeList = _fetchByQuery(query);
-    });
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _showHint = false;
-      if (_isSearching) {
-        _isSearching = false;
-        _searchController.clear();
-        _animeList = _homeAnimeList;
-      } else {
-        _isSearching = true;
-      }
+      FocusManager.instance.primaryFocus?.unfocus();
     });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -146,26 +145,17 @@ class _AnimeListPageState extends State<AnimeListPage> {
         final colorScheme = Theme.of(context).colorScheme;
         final useGlass = ThemeService().useGlassTheme;
 
-        return PopScope(
-          canPop: !_isSearching,
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop) return;
-            if (_isSearching) {
-              _toggleSearch();
-            }
-          },
-          child: SearchSymbolGesture(
-            onSymbolDetected: () {
-              if (!_isSearching) {
-                _toggleSearch();
-              }
-            },
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              extendBody: true,
-              body: Container(
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          extendBody: true,
+          body: GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: Container(
               decoration: BoxDecoration(
-                color: AkiraColors.getBackground(colorScheme, Theme.of(context).brightness == Brightness.light),
+                color: AkiraColors.getBackground(
+                  colorScheme,
+                  Theme.of(context).brightness == Brightness.light,
+                ),
               ),
               child: Stack(
                 children: [
@@ -200,7 +190,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                     builder: (context, snapshot) {
                       return OverscrollDismissGesture(
                         onDismiss: () {
-                          FocusScope.of(context).unfocus();
+                          FocusManager.instance.primaryFocus?.unfocus();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -210,12 +200,14 @@ class _AnimeListPageState extends State<AnimeListPage> {
                         },
                         child: CustomScrollView(
                           controller: _scrollController,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           physics: const AlwaysScrollableScrollPhysics(
                             parent: BouncingScrollPhysics(),
                           ),
                           slivers: [
                             ListAppBar(appBarOpacity: _appBarOpacity),
-                            
+
                             // Tooltip Hint Banner
                             SliverToBoxAdapter(
                               child: ScaleFadeVisibility(
@@ -224,71 +216,116 @@ class _AnimeListPageState extends State<AnimeListPage> {
                               ),
                             ),
 
-                            if (snapshot.connectionState == ConnectionState.waiting)
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting)
                               const SliverFillRemaining(
-                                child: Center(child: CircularProgressIndicator()),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                               )
                             else if (snapshot.hasError)
                               ListErrorView(
                                 error: snapshot.error,
                                 onRetry: () => setState(() {
-                                  _animeList = _fetchByQuery(_searchController.text);
+                                  _animeList = _fetchByQuery(
+                                    _searchController.text,
+                                  );
                                 }),
                               )
-                            else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                            else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty)
                               ListEmptyView(
                                 isSearching: _isSearching,
                                 onClearSearch: () {
                                   _searchController.clear();
-                                  _toggleSearch();
+                                  _onSearch('');
                                 },
                               )
                             else
                               ListGrid(
                                 animeList: snapshot.data!,
                                 onAnimeTap: (anime) async {
-                                  if (_isSearching) {
-                                    _toggleSearch();
-                                    FocusScope.of(context).unfocus();
-                                    await Future.delayed(const Duration(milliseconds: 100));
-                                  } else {
-                                    FocusScope.of(context).unfocus();
-                                  }
-                                  
+                                  FocusManager.instance.primaryFocus?.unfocus();
+
                                   if (!mounted) return;
 
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => AnimeDetailPage(anime: anime),
+                                      builder: (context) =>
+                                          AnimeDetailPage(anime: anime),
                                     ),
                                   );
                                 },
                               ),
                             const SliverToBoxAdapter(
-                              child: SizedBox(height: 130), // Space for the bottom search bar
+                              child: SizedBox(height: 100),
                             ),
                           ],
                         ),
                       );
                     },
                   ),
-                  ListSearchBar(
+                  _buildFloatingFilterChips(colorScheme),
+                  BottomSearchBar(
                     controller: _searchController,
-                    isExpanded: _isSearching,
-                    onExpand: _toggleSearch,
+                    focusNode: _searchFocusNode,
                     onSearch: _onSearch,
-                    onChanged: (value) {
-                      setState(() {});
+                    onChanged: (value) => setState(() {}),
+                    onClear: () {
+                      setState(() {
+                        _isSearching = false;
+                        _animeList = _homeAnimeList;
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      });
                     },
                   ),
                 ],
               ),
             ),
           ),
-        ),
         );
       },
+    );
+  }
+
+  Widget _buildFloatingFilterChips(ColorScheme colorScheme) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    return Positioned(
+      bottom: bottomInset + 90,
+      left: 0,
+      right: 0,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            CommonChip(
+              label: 'Trending',
+              icon: Icons.trending_up_rounded,
+              color: colorScheme.primary,
+              onTap: () {
+                _searchController.text = 'Trending';
+                _onSearch('Trending');
+              },
+            ),
+            const SizedBox(width: 8),
+            ...['Action', 'Comedy', 'Romance', 'Fantasy', 'Horror'].map(
+              (genre) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: CommonChip(
+                  label: genre,
+                  onTap: () {
+                    _searchController.text = genre;
+                    _onSearch(genre);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

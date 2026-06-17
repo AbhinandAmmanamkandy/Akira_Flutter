@@ -44,11 +44,12 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    
+
     // expandedHeight (400) - toolbarHeight (56) - status bar height (~30-40)
-    final threshold = 400 - kToolbarHeight - MediaQuery.of(context).padding.top - 20;
+    final threshold =
+        400 - kToolbarHeight - MediaQuery.of(context).padding.top - 20;
     final isCollapsed = _scrollController.offset > threshold;
-    
+
     if (isCollapsed != _isCollapsed) {
       setState(() {
         _isCollapsed = isCollapsed;
@@ -69,119 +70,145 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     final themeService = ThemeService();
 
     return ListenableBuilder(
-      listenable: Listenable.merge([themeService, _favoriteService, _historyService]),
+      listenable: Listenable.merge([
+        themeService,
+        _favoriteService,
+        _historyService,
+      ]),
       builder: (context, _) {
         final useGlass = themeService.useGlassTheme;
         final isFavorite = _favoriteService.isFavorite(widget.anime.id);
         final history = _historyService.getHistory(widget.anime.id);
 
         return Scaffold(
-          body: Stack(
-            children: [
-              if (useGlass)
-                Positioned.fill(
-                  child: Container(
-                    color: colorScheme.surface,
-                  ),
-                ),
-              FSymbolGesture(
-                onSymbolDetected: () {
-                  _favoriteService.toggleFavorite(widget.anime);
-                  CustomStatusIndicator.show(
-                    context,
-                    isFavorite ? 'Removed from favorites' : 'Added to favorites',
-                    isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
-                  );
-                },
-                child: OverscrollDismissGesture(
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    slivers: [
-                      DetailAppBar(
-                        anime: widget.anime,
-                        isFavorite: isFavorite,
-                        isCollapsed: _isCollapsed,
-                        onFavoriteTap: () {
-                          _favoriteService.toggleFavorite(widget.anime);
-                          CustomStatusIndicator.show(
-                            context,
-                            isFavorite ? 'Removed from favorites' : 'Added to favorites',
-                            isFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
-                          );
-                        },
+          body: GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: Stack(
+              children: [
+                if (useGlass)
+                  Positioned.fill(child: Container(color: colorScheme.surface)),
+                FSymbolGesture(
+                  onSymbolDetected: () {
+                    _favoriteService.toggleFavorite(widget.anime);
+                    CustomStatusIndicator.show(
+                      context,
+                      isFavorite
+                          ? 'Removed from favorites'
+                          : 'Added to favorites',
+                      isFavorite
+                          ? Icons.favorite_border_rounded
+                          : Icons.favorite_rounded,
+                    );
+                  },
+                  child: OverscrollDismissGesture(
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
                       ),
-                      SliverToBoxAdapter(
-                        child: FutureBuilder<AnimeDetails?>(
-                          future: _detailsFuture,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const SizedBox(
-                                height: 300,
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            }
-
-                            if (snapshot.hasError || !snapshot.hasData) {
-                              return const SizedBox(
-                                height: 300,
-                                child: Center(child: Text('Failed to load details')),
-                              );
-                            }
-
-                            final details = snapshot.data!;
-
-                            return Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  DetailTagsRow(
-                                    details: details,
-                                    onTagTap: (tag) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => AnimeListPage(initialSearch: tag),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 24),
-                                  DetailActionRow(
-                                    continueEpisode: history?.episode,
-                                    onPlayTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => WatchPage(
-                                            anime: widget.anime,
-                                            details: details,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 24),
-                                  DetailMetadataBar(details: details),
-                                  const SizedBox(height: 24),
-                                  DetailDescriptionSection(description: details.description),
-                                  const SizedBox(height: 24),
-                                  DetailRelatedSection(relatedShows: details.relatedShows),
-                                  const SizedBox(height: 100),
-                                ],
-                              ),
+                      slivers: [
+                        DetailAppBar(
+                          anime: widget.anime,
+                          isFavorite: isFavorite,
+                          isCollapsed: _isCollapsed,
+                          onFavoriteTap: () {
+                            _favoriteService.toggleFavorite(widget.anime);
+                            CustomStatusIndicator.show(
+                              context,
+                              isFavorite
+                                  ? 'Removed from favorites'
+                                  : 'Added to favorites',
+                              isFavorite
+                                  ? Icons.favorite_border_rounded
+                                  : Icons.favorite_rounded,
                             );
                           },
                         ),
-                      ),
-                    ],
+                        SliverToBoxAdapter(
+                          child: FutureBuilder<AnimeDetails?>(
+                            future: _detailsFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const SizedBox(
+                                  height: 300,
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.hasError || !snapshot.hasData) {
+                                return const SizedBox(
+                                  height: 300,
+                                  child: Center(
+                                    child: Text('Failed to load details'),
+                                  ),
+                                );
+                              }
+
+                              final details = snapshot.data!;
+
+                              return Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    DetailTagsRow(
+                                      details: details,
+                                      onTagTap: (tag) {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AnimeListPage(
+                                              initialSearch: tag,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 24),
+                                    DetailActionRow(
+                                      continueEpisode: history?.episode,
+                                      onPlayTap: () {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => WatchPage(
+                                              anime: widget.anime,
+                                              details: details,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 24),
+                                    DetailMetadataBar(details: details),
+                                    const SizedBox(height: 24),
+                                    DetailDescriptionSection(
+                                      description: details.description,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    DetailRelatedSection(
+                                      relatedShows: details.relatedShows,
+                                    ),
+                                    const SizedBox(height: 100),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

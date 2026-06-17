@@ -133,7 +133,10 @@ class ListAppBar extends StatelessWidget {
                         children: [
                           IconButton(
                             tooltip: 'Senpai\'s Picks',
-                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage())),
+                            onPressed: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage()));
+                            },
                             style: IconButton.styleFrom(
                               backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
                               padding: const EdgeInsets.all(12),
@@ -145,7 +148,7 @@ class ListAppBar extends StatelessWidget {
                           const SizedBox(width: 8),
                           IconButton(
                             onPressed: () {
-                              FocusScope.of(context).unfocus();
+                              FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
                             },
                             style: IconButton.styleFrom(
