@@ -205,9 +205,9 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   buttonBarButtonSize: 28.0,
                   buttonBarButtonColor: Colors.white,
                   seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: Colors.white,
+                  seekBarThumbColor: Colors.transparent,
                   seekBarHeight: 4.0,
-                  seekBarThumbSize: 12.0,
+                  seekBarThumbSize: 0.0,
                   seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 28),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 20, right: 12, bottom: 16),
                   topButtonBarMargin: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -362,6 +362,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     const Spacer(flex: 3),
                   ],
                   bottomButtonBar: [
+                    _SeekMarkers(
+                      player: widget.controller!.player,
+                      resumePosition: widget.resumePosition,
+                    ),
                     const SizedBox(width: 20),
                     const MaterialPositionIndicator(
                       style: TextStyle(
@@ -376,9 +380,9 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                 ),
                 fullscreen: MaterialVideoControlsThemeData(
                   seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: Colors.white,
+                  seekBarThumbColor: Colors.transparent,
                   seekBarHeight: 5.0,
-                  seekBarThumbSize: 14.0,
+                  seekBarThumbSize: 0.0,
                   seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 40),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 32, right: 24, bottom: 24),
                   topButtonBarMargin: const EdgeInsets.only(left: 24, right: 24, top: 24),
@@ -463,10 +467,15 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     const MaterialFullscreenButton(),
                   ],
                   bottomButtonBar: [
+                    _SeekMarkers(
+                      player: widget.controller!.player,
+                      resumePosition: widget.resumePosition,
+                    ),
+                    const SizedBox(width: 20),
                     const MaterialPositionIndicator(
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
@@ -508,28 +517,25 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   controls: (state) => Stack(
                     children: [
                       MaterialVideoControls(state),
+                      // Vertical Drag for Fullscreen Toggle
                       Positioned.fill(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Row(
-                              children: [
-                                const Spacer(flex: 3),
-                                Expanded(
-                                  flex: 4,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    onVerticalDragEnd: (details) {
-                                      if (details.primaryVelocity != null &&
-                                          details.primaryVelocity!.abs() > 300) {
-                                        state.toggleFullscreen();
-                                      }
-                                    },
-                                  ),
-                                ),
-                                const Spacer(flex: 3),
-                              ],
-                            );
-                          },
+                        child: Row(
+                          children: [
+                            const Spacer(flex: 3),
+                            Expanded(
+                              flex: 4,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onVerticalDragEnd: (details) {
+                                  if (details.primaryVelocity != null &&
+                                      details.primaryVelocity!.abs() > 300) {
+                                    state.toggleFullscreen();
+                                  }
+                                },
+                              ),
+                            ),
+                            const Spacer(flex: 3),
+                          ],
                         ),
                       ),
                     ],
@@ -750,6 +756,125 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
         size: widget.size * 0.6,
         color: widget.colorScheme.onPrimary,
       ),
+    );
+  }
+}
+
+class _SeekMarkers extends StatelessWidget {
+  final Player player;
+  final Duration? resumePosition;
+
+  const _SeekMarkers({
+    required this.player,
+    this.resumePosition,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final videoState = VideoStateInheritedWidget.of(context).state;
+    final isFullscreen = videoState.isFullscreen();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return StreamBuilder<Duration>(
+      stream: player.stream.duration,
+      builder: (context, snapshot) {
+        final duration = snapshot.data ?? player.state.duration;
+        if (duration.inMilliseconds <= 0) return const SizedBox.shrink();
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = MediaQuery.of(context).size.width;
+
+            // Media-kit default seek bar values
+            final seekBarMargin = isFullscreen 
+                ? const EdgeInsets.only(left: 32, right: 32, bottom: 40)
+                : const EdgeInsets.only(left: 20, right: 20, bottom: 28);
+            
+            // Button bar margin
+            final barLeft = isFullscreen ? 32.0 : 20.0;
+            final barBottom = isFullscreen ? 24.0 : 16.0;
+
+            final seekBarHeight = isFullscreen ? 5.0 : 4.0;
+            final availableWidth = screenWidth - seekBarMargin.horizontal;
+
+            // Horizontal distance from button bar left to seek bar left
+            final dx = seekBarMargin.left - barLeft;
+
+            // Final attempt at vertical alignment:
+            // We use a much larger downward offset. 
+            // In Flutter, bottom: -X moves the widget DOWN from the bottom edge of the parent.
+            final dy = (seekBarMargin.bottom - barBottom) + (seekBarHeight / 2) - 28;
+
+            return SizedBox(
+              width: 0,
+              height: 0,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: dx,
+                    bottom: dy,
+                    child: SizedBox(
+                      width: availableWidth,
+                      height: 0,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // Resume Position Marker (2px)
+                          if (resumePosition != null)
+                            Builder(builder: (context) {
+                              final ratio = (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+                              return Positioned(
+                                left: availableWidth * ratio - 1,
+                                bottom: -4,
+                                child: Container(
+                                  width: 2,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              );
+                            }),
+                          // Current Position Marker (4px)
+                          StreamBuilder<Duration>(
+                            stream: player.stream.position,
+                            builder: (context, snapshot) {
+                              final position = snapshot.data ?? player.state.position;
+                              final ratio = (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+                              return Positioned(
+                                left: availableWidth * ratio - 2,
+                                bottom: -10,
+                                child: Container(
+                                  width: 4,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
