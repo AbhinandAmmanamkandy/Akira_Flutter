@@ -1,13 +1,15 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'theme_service.dart';
 import '../models/anime.dart';
 import '../models/anime_details.dart';
+import 'package:http/http.dart' as http;
 
 class NoInternetException implements Exception {
   final String message;
+
   NoInternetException([this.message = 'No internet connection']);
+
   @override
   String toString() => message;
 }
@@ -17,11 +19,11 @@ class AnimeService {
   static const String _baseUrl = 'https://api.allanime.day/api';
 
   Map<String, String> _headers() => {
-        'Content-Type': 'application/json',
-        'Referer': 'https://youtu-chan.com',
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-      };
+    'Content-Type': 'application/json',
+    'Referer': 'https://youtu-chan.com',
+    'sec-ch-ua': '"Microsoft Edge";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+  };
 
   Future<http.Response> _post(
     String query, {
@@ -30,10 +32,7 @@ class AnimeService {
     return await http.post(
       Uri.parse(_baseUrl),
       headers: _headers(),
-      body: jsonEncode({
-        'variables': variables,
-        'query': query,
-      }),
+      body: jsonEncode({'variables': variables, 'query': query}),
     );
   }
 
@@ -49,7 +48,8 @@ class AnimeService {
     const String queryFields =
         'shows(search: \$search, limit: \$limit, page: \$page, translationType: \$translationType, countryOrigin: \$countryOrigin)';
 
-    const String query = '''
+    const String query =
+        '''
       query($queryTypes) {
         $queryFields {
           edges {
@@ -77,10 +77,7 @@ class AnimeService {
     };
 
     try {
-      final response = await _post(
-        query,
-        variables: variables,
-      );
+      final response = await _post(query, variables: variables);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -96,6 +93,40 @@ class AnimeService {
       throw NoInternetException();
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<List<Anime>> fetchAnimeWithIds(List<String> ids) async {
+    const String query = r'''
+      query($ids: [String!]!) {
+        showsWithIds(ids: $ids) {
+          _id
+          name
+          englishName
+          thumbnail
+          lastEpisodeInfo
+          rating
+          status
+        }
+      }
+    ''';
+
+    try {
+      final response = await _post(query, variables: {'ids': ids});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] == null || data['data']['showsWithIds'] == null) {
+          return [];
+        }
+        final List shows = data['data']['showsWithIds'];
+        return shows.map((e) => Anime.fromJson(e)).toList();
+      }
+      return [];
+    } on SocketException {
+      throw NoInternetException();
+    } catch (e) {
+      return [];
     }
   }
 
@@ -117,13 +148,10 @@ class AnimeService {
           relatedShows
         }
       }
-    ''' ;
+    ''';
 
     try {
-      final response = await _post(
-        query,
-        variables: {'id': id},
-      );
+      final response = await _post(query, variables: {'id': id});
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
