@@ -11,12 +11,7 @@ class DetailRelatedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final relevantShows = relatedShows.where((show) {
-      final rel = show.relation.toLowerCase();
-      return rel == 'sequel' || rel == 'prequel';
-    }).toList();
-
-    if (relevantShows.isEmpty) return const SizedBox.shrink();
+    if (relatedShows.isEmpty) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -49,7 +44,7 @@ class DetailRelatedSection extends StatelessWidget {
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: relevantShows.map((show) {
+          children: relatedShows.map((show) {
             return _RelatedShowTile(show: show);
           }).toList(),
         ),
@@ -66,8 +61,39 @@ class _RelatedShowTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isSequel = show.relation.toLowerCase() == 'sequel';
-    final accentColor = isSequel ? Colors.green : Colors.blue;
+    final rel = show.relation.toLowerCase();
+    
+    Color accentColor;
+    IconData icon;
+    
+    if (rel == 'sequel') {
+      accentColor = Colors.green;
+      icon = Icons.arrow_forward_rounded;
+    } else if (rel == 'prequel') {
+      accentColor = Colors.blue;
+      icon = Icons.arrow_back_rounded;
+    } else if (rel == 'summary') {
+      accentColor = Colors.teal;
+      icon = Icons.summarize_rounded;
+    } else if (rel.contains('alternative') || rel.contains('alt')) {
+      accentColor = Colors.indigo;
+      icon = Icons.swap_horiz_rounded;
+    } else if (rel.contains('side story') || rel.contains('sidestory')) {
+      accentColor = Colors.purple;
+      icon = Icons.auto_stories_rounded;
+    } else if (rel.contains('spin-off') || rel.contains('spinoff')) {
+      accentColor = Colors.orange;
+      icon = Icons.alt_route_rounded;
+    } else if (rel.contains('full story')) {
+      accentColor = Colors.cyan;
+      icon = Icons.library_books_rounded;
+    } else if (rel == 'other') {
+      accentColor = Colors.blueGrey;
+      icon = Icons.more_horiz_rounded;
+    } else {
+      accentColor = colorScheme.primary;
+      icon = Icons.link_rounded;
+    }
 
     return FutureBuilder<AnimeDetails?>(
       future: AnimeService().fetchAnimeDetails(show.showId),
@@ -88,7 +114,7 @@ class _RelatedShowTile extends StatelessWidget {
               : null,
           child: SizedBox(
             width: (MediaQuery.of(context).size.width - 52) / 2,
-            height: 66, // Reduced height to decrease middle gap
+            height: 66,
             child: GlassContainer(
               borderRadius: 16,
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -99,24 +125,28 @@ class _RelatedShowTile extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: accentColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          show.relation.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w900,
-                            color: accentColor,
-                            letterSpacing: 0.5,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            show.relation.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              color: accentColor,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
                       Icon(
-                        isSequel ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded,
+                        icon,
                         size: 14,
                         color: accentColor.withValues(alpha: 0.5),
                       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/glass_container.dart';
 import '../../../../services/theme_service.dart';
+import '../../../../services/anime_service.dart';
 
 class ListErrorView extends StatelessWidget {
   final Object? error;
@@ -16,6 +17,8 @@ class ListErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
+    
+    final bool isNoInternet = error is NoInternetException;
 
     return SliverFillRemaining(
       hasScrollBody: false,
@@ -30,15 +33,21 @@ class ListErrorView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline_rounded, size: 64, color: colorScheme.error),
+                Icon(
+                  isNoInternet ? Icons.wifi_off_rounded : Icons.error_outline_rounded, 
+                  size: 64, 
+                  color: colorScheme.error,
+                ),
                 const SizedBox(height: 24),
                 Text(
-                  'Something went wrong',
+                  isNoInternet ? 'No Connection' : 'Something went wrong',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  error.toString(),
+                  isNoInternet 
+                      ? 'Please check your internet connection and try again.' 
+                      : error.toString(),
                   textAlign: TextAlign.center,
                   style: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),

@@ -139,10 +139,44 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                               }
 
                               if (snapshot.hasError || !snapshot.hasData) {
-                                return const SizedBox(
+                                final bool isNoInternet = snapshot.error is NoInternetException;
+                                return SizedBox(
                                   height: 300,
                                   child: Center(
-                                    child: Text('Failed to load details'),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          isNoInternet ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
+                                          size: 48,
+                                          color: colorScheme.error,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          isNoInternet 
+                                              ? 'No Internet Connection' 
+                                              : 'Failed to load details',
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        if (isNoInternet) ...[
+                                          const SizedBox(height: 8),
+                                          const Text(
+                                            'Please check your connection and try again',
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                        ],
+                                        const SizedBox(height: 24),
+                                        FilledButton.tonalIcon(
+                                          onPressed: () {
+                                            setState(() {
+                                              _detailsFuture = _animeService.fetchAnimeDetails(widget.anime.id);
+                                            });
+                                          },
+                                          icon: const Icon(Icons.refresh_rounded),
+                                          label: const Text('Retry'),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               }

@@ -1,8 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'theme_service.dart';
 import '../models/anime.dart';
 import '../models/anime_details.dart';
+
+class NoInternetException implements Exception {
+  final String message;
+  NoInternetException([this.message = 'No internet connection']);
+  @override
+  String toString() => message;
+}
 
 class AnimeService {
   final ThemeService _settings = ThemeService();
@@ -84,6 +92,8 @@ class AnimeService {
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
+    } on SocketException {
+      throw NoInternetException();
     } catch (e) {
       rethrow;
     }
@@ -123,6 +133,8 @@ class AnimeService {
         return AnimeDetails.fromJson(data['data']['show']);
       }
       return null;
+    } on SocketException {
+      throw NoInternetException();
     } catch (e) {
       return null;
     }
@@ -168,6 +180,8 @@ class AnimeService {
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
+    } on SocketException {
+      throw NoInternetException();
     } catch (e) {
       return [];
     }
