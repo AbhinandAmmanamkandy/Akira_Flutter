@@ -800,10 +800,11 @@ class _SeekMarkers extends StatelessWidget {
             // Horizontal distance from button bar left to seek bar left
             final dx = seekBarMargin.left - barLeft;
 
-            // Final attempt at vertical alignment:
-            // We use a much larger downward offset. 
-            // In Flutter, bottom: -X moves the widget DOWN from the bottom edge of the parent.
-            final dy = (seekBarMargin.bottom - barBottom) + (seekBarHeight / 2) - 28;
+            // Derived Math Equation for Universal Alignment:
+            // The markers are hosted in the button bar which has a standard height (usually 56px).
+            // We calculate the distance from the center of that bar to the center of the seekbar.
+            const buttonBarHeight = 56.0;
+            final dy = (seekBarMargin.bottom - barBottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
 
             return SizedBox(
               width: 0,
