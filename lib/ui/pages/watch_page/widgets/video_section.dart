@@ -198,7 +198,8 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                 ),
               )
             else if (widget.controller != null)
-              MaterialVideoControlsTheme(
+              LayoutBuilder(
+                builder: (context, constraints) => MaterialVideoControlsTheme(
                 normal: MaterialVideoControlsThemeData(
                   visibleOnMount: true,
                   backdropColor: Colors.black.withValues(alpha: 0.5),
@@ -365,6 +366,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     _SeekMarkers(
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
+                      videoWidth: constraints.maxWidth,
                     ),
                     const SizedBox(width: 20),
                     const MaterialPositionIndicator(
@@ -512,6 +514,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     _SeekMarkers(
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
+                      videoWidth: null,
                     ),
                     const SizedBox(width: 20),
                     const MaterialPositionIndicator(
@@ -583,8 +586,9 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     ],
                   ),
                 ),
-              )
-            else
+              ),
+            )
+          else
               IconButton(
                 icon: const Icon(Icons.play_circle_filled, size: 64, color: Colors.white),
                 onPressed: widget.onRetry,
@@ -805,10 +809,12 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
 class _SeekMarkers extends StatelessWidget {
   final Player player;
   final Duration? resumePosition;
+  final double? videoWidth;
 
   const _SeekMarkers({
     required this.player,
     this.resumePosition,
+    this.videoWidth,
   });
 
   @override
@@ -825,7 +831,11 @@ class _SeekMarkers extends StatelessWidget {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final screenWidth = MediaQuery.of(context).size.width;
+            final mq = MediaQuery.of(context);
+            // In many layouts, the video player is constrained by the safe area (notches, etc.)
+            // We use the smaller of the passed videoWidth and the available screen width minus padding.
+            final screenWidth = mq.size.width - mq.padding.horizontal;
+            final width = (isFullscreen ? screenWidth : (videoWidth ?? screenWidth)).clamp(0.0, screenWidth);
 
             // Media-kit default seek bar values
             final seekBarMargin = isFullscreen 
@@ -837,14 +847,12 @@ class _SeekMarkers extends StatelessWidget {
             final barBottom = isFullscreen ? 24.0 : 16.0;
 
             final seekBarHeight = isFullscreen ? 5.0 : 4.0;
-            final availableWidth = screenWidth - seekBarMargin.horizontal;
+            final availableWidth = width - seekBarMargin.horizontal;
 
             // Horizontal distance from button bar left to seek bar left
             final dx = seekBarMargin.left - barLeft;
 
             // Derived Math Equation for Universal Alignment:
-            // The markers are hosted in the button bar which has a standard height (usually 56px).
-            // We calculate the distance from the center of that bar to the center of the seekbar.
             const buttonBarHeight = 56.0;
             final dy = (seekBarMargin.bottom - barBottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
 
