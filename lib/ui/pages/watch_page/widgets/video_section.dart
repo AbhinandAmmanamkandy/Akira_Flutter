@@ -463,7 +463,49 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     ),
                   ),
                   topButtonBar: [
-                    const Spacer(),
+                    MaterialCustomButton(
+                      onPressed: widget.onBack,
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    if (widget.animeTitle != null)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.animeTitle!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (widget.episodeNumber != null)
+                              Text(
+                                'EPISODE ${widget.episodeNumber}',
+                                style: TextStyle(
+                                  color: colorScheme.primary.withValues(alpha: 0.9),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                          ],
+                        ),
+                      )
+                    else
+                      const Spacer(),
                     const MaterialFullscreenButton(),
                   ],
                   bottomButtonBar: [
