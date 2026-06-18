@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -129,10 +132,37 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
           alignment: Alignment.center,
           children: [
             if (widget.isLoading)
-              const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: Colors.white,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 4,
+                          color: colorScheme.primary,
+                          backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'PREPARING STREAM',
+                      style: TextStyle(
+                        color: colorScheme.primary.withValues(alpha: 0.8),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
                 ),
               )
             else if (widget.errorMessage != null)
@@ -171,16 +201,16 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
               MaterialVideoControlsTheme(
                 normal: MaterialVideoControlsThemeData(
                   visibleOnMount: true,
-                  backdropColor: Colors.black.withValues(alpha: 0.45),
-                  buttonBarButtonSize: 24.0,
+                  backdropColor: Colors.black.withValues(alpha: 0.5),
+                  buttonBarButtonSize: 28.0,
                   buttonBarButtonColor: Colors.white,
                   seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: colorScheme.primary,
+                  seekBarThumbColor: Colors.white,
                   seekBarHeight: 4.0,
-                  seekBarThumbSize: 14.0,
-                  seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 24),
+                  seekBarThumbSize: 12.0,
+                  seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 28),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 20, right: 12, bottom: 16),
-                  topButtonBarMargin: const EdgeInsets.only(left: 12, right: 12, top: 12),
+                  topButtonBarMargin: const EdgeInsets.only(left: 16, right: 16, top: 16),
                   seekOnDoubleTap: true,
                   volumeGesture: true,
                   brightnessGesture: true,
@@ -198,12 +228,78 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     } catch (_) {}
                     widget.controller?.player.setVolume(value * 100);
                   },
+                  bufferingIndicatorBuilder: (context) => Center(
+                    child: GlassContainer(
+                      borderRadius: 100,
+                      padding: const EdgeInsets.fromLTRB(12, 12, 24, 12),
+                      withBlur: true,
+                      opacity: 0.2,
+                      blur: 20,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: colorScheme.primary,
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'BUFFERING',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              Text(
+                                'Please wait...',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   topButtonBar: [
                     MaterialCustomButton(
                       onPressed: widget.onBack,
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     if (widget.animeTitle != null)
                       Expanded(
                         child: Column(
@@ -214,18 +310,20 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                               widget.animeTitle!,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (widget.episodeNumber != null)
                               Text(
-                                'Episode ${widget.episodeNumber}',
+                                'EPISODE ${widget.episodeNumber}',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.primary.withValues(alpha: 0.9),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                           ],
@@ -237,15 +335,132 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
-                    const MaterialSkipPreviousButton(iconSize: 32),
-                    const Spacer(),
-                    MaterialPlayOrPauseButton(
-                      iconSize: 52.0,
-                      iconColor: colorScheme.primary,
+                    MaterialCustomButton(
+                      onPressed: () {
+                        final current = widget.controller?.player.state.position ?? Duration.zero;
+                        widget.controller?.player.seek(current - const Duration(seconds: 10));
+                      },
+                      icon: const Icon(Icons.replay_10_rounded, size: 32, color: Colors.white),
                     ),
                     const Spacer(),
-                    const MaterialSkipNextButton(iconSize: 32),
+                    MaterialCustomButton(
+                      onPressed: () => widget.controller?.player.playOrPause(),
+                      icon: _ThemedPlayPauseButton(
+                        player: widget.controller?.player,
+                        colorScheme: colorScheme,
+                        size: 64,
+                      ),
+                    ),
+                    const Spacer(),
+                    MaterialCustomButton(
+                      onPressed: () {
+                        final current = widget.controller?.player.state.position ?? Duration.zero;
+                        widget.controller?.player.seek(current + const Duration(seconds: 10));
+                      },
+                      icon: const Icon(Icons.forward_10_rounded, size: 32, color: Colors.white),
+                    ),
                     const Spacer(flex: 3),
+                  ],
+                  bottomButtonBar: [
+                    const SizedBox(width: 20),
+                    const MaterialPositionIndicator(
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+                fullscreen: MaterialVideoControlsThemeData(
+                  seekBarPositionColor: colorScheme.primary,
+                  seekBarThumbColor: Colors.white,
+                  seekBarHeight: 5.0,
+                  seekBarThumbSize: 14.0,
+                  seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 40),
+                  bottomButtonBarMargin: const EdgeInsets.only(left: 32, right: 24, bottom: 24),
+                  topButtonBarMargin: const EdgeInsets.only(left: 24, right: 24, top: 24),
+                  seekOnDoubleTap: true,
+                  volumeGesture: true,
+                  brightnessGesture: true,
+                  initialBrightness: _brightness,
+                  onBrightnessChanged: (value) {
+                    ScreenBrightness().setScreenBrightness(value);
+                  },
+                  onBrightnessReset: () {
+                    ScreenBrightness().resetScreenBrightness();
+                  },
+                  initialVolume: _volume,
+                  onVolumeChanged: (value) {
+                    try {
+                      FlutterVolumeController.setVolume(value);
+                    } catch (_) {}
+                    widget.controller?.player.setVolume(value * 100);
+                  },
+                  bufferingIndicatorBuilder: (context) => Center(
+                    child: GlassContainer(
+                      borderRadius: 100,
+                      padding: const EdgeInsets.fromLTRB(12, 12, 24, 12),
+                      withBlur: true,
+                      opacity: 0.2,
+                      blur: 20,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: colorScheme.primary,
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'BUFFERING',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              Text(
+                                'Please wait...',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  topButtonBar: [
+                    const Spacer(),
+                    const MaterialFullscreenButton(),
                   ],
                   bottomButtonBar: [
                     const MaterialPositionIndicator(
@@ -258,48 +473,32 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     ),
                     const Spacer(),
                   ],
-                ),
-                fullscreen: MaterialVideoControlsThemeData(
-                  seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: colorScheme.primary,
-                  seekBarHeight: 4.5,
-                  seekBarThumbSize: 16.0,
-                  seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 32),
-                  bottomButtonBarMargin: const EdgeInsets.only(left: 32, right: 24, bottom: 20),
-                  seekOnDoubleTap: true,
-                  volumeGesture: true,
-                  brightnessGesture: true,
-                  initialBrightness: _brightness,
-                  onBrightnessChanged: (value) {
-                    ScreenBrightness().setScreenBrightness(value);
-                  },
-                  onBrightnessReset: () {
-                    ScreenBrightness().resetScreenBrightness();
-                  },
-                  initialVolume: _volume,
-                  onVolumeChanged: (value) {
-                    try {
-                      FlutterVolumeController.setVolume(value);
-                    } catch (_) {}
-                    widget.controller?.player.setVolume(value * 100);
-                  },
-                  topButtonBar: [
-                    const Spacer(),
-                    const MaterialFullscreenButton(),
-                  ],
-                  bottomButtonBar: [
-                    const MaterialPositionIndicator(
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                  ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
-                    const MaterialSkipPreviousButton(iconSize: 48),
+                    MaterialCustomButton(
+                      onPressed: () {
+                        final current = widget.controller?.player.state.position ?? Duration.zero;
+                        widget.controller?.player.seek(current - const Duration(seconds: 10));
+                      },
+                      icon: const Icon(Icons.replay_10_rounded, size: 48, color: Colors.white),
+                    ),
                     const Spacer(),
-                    MaterialPlayOrPauseButton(iconSize: 72.0, iconColor: colorScheme.primary),
+                    MaterialCustomButton(
+                      onPressed: () => widget.controller?.player.playOrPause(),
+                      icon: _ThemedPlayPauseButton(
+                        player: widget.controller?.player,
+                        colorScheme: colorScheme,
+                        size: 88,
+                      ),
+                    ),
                     const Spacer(),
-                    const MaterialSkipNextButton(iconSize: 48),
+                    MaterialCustomButton(
+                      onPressed: () {
+                        final current = widget.controller?.player.state.position ?? Duration.zero;
+                        widget.controller?.player.seek(current + const Duration(seconds: 10));
+                      },
+                      icon: const Icon(Icons.forward_10_rounded, size: 48, color: Colors.white),
+                    ),
                     const Spacer(flex: 3),
                   ],
                 ),
@@ -461,6 +660,95 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
 
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ThemedPlayPauseButton extends StatefulWidget {
+  final Player? player;
+  final ColorScheme colorScheme;
+  final double size;
+
+  const _ThemedPlayPauseButton({
+    required this.player,
+    required this.colorScheme,
+    required this.size,
+  });
+
+  @override
+  State<_ThemedPlayPauseButton> createState() => _ThemedPlayPauseButtonState();
+}
+
+class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
+  late bool _isPlaying;
+  StreamSubscription? _playingSub;
+  StreamSubscription? _bufferingSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPlaying = widget.player?.state.playing ?? false;
+    _initSubscriptions();
+  }
+
+  void _initSubscriptions() {
+    _playingSub?.cancel();
+    _bufferingSub?.cancel();
+
+    _playingSub = widget.player?.stream.playing.listen((playing) {
+      if (mounted && _isPlaying != playing) {
+        setState(() => _isPlaying = playing);
+      }
+    });
+
+    // Force refresh playing state when buffering ends
+    _bufferingSub = widget.player?.stream.buffering.listen((buffering) {
+      if (mounted && !buffering) {
+        final currentPlaying = widget.player?.state.playing ?? false;
+        if (_isPlaying != currentPlaying) {
+          setState(() => _isPlaying = currentPlaying);
+        }
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(_ThemedPlayPauseButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.player != oldWidget.player) {
+      _isPlaying = widget.player?.state.playing ?? false;
+      _initSubscriptions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _playingSub?.cancel();
+    _bufferingSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        color: widget.colorScheme.primary,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: widget.colorScheme.primary.withValues(alpha: widget.size > 70 ? 0.4 : 0.3),
+            blurRadius: widget.size > 70 ? 30 : 20,
+            spreadRadius: widget.size > 70 ? 5 : 2,
+          ),
+        ],
+      ),
+      child: Icon(
+        _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+        size: widget.size * 0.6,
+        color: widget.colorScheme.onPrimary,
       ),
     );
   }
