@@ -36,6 +36,11 @@ class SettingsPage extends StatelessWidget {
                     foregroundColor: colorScheme.onSurface,
                     elevation: 0,
                     iconTheme: IconThemeData(color: colorScheme.onSurface),
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: '',
+                    ),
                     flexibleSpace: useGlass 
                       ? const GlassContainer(
                           borderRadius: 0,
