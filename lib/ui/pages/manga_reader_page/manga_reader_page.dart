@@ -28,11 +28,12 @@ class MangaReaderPage extends StatefulWidget {
 class _MangaReaderPageState extends State<MangaReaderPage> {
   final HistoryService _historyService = HistoryService();
   final PageController _pageController = PageController();
+  ScrollPhysics _physics = const BouncingScrollPhysics();
   
   bool _isLoading = true;
   String? _error;
   List<String> _pages = [];
-  int _currentChapter = 1;
+  String _currentChapter = '1';
   int _currentPage = 0;
   bool _showControls = true;
 
@@ -43,11 +44,24 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
       final history = _historyService.getHistory(widget.anime.id);
       if (history != null) {
         setState(() {
-          _currentChapter = history.episode;
+          _currentChapter = history.episode.toString();
           _currentPage = history.position.inSeconds;
         });
+      } else if (widget.details.availableEpisodes.isNotEmpty) {
+        setState(() {
+          // Use the first available chapter if no history
+          _currentChapter = widget.details.availableEpisodes.first;
+        });
       }
-      _loadChapter(_currentChapter.toString(), initialPage: _currentPage);
+      
+      // Double check if _currentChapter exists in availableEpisodes
+      // Sometimes history might have an old chapter
+      if (widget.details.availableEpisodes.isNotEmpty && 
+          !widget.details.availableEpisodes.contains(_currentChapter)) {
+        _currentChapter = widget.details.availableEpisodes.first;
+      }
+
+      _loadChapter(_currentChapter, initialPage: _currentPage);
     });
   }
 
@@ -55,7 +69,7 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
     setState(() {
       _isLoading = true;
       _error = null;
-      _currentChapter = int.tryParse(chapter) ?? 1;
+      _currentChapter = chapter;
     });
 
     try {
@@ -114,7 +128,7 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
   void _saveProgress() {
     _historyService.saveHistory(
       widget.anime.id,
-      _currentChapter,
+      int.tryParse(_currentChapter) ?? 1,
       Duration(seconds: _currentPage),
       force: true,
     );
@@ -147,8 +161,16 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
             MangaPageView(
               pages: _pages,
               controller: _pageController,
+              physics: _physics,
               onPageChanged: _onPageChanged,
               onTap: _toggleControls,
+              onZoomChanged: (isZoomed) {
+                setState(() {
+                  _physics = isZoomed 
+                      ? const NeverScrollableScrollPhysics() 
+                      : const BouncingScrollPhysics();
+                });
+              },
             ),
 
           // Loading Indicator

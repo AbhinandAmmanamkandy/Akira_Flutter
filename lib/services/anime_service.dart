@@ -145,6 +145,7 @@ class AnimeService {
           status
           averageScore
           rating
+          availableEpisodesDetail
           relatedShows
         }
       }

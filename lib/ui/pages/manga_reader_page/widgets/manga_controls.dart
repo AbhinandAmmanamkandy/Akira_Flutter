@@ -7,10 +7,10 @@ import 'package:akira/ui/widgets/glass_container.dart';
 class MangaControls extends StatelessWidget {
   final Anime anime;
   final AnimeDetails details;
-  final int currentChapter;
+  final String currentChapter;
   final int currentPage;
   final int totalPages;
-  final Function(int) onChapterSelected;
+  final Function(String) onChapterSelected;
   final Function(int) onPageSelected;
   final VoidCallback onBack;
 
@@ -53,9 +53,9 @@ class MangaControls extends StatelessWidget {
             currentPage: currentPage,
             totalPages: totalPages,
             currentChapter: currentChapter,
-            totalChapters: int.tryParse(details.lastEpisode ?? '0') ?? 0,
-            onPageSelected: onPageSelected,
+            availableChapters: details.availableEpisodes,
             onChapterSelected: onChapterSelected,
+            onPageSelected: onPageSelected,
             onChaptersTap: () => _showChapterSelection(context),
           ),
         ),
@@ -64,7 +64,7 @@ class MangaControls extends StatelessWidget {
   }
 
   void _showChapterSelection(BuildContext context) {
-    final total = int.tryParse(details.lastEpisode ?? '0') ?? 0;
+    final chapters = details.availableEpisodes;
     final colorScheme = Theme.of(context).colorScheme;
 
     showModalBottomSheet(
@@ -101,13 +101,14 @@ class MangaControls extends StatelessWidget {
                 child: GridView.builder(
                   controller: scrollController,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 2,
                   ),
-                  itemCount: total,
+                  itemCount: chapters.length,
                   itemBuilder: (context, index) {
-                    final chapter = index + 1;
+                    final chapter = chapters[index];
                     final isSelected = chapter == currentChapter;
                     return InkWell(
                       onTap: () {
@@ -121,7 +122,7 @@ class MangaControls extends StatelessWidget {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          '$chapter',
+                          chapter,
                           style: TextStyle(
                             color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -210,101 +211,188 @@ class _TopBar extends StatelessWidget {
 class _BottomBar extends StatelessWidget {
   final int currentPage;
   final int totalPages;
-  final int currentChapter;
-  final int totalChapters;
+  final String currentChapter;
+  final List<String> availableChapters;
+  final Function(String) onChapterSelected;
   final Function(int) onPageSelected;
-  final Function(int) onChapterSelected;
   final VoidCallback onChaptersTap;
 
   const _BottomBar({
     required this.currentPage,
     required this.totalPages,
     required this.currentChapter,
-    required this.totalChapters,
-    required this.onPageSelected,
+    required this.availableChapters,
     required this.onChapterSelected,
+    required this.onPageSelected,
     required this.onChaptersTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: EdgeInsets.only(
-        top: 16,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
-        left: 24,
-        right: 24,
+        top: 20,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
+        left: 16,
+        right: 16,
       ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.7),
+            Colors.black.withValues(alpha: 0.95),
+            Colors.black.withValues(alpha: 0.6),
             Colors.transparent,
           ],
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (totalPages > 0)
-            Row(
-              children: [
-                Text(
-                  '${currentPage + 1}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                Expanded(
-                  child: Slider(
-                    value: currentPage.toDouble(),
-                    min: 0,
-                    max: (totalPages - 1).toDouble().clamp(0, double.infinity),
-                    onChanged: (value) => onPageSelected(value.toInt()),
-                    activeColor: Theme.of(context).colorScheme.primary,
-                    inactiveColor: Colors.white.withValues(alpha: 0.3),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            // Main Pill (Page Navigation)
+            Expanded(
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    width: 1,
                   ),
                 ),
-                Text(
-                  '$totalPages',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: _ControlButton(
+                        icon: Icons.chevron_left_rounded,
+                        onPressed: currentPage > 0
+                            ? () => onPageSelected(currentPage - 1)
+                            : null,
+                        transparent: true,
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'PAGE ${currentPage + 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            'of $totalPages',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: _ControlButton(
+                        icon: Icons.chevron_right_rounded,
+                        onPressed: currentPage < totalPages - 1
+                            ? () => onPageSelected(currentPage + 1)
+                            : null,
+                        transparent: true,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
-                onPressed: onChaptersTap,
+
+            const SizedBox(width: 12),
+
+            // Chapter Selection Badge
+            InkWell(
+              onTap: onChaptersTap,
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: colorScheme.primary.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'CH $currentChapter',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_up_rounded,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
+                  ],
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous_rounded, color: Colors.white),
-                    onPressed: currentChapter > 1 
-                        ? () => onChapterSelected(currentChapter - 1) 
-                        : null,
-                  ),
-                  Text(
-                    'Page ${currentPage + 1} of $totalPages',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.skip_next_rounded, color: Colors.white),
-                    onPressed: currentChapter < totalChapters
-                        ? () => onChapterSelected(currentChapter + 1)
-                        : null,
-                  ),
-                ],
-              ),
-              const SizedBox(width: 48), // Spacer for balance
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _ControlButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final Color? color;
+  final bool transparent;
+
+  const _ControlButton({
+    required this.icon,
+    required this.onPressed,
+    this.color,
+    this.transparent = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      iconSize: 24,
+      padding: EdgeInsets.zero,
+      style: IconButton.styleFrom(
+        backgroundColor: transparent
+            ? Colors.transparent
+            : (color ?? Colors.white.withValues(alpha: 0.1)),
+        foregroundColor: Colors.white,
+        disabledForegroundColor: Colors.white.withValues(alpha: 0.2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        minimumSize: const Size(44, 44),
+        fixedSize: const Size(44, 44),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      icon: Icon(icon),
     );
   }
 }

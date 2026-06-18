@@ -36,6 +36,7 @@ class AnimeDetails extends Anime {
   final double? averageScore;
   final String? rating;
   final List<RelatedShow> relatedShows;
+  final List<String> availableEpisodes;
 
   AnimeDetails({
     required super.id,
@@ -50,10 +51,18 @@ class AnimeDetails extends Anime {
     this.averageScore,
     this.rating,
     this.relatedShows = const [],
+    this.availableEpisodes = const [],
   });
 
   factory AnimeDetails.fromJson(Map<String, dynamic> json) {
     final anime = Anime.fromJson(json);
+    
+    List<String> episodes = [];
+    final details = json['availableEpisodesDetail'] ?? json['availableChaptersDetail'];
+    if (details != null && details['sub'] != null) {
+      episodes = (details['sub'] as List).map((e) => e.toString()).toList();
+    }
+
     return AnimeDetails(
       id: anime.id,
       name: anime.name,
@@ -70,6 +79,7 @@ class AnimeDetails extends Anime {
               ?.map((e) => RelatedShow.fromJson(e))
               .toList() ??
           [],
+      availableEpisodes: episodes,
     );
   }
 }

@@ -123,6 +123,8 @@ class MangaService {
           status
           averageScore
           rating
+          lastChapterInfo
+          availableChaptersDetail
           relatedMangas
         }
       }
