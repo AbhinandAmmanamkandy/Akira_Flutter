@@ -21,16 +21,25 @@ class DetailRelatedSection extends StatelessWidget {
       future: AnimeService().fetchAnimeWithIds(ids),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ));
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
 
         final animeList = snapshot.data ?? [];
         if (animeList.isEmpty) return const SizedBox.shrink();
 
         final animeMap = {for (var a in animeList) a.id: a};
+        
+        // Filter and maintain order based on relatedShows
+        final validRelations = relatedShows
+            .where((rel) => animeMap.containsKey(rel.showId))
+            .toList();
+
+        if (validRelations.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,14 +67,24 @@ class DetailRelatedSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: relatedShows.map((rel) {
-                final anime = animeMap[rel.showId];
-                if (anime == null) return const SizedBox.shrink();
-                return _RelatedShowTile(show: rel, anime: anime);
-              }).toList(),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                mainAxisExtent: 66,
+              ),
+              itemCount: validRelations.length,
+              itemBuilder: (context, index) {
+                final rel = validRelations[index];
+                return _RelatedShowTile(
+                  show: rel,
+                  anime: animeMap[rel.showId]!,
+                );
+              },
             ),
           ],
         );
@@ -84,10 +103,10 @@ class _RelatedShowTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final rel = show.relation.toLowerCase();
-    
+
     Color accentColor;
     IconData icon;
-    
+
     if (rel == 'sequel') {
       accentColor = Colors.green;
       icon = Icons.arrow_forward_rounded;
@@ -130,58 +149,55 @@ class _RelatedShowTile extends StatelessWidget {
           ),
         );
       },
-      child: SizedBox(
-        width: (MediaQuery.of(context).size.width - 52) / 2,
-        height: 66,
-        child: GlassContainer(
-          borderRadius: 16,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: accentColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        show.relation.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          color: accentColor,
-                          letterSpacing: 0.5,
-                        ),
+      child: GlassContainer(
+        borderRadius: 16,
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      show.relation.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        color: accentColor,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                  Icon(
-                    icon,
-                    size: 14,
-                    color: accentColor.withValues(alpha: 0.5),
-                  ),
-                ],
-              ),
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
                 ),
+                Icon(
+                  icon,
+                  size: 14,
+                  color: accentColor.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+            Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
