@@ -14,23 +14,10 @@ class Anime {
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) {
-    String? thumbnail;
-    final List? thumbnails = json['thumbnails'];
-
-    if (thumbnails != null && thumbnails.isNotEmpty) {
-      for (var t in thumbnails) {
-        final str = t.toString();
-        if (str.startsWith('http')) {
-          thumbnail = str;
-          break;
-        }
-      }
+    String? thumbnail = json['thumbnail']?.toString();
+    if (thumbnail != null && !thumbnail.startsWith('http')) {
+      thumbnail = 'https://wp.youtube-anime.com/aln.youtube-anime.com/$thumbnail';
     }
-
-    if (thumbnail == null) {
-      thumbnail = json['thumbnail']?.toString();
-    }
-
     final lastEpisodeInfo = json['lastEpisodeInfo'];
     final String? lastEpisode = lastEpisodeInfo?['sub']?['episodeString']?.toString();
 

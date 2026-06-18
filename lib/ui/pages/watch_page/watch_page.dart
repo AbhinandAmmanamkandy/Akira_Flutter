@@ -314,6 +314,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                   child: Image.network(
                     widget.details.thumbnail ?? widget.anime.thumbnail ?? '',
                     fit: BoxFit.cover,
+                    headers: const {'Referer': 'https://youtu-chan.com'},
                     errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                   ),
                 ),

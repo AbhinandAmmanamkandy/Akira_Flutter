@@ -20,6 +20,7 @@ class ListCardThumbnail extends StatelessWidget {
             ? Image.network(
                 imageUrl!,
                 fit: BoxFit.cover,
+                headers: const {'Referer': 'https://youtu-chan.com'},
                 errorBuilder: (context, error, stackTrace) =>
                     _placeholder(context, Icons.broken_image),
               )

@@ -49,7 +49,6 @@ class AnimeService {
             name
             englishName
             thumbnail
-            thumbnails
             lastEpisodeInfo
           }
         }
@@ -98,7 +97,6 @@ class AnimeService {
           name
           englishName
           thumbnail
-          thumbnails
           description
           lastEpisodeInfo
           season
@@ -140,7 +138,6 @@ class AnimeService {
               name
               englishName
               thumbnail
-              thumbnails
               lastEpisodeInfo
             }
           }

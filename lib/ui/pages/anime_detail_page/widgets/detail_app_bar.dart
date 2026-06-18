@@ -99,6 +99,7 @@ class DetailAppBar extends StatelessWidget {
                   ? Image.network(
                       anime.thumbnail!,
                       fit: BoxFit.cover,
+                      headers: const {'Referer': 'https://youtu-chan.com'},
                     )
                   : Container(
                       color: colorScheme.surfaceContainerHighest,
