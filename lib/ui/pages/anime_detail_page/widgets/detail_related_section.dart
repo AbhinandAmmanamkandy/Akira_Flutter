@@ -5,22 +5,53 @@ import 'package:akira/services/anime_service.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
 import '../anime_detail_page.dart';
 
-class DetailRelatedSection extends StatelessWidget {
+class DetailRelatedSection extends StatefulWidget {
   final List<RelatedShow> relatedShows;
 
   const DetailRelatedSection({super.key, required this.relatedShows});
 
   @override
+  State<DetailRelatedSection> createState() => _DetailRelatedSectionState();
+}
+
+class _DetailRelatedSectionState extends State<DetailRelatedSection> {
+  late Future<List<Anime>> _relatedAnimeFuture;
+  List<Anime>? _cachedAnimeList;
+  Map<String, Anime>? _cachedAnimeMap;
+  List<RelatedShow>? _cachedValidRelations;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFuture();
+  }
+
+  @override
+  void didUpdateWidget(DetailRelatedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.relatedShows != widget.relatedShows) {
+      _cachedAnimeList = null;
+      _cachedAnimeMap = null;
+      _cachedValidRelations = null;
+      _initFuture();
+    }
+  }
+
+  void _initFuture() {
+    final ids = widget.relatedShows.map((s) => s.showId).toList();
+    _relatedAnimeFuture = AnimeService().fetchAnimeWithIds(ids);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (relatedShows.isEmpty) return const SizedBox.shrink();
+    if (widget.relatedShows.isEmpty) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
-    final ids = relatedShows.map((s) => s.showId).toList();
 
     return FutureBuilder<List<Anime>>(
-      future: AnimeService().fetchAnimeWithIds(ids),
+      future: _relatedAnimeFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting && _cachedAnimeList == null) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20.0),
@@ -29,64 +60,69 @@ class DetailRelatedSection extends StatelessWidget {
           );
         }
 
-        final animeList = snapshot.data ?? [];
+        final animeList = snapshot.data ?? _cachedAnimeList ?? [];
         if (animeList.isEmpty) return const SizedBox.shrink();
 
-        final animeMap = {for (var a in animeList) a.id: a};
-        
-        // Filter and maintain order based on relatedShows
-        final validRelations = relatedShows
-            .where((rel) => animeMap.containsKey(rel.showId))
-            .toList();
+        if (_cachedAnimeList != animeList) {
+          _cachedAnimeList = animeList;
+          _cachedAnimeMap = {for (var a in animeList) a.id: a};
+          _cachedValidRelations = widget.relatedShows
+              .where((rel) => _cachedAnimeMap!.containsKey(rel.showId))
+              .toList();
+        }
 
-        if (validRelations.isEmpty) return const SizedBox.shrink();
+        if (_cachedValidRelations == null || _cachedValidRelations!.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 3,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    borderRadius: BorderRadius.circular(2),
+        return RepaintBoundary(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 3,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'RELATIONS',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: colorScheme.onSurfaceVariant,
-                    letterSpacing: 1.5,
+                  const SizedBox(width: 8),
+                  Text(
+                    'RELATIONS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                mainAxisExtent: 66,
+                ],
               ),
-              itemCount: validRelations.length,
-              itemBuilder: (context, index) {
-                final rel = validRelations[index];
-                return _RelatedShowTile(
-                  show: rel,
-                  anime: animeMap[rel.showId]!,
-                );
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemWidth = (constraints.maxWidth - 12) / 2;
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _cachedValidRelations!.map((rel) {
+                      return SizedBox(
+                        width: itemWidth,
+                        height: 66,
+                        child: _RelatedShowTile(
+                          show: rel,
+                          anime: _cachedAnimeMap![rel.showId]!,
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ],
+          ),
         );
       },
     );

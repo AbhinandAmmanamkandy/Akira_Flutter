@@ -32,7 +32,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   final FavoriteService _favoriteService = FavoriteService();
   final HistoryService _historyService = HistoryService();
   final ScrollController _scrollController = ScrollController();
-  bool _isCollapsed = false;
+  final ValueNotifier<bool> _isCollapsed = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -50,10 +50,8 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
         400 - kToolbarHeight - MediaQuery.of(context).padding.top - 20;
     final isCollapsed = _scrollController.offset > threshold;
 
-    if (isCollapsed != _isCollapsed) {
-      setState(() {
-        _isCollapsed = isCollapsed;
-      });
+    if (isCollapsed != _isCollapsed.value) {
+      _isCollapsed.value = isCollapsed;
     }
   }
 
@@ -61,6 +59,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _isCollapsed.dispose();
     super.dispose();
   }
 
@@ -107,20 +106,25 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                         parent: BouncingScrollPhysics(),
                       ),
                       slivers: [
-                        DetailAppBar(
-                          anime: widget.anime,
-                          isFavorite: isFavorite,
-                          isCollapsed: _isCollapsed,
-                          onFavoriteTap: () {
-                            _favoriteService.toggleFavorite(widget.anime);
-                            CustomStatusIndicator.show(
-                              context,
-                              isFavorite
-                                  ? 'Removed from favorites'
-                                  : 'Added to favorites',
-                              isFavorite
-                                  ? Icons.favorite_border_rounded
-                                  : Icons.favorite_rounded,
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _isCollapsed,
+                          builder: (context, isCollapsed, _) {
+                            return DetailAppBar(
+                              anime: widget.anime,
+                              isFavorite: isFavorite,
+                              isCollapsed: isCollapsed,
+                              onFavoriteTap: () {
+                                _favoriteService.toggleFavorite(widget.anime);
+                                CustomStatusIndicator.show(
+                                  context,
+                                  isFavorite
+                                      ? 'Removed from favorites'
+                                      : 'Added to favorites',
+                                  isFavorite
+                                      ? Icons.favorite_border_rounded
+                                      : Icons.favorite_rounded,
+                                );
+                              },
                             );
                           },
                         ),
@@ -188,43 +192,51 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    DetailTagsRow(
-                                      details: details,
-                                      onTagTap: (tag) {
-                                        FocusManager.instance.primaryFocus
-                                            ?.unfocus();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AnimeListPage(
-                                              initialGenre: tag,
+                                    RepaintBoundary(
+                                      child: DetailTagsRow(
+                                        details: details,
+                                        onTagTap: (tag) {
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AnimeListPage(
+                                                initialGenre: tag,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
-                                    DetailActionRow(
-                                      continueEpisode: history?.episode,
-                                      onPlayTap: () {
-                                        FocusManager.instance.primaryFocus
-                                            ?.unfocus();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => WatchPage(
-                                              anime: widget.anime,
-                                              details: details,
+                                    RepaintBoundary(
+                                      child: DetailActionRow(
+                                        continueEpisode: history?.episode,
+                                        onPlayTap: () {
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => WatchPage(
+                                                anime: widget.anime,
+                                                details: details,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
-                                    DetailMetadataBar(details: details),
+                                    RepaintBoundary(
+                                      child: DetailMetadataBar(details: details),
+                                    ),
                                     const SizedBox(height: 24),
-                                    DetailDescriptionSection(
-                                      description: details.description,
+                                    RepaintBoundary(
+                                      child: DetailDescriptionSection(
+                                        description: details.description,
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
                                     DetailRelatedSection(

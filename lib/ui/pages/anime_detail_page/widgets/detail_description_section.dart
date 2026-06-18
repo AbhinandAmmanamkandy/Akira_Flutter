@@ -54,7 +54,7 @@ class DetailDescriptionSection extends StatelessWidget {
           borderRadius: 20,
           padding: const EdgeInsets.all(16),
           opacity: 0.05,
-          withBlur: true,
+          withBlur: false, // Disabled blur for better scroll performance
           child: HtmlWidget(
             description!,
             textStyle: textTheme.bodyLarge?.copyWith(
