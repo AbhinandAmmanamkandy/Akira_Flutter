@@ -11,6 +11,7 @@ import 'package:akira/services/anime_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
+import 'package:akira/gestures/search_symbol_gesture.dart';
 import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
@@ -62,6 +63,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
       'TIP: Draw an F to add anime to favorites',
+      'TIP: Draw an S to search instantly',
       'TIP: Tap on tags to explore similar worlds',
       'TIP: Scroll down to hide this System Advisory',
     ];
@@ -148,139 +150,163 @@ class _AnimeListPageState extends State<AnimeListPage> {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           extendBody: true,
-          body: GestureDetector(
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AkiraColors.getBackground(
-                  colorScheme,
-                  Theme.of(context).brightness == Brightness.light,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  if (useGlass) ...[
-                    Positioned(
-                      top: 200,
-                      left: -100,
-                      child: Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: colorScheme.primary.withValues(alpha: 0.1),
-                        ),
-                      ),
+          body: PopScope(
+            canPop: !_isSearching && !_searchFocusNode.hasFocus,
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) return;
+              if (_searchFocusNode.hasFocus) {
+                _searchFocusNode.unfocus();
+              } else if (_isSearching) {
+                setState(() {
+                  _isSearching = false;
+                  _searchController.clear();
+                  _animeList = _homeAnimeList;
+                });
+              }
+            },
+            child: SearchSymbolGesture(
+              onSymbolDetected: () {
+                _searchFocusNode.requestFocus();
+              },
+              child: GestureDetector(
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AkiraColors.getBackground(
+                      colorScheme,
+                      Theme.of(context).brightness == Brightness.light,
                     ),
-                    Positioned(
-                      bottom: -50,
-                      right: -50,
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: colorScheme.secondary.withValues(alpha: 0.08),
+                  ),
+                  child: Stack(
+                    children: [
+                      if (useGlass) ...[
+                        Positioned(
+                          top: 200,
+                          left: -100,
+                          child: Container(
+                            width: 300,
+                            height: 300,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                  FutureBuilder<List<Anime>>(
-                    future: _animeList,
-                    builder: (context, snapshot) {
-                      return OverscrollDismissGesture(
-                        onDismiss: () {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const BookmarksPage(),
+                        Positioned(
+                          bottom: -50,
+                          right: -50,
+                          child: Container(
+                            width: 250,
+                            height: 250,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colorScheme.secondary.withValues(
+                                alpha: 0.08,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      FutureBuilder<List<Anime>>(
+                        future: _animeList,
+                        builder: (context, snapshot) {
+                          return OverscrollDismissGesture(
+                            onDismiss: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const BookmarksPage(),
+                                ),
+                              );
+                            },
+                            child: CustomScrollView(
+                              controller: _scrollController,
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
+                              slivers: [
+                                ListAppBar(appBarOpacity: _appBarOpacity),
+
+                                // Tooltip Hint Banner
+                                SliverToBoxAdapter(
+                                  child: ScaleFadeVisibility(
+                                    isVisible:
+                                        _showHint && _appBarOpacity < 0.1,
+                                    child: HintBanner(text: _hintText),
+                                  ),
+                                ),
+
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting)
+                                  const SliverFillRemaining(
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                else if (snapshot.hasError)
+                                  ListErrorView(
+                                    error: snapshot.error,
+                                    onRetry: () => setState(() {
+                                      _animeList = _fetchByQuery(
+                                        _searchController.text,
+                                      );
+                                    }),
+                                  )
+                                else if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty)
+                                  ListEmptyView(
+                                    isSearching: _isSearching,
+                                    onClearSearch: () {
+                                      _searchController.clear();
+                                      _onSearch('');
+                                    },
+                                  )
+                                else
+                                  ListGrid(
+                                    animeList: snapshot.data!,
+                                    onAnimeTap: (anime) async {
+                                      FocusManager.instance.primaryFocus
+                                          ?.unfocus();
+
+                                      if (!mounted) return;
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AnimeDetailPage(anime: anime),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                const SliverToBoxAdapter(
+                                  child: SizedBox(height: 100),
+                                ),
+                              ],
                             ),
                           );
                         },
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          physics: const AlwaysScrollableScrollPhysics(
-                            parent: BouncingScrollPhysics(),
-                          ),
-                          slivers: [
-                            ListAppBar(appBarOpacity: _appBarOpacity),
-
-                            // Tooltip Hint Banner
-                            SliverToBoxAdapter(
-                              child: ScaleFadeVisibility(
-                                isVisible: _showHint && _appBarOpacity < 0.1,
-                                child: HintBanner(text: _hintText),
-                              ),
-                            ),
-
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting)
-                              const SliverFillRemaining(
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            else if (snapshot.hasError)
-                              ListErrorView(
-                                error: snapshot.error,
-                                onRetry: () => setState(() {
-                                  _animeList = _fetchByQuery(
-                                    _searchController.text,
-                                  );
-                                }),
-                              )
-                            else if (!snapshot.hasData ||
-                                snapshot.data!.isEmpty)
-                              ListEmptyView(
-                                isSearching: _isSearching,
-                                onClearSearch: () {
-                                  _searchController.clear();
-                                  _onSearch('');
-                                },
-                              )
-                            else
-                              ListGrid(
-                                animeList: snapshot.data!,
-                                onAnimeTap: (anime) async {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-
-                                  if (!mounted) return;
-
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          AnimeDetailPage(anime: anime),
-                                    ),
-                                  );
-                                },
-                              ),
-                            const SliverToBoxAdapter(
-                              child: SizedBox(height: 100),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                      ),
+                      _buildFloatingFilterChips(colorScheme),
+                      BottomSearchBar(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        onSearch: _onSearch,
+                        onChanged: (value) => setState(() {}),
+                        onClear: () {
+                          setState(() {
+                            _isSearching = false;
+                            _animeList = _homeAnimeList;
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                  _buildFloatingFilterChips(colorScheme),
-                  BottomSearchBar(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                    onSearch: _onSearch,
-                    onChanged: (value) => setState(() {}),
-                    onClear: () {
-                      setState(() {
-                        _isSearching = false;
-                        _animeList = _homeAnimeList;
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      });
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ),
