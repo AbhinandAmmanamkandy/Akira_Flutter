@@ -110,6 +110,89 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
     } catch (_) {}
   }
 
+  void _showSpeedDialog(BuildContext context) {
+    final player = widget.controller?.player;
+    if (player == null) return;
+
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    final currentSpeed = player.state.rate;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassContainer(
+        borderRadius: 28,
+        withBlur: true,
+        blur: 25,
+        opacity: 0.9,
+        color: Colors.black.withValues(alpha: 0.8),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Icon(Icons.speed_rounded, color: colorScheme.primary),
+                const SizedBox(width: 12),
+                const Text(
+                  'Playback Speed',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: speeds.map((speed) {
+                final isSelected = currentSpeed == speed;
+                return Material(
+                  color: isSelected ? colorScheme.primary : Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    onTap: () {
+                      player.setRate(speed);
+                      Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: (MediaQuery.of(context).size.width - 72) / 3,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        '${speed}x',
+                        style: TextStyle(
+                          color: isSelected ? colorScheme.onPrimary : Colors.white,
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -202,14 +285,16 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                 builder: (context, constraints) => MaterialVideoControlsTheme(
                 normal: MaterialVideoControlsThemeData(
                   visibleOnMount: true,
-                  backdropColor: Colors.black.withValues(alpha: 0.5),
+                  backdropColor: Colors.black.withValues(alpha: 0.4),
                   buttonBarButtonSize: 28.0,
                   buttonBarButtonColor: Colors.white,
                   seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: Colors.transparent,
+                  seekBarColor: Colors.white.withValues(alpha: 0.2),
+                  seekBarBufferColor: Colors.white.withValues(alpha: 0.3),
+                  seekBarThumbColor: colorScheme.primary,
                   seekBarHeight: 4.0,
-                  seekBarThumbSize: 0.0,
-                  seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 28),
+                  seekBarThumbSize: 12.0,
+                  seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 42),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 20, right: 12, bottom: 16),
                   topButtonBarMargin: const EdgeInsets.only(left: 16, right: 16, top: 16),
                   seekOnDoubleTap: true,
@@ -234,9 +319,9 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       borderRadius: 100,
                       padding: const EdgeInsets.fromLTRB(12, 12, 24, 12),
                       withBlur: true,
-                      opacity: 0.2,
+                      opacity: 0.15,
                       blur: 20,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black,
                       border: Border.all(
                         color: colorScheme.primary.withValues(alpha: 0.2),
                         width: 1,
@@ -247,14 +332,14 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              color: colorScheme.primary.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                strokeWidth: 3,
+                                strokeWidth: 2.5,
                                 color: colorScheme.primary,
                                 backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                               ),
@@ -265,17 +350,17 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'BUFFERING',
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 2,
                                 ),
                               ),
                               Text(
-                                'Please wait...',
+                                'Syncing stream...',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.5),
                                   fontSize: 9,
@@ -309,6 +394,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                           children: [
                             Text(
                               widget.animeTitle!,
+                              maxLines: 1,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -321,7 +407,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                               Text(
                                 'EPISODE ${widget.episodeNumber}',
                                 style: TextStyle(
-                                  color: colorScheme.primary.withValues(alpha: 0.9),
+                                  color: colorScheme.primary,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1.2,
@@ -333,6 +419,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     else
                       const Spacer(),
                     const MaterialFullscreenButton(),
+                    MaterialCustomButton(
+                      onPressed: () => _showSpeedDialog(context),
+                      icon: const Icon(Icons.speed_rounded, size: 20, color: Colors.white),
+                    ),
                   ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
@@ -367,10 +457,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
                       videoWidth: constraints.maxWidth,
-                    ),
-                    const SizedBox(width: 20),
-                    const MaterialPositionIndicator(
-                      style: TextStyle(
+                      positionStyle: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -380,12 +467,15 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     const Spacer(),
                   ],
                 ),
+
                 fullscreen: MaterialVideoControlsThemeData(
                   seekBarPositionColor: colorScheme.primary,
-                  seekBarThumbColor: Colors.transparent,
-                  seekBarHeight: 5.0,
-                  seekBarThumbSize: 0.0,
-                  seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 40),
+                  seekBarColor: Colors.white.withValues(alpha: 0.2),
+                  seekBarBufferColor: Colors.white.withValues(alpha: 0.3),
+                  seekBarThumbColor: colorScheme.primary,
+                  seekBarHeight: 6.0,
+                  seekBarThumbSize: 14.0,
+                  seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 56),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 32, right: 24, bottom: 24),
                   topButtonBarMargin: const EdgeInsets.only(left: 24, right: 24, top: 24),
                   seekOnDoubleTap: true,
@@ -408,11 +498,11 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   bufferingIndicatorBuilder: (context) => Center(
                     child: GlassContainer(
                       borderRadius: 100,
-                      padding: const EdgeInsets.fromLTRB(12, 12, 24, 12),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 32, 16),
                       withBlur: true,
-                      opacity: 0.2,
-                      blur: 20,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      opacity: 0.15,
+                      blur: 25,
+                      color: Colors.black,
                       border: Border.all(
                         color: colorScheme.primary.withValues(alpha: 0.2),
                         width: 1,
@@ -421,14 +511,14 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              color: colorScheme.primary.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 24,
+                              height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 3,
                                 color: colorScheme.primary,
@@ -436,25 +526,25 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 20),
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'BUFFERING',
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
+                                  letterSpacing: 2.5,
                                 ),
                               ),
                               Text(
-                                'Please wait...',
+                                'Synchronizing data stream...',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 9,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -468,15 +558,15 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     MaterialCustomButton(
                       onPressed: widget.onBack,
                       icon: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     if (widget.animeTitle != null)
                       Expanded(
                         child: Column(
@@ -485,9 +575,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                           children: [
                             Text(
                               widget.animeTitle!,
+                              maxLines: 1,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.5,
                                 overflow: TextOverflow.ellipsis,
@@ -497,10 +588,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                               Text(
                                 'EPISODE ${widget.episodeNumber}',
                                 style: TextStyle(
-                                  color: colorScheme.primary.withValues(alpha: 0.9),
+                                  color: colorScheme.primary,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.2,
+                                  letterSpacing: 1.5,
                                 ),
                               ),
                           ],
@@ -509,18 +600,19 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     else
                       const Spacer(),
                     const MaterialFullscreenButton(),
+                    MaterialCustomButton(
+                      onPressed: () => _showSpeedDialog(context),
+                      icon: const Icon(Icons.speed_rounded, size: 24, color: Colors.white),
+                    ),
                   ],
                   bottomButtonBar: [
                     _SeekMarkers(
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
-                      videoWidth: null,
-                    ),
-                    const SizedBox(width: 20),
-                    const MaterialPositionIndicator(
-                      style: TextStyle(
+                      videoWidth: MediaQuery.of(context).size.width,
+                      positionStyle: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
@@ -556,6 +648,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     const Spacer(flex: 3),
                   ],
                 ),
+
                 child: Video(
                   key: widget.videoKey,
                   controller: widget.controller!,
@@ -783,7 +876,9 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final bool isLarge = widget.size > 70;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       width: widget.size,
       height: widget.size,
       decoration: BoxDecoration(
@@ -791,16 +886,25 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: widget.colorScheme.primary.withValues(alpha: widget.size > 70 ? 0.4 : 0.3),
-            blurRadius: widget.size > 70 ? 30 : 20,
-            spreadRadius: widget.size > 70 ? 5 : 2,
+            color: widget.colorScheme.primary.withValues(alpha: isLarge ? 0.35 : 0.25),
+            blurRadius: isLarge ? 40 : 25,
+            spreadRadius: isLarge ? 8 : 4,
           ),
         ],
       ),
-      child: Icon(
-        _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-        size: widget.size * 0.6,
-        color: widget.colorScheme.onPrimary,
+      child: Center(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+          child: Icon(
+            _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            key: ValueKey(_isPlaying),
+            size: widget.size * 0.55,
+            color: widget.colorScheme.onPrimary,
+          ),
+        ),
       ),
     );
   }
@@ -809,19 +913,20 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
 class _SeekMarkers extends StatelessWidget {
   final Player player;
   final Duration? resumePosition;
-  final double? videoWidth;
+  final double videoWidth;
+  final TextStyle? positionStyle;
 
   const _SeekMarkers({
     required this.player,
     this.resumePosition,
-    this.videoWidth,
+    required this.videoWidth,
+    this.positionStyle,
   });
 
   @override
   Widget build(BuildContext context) {
     final videoState = VideoStateInheritedWidget.of(context).state;
     final isFullscreen = videoState.isFullscreen();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return StreamBuilder<Duration>(
       stream: player.stream.duration,
@@ -829,140 +934,75 @@ class _SeekMarkers extends StatelessWidget {
         final duration = snapshot.data ?? player.state.duration;
         if (duration.inMilliseconds <= 0) return const SizedBox.shrink();
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final mq = MediaQuery.of(context);
-            // In many layouts, the video player is constrained by the safe area (notches, etc.)
-            // We use the smaller of the passed videoWidth and the available screen width minus padding.
-            final screenWidth = mq.size.width - mq.padding.horizontal;
-            final width = (isFullscreen ? screenWidth : (videoWidth ?? screenWidth)).clamp(0.0, screenWidth);
+        final seekBarMargin = isFullscreen 
+            ? const EdgeInsets.only(left: 32, right: 32, bottom: 56)
+            : const EdgeInsets.only(left: 20, right: 20, bottom: 42);
+        
+        final bottomButtonBarMargin = isFullscreen
+            ? const EdgeInsets.only(left: 32, right: 24, bottom: 24)
+            : const EdgeInsets.only(left: 20, right: 12, bottom: 16);
 
-            // Media-kit default seek bar values
-            final seekBarMargin = isFullscreen 
-                ? const EdgeInsets.only(left: 32, right: 32, bottom: 40)
-                : const EdgeInsets.only(left: 20, right: 20, bottom: 28);
-            
-            // Button bar margin
-            final barLeft = isFullscreen ? 32.0 : 20.0;
-            final barBottom = isFullscreen ? 24.0 : 16.0;
+        final availableWidth = videoWidth - seekBarMargin.horizontal;
+        final seekBarHeight = isFullscreen ? 6.0 : 4.0;
+        const buttonBarHeight = 56.0;
+        final dy = (seekBarMargin.bottom - bottomButtonBarMargin.bottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
 
-            final seekBarHeight = isFullscreen ? 5.0 : 4.0;
-            final availableWidth = width - seekBarMargin.horizontal;
-
-            // Horizontal distance from button bar left to seek bar left
-            final dx = seekBarMargin.left - barLeft;
-
-            // Derived Math Equation for Universal Alignment:
-            const buttonBarHeight = 56.0;
-            final dy = (seekBarMargin.bottom - barBottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
-
-            return SizedBox(
-              width: 0,
-              height: 0,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    left: dx,
-                    bottom: dy,
-                    child: SizedBox(
-                      width: availableWidth,
-                      height: 0,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.centerLeft,
-                        children: [
-                          // Resume Position Marker (2px)
-                          if (resumePosition != null)
-                            Builder(builder: (context) {
-                              final ratio = (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-                              return Positioned(
-                                left: availableWidth * ratio - 1,
-                                bottom: -4,
-                                child: Container(
-                                  width: 2,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(1),
+        return SizedBox(
+          width: 0,
+          height: 0,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: seekBarMargin.left - bottomButtonBarMargin.left,
+                bottom: dy,
+                child: SizedBox(
+                  width: availableWidth,
+                  height: 0,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      // Position Indicator (Top Right of Seek Bar)
+                      if (positionStyle != null)
+                        Positioned(
+                          right: 0,
+                          bottom: isFullscreen ? 16 : 12,
+                          child: MaterialPositionIndicator(style: positionStyle),
+                        ),
+                      // Resume Position Marker
+                      if (resumePosition != null)
+                        Builder(builder: (context) {
+                          final ratio = (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+                          final markerHeight = isFullscreen ? 12.0 : 8.0;
+                          return Positioned(
+                            left: availableWidth * ratio - 1,
+                            bottom: -markerHeight / 2,
+                            child: Container(
+                              width: 2,
+                              height: markerHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(1),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    blurRadius: 2,
                                   ),
-                                ),
-                              );
-                            }),
-                          // Current Position Marker (4px)
-                          StreamBuilder<Duration>(
-                            stream: player.stream.position,
-                            builder: (context, snapshot) {
-                              final position = snapshot.data ?? player.state.position;
-                              final ratio = (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-                              return Positioned(
-                                left: availableWidth * ratio - 2,
-                                bottom: -10,
-                                child: Container(
-                                  width: 4,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(2),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                    ],
                   ),
-                ],
+                ),
               ),
-            );
-          },
+            ],
+          ),
         );
       },
     );
   }
 }
 
-class _ResumeButton extends StatelessWidget {
-  final String label;
-  final bool isPrimary;
-  final ColorScheme colorScheme;
-  final VoidCallback onTap;
-
-  const _ResumeButton({
-    required this.label,
-    required this.isPrimary,
-    required this.colorScheme,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isPrimary ? colorScheme.primary : Colors.white.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isPrimary ? colorScheme.onPrimary : Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
