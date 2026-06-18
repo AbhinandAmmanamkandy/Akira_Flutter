@@ -61,9 +61,9 @@ class HistoryService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveHistory(String animeId, int episode, Duration position) {
-    // Only save if we have at least 1 second of progress
-    if (position.inSeconds < 1) return;
+  void saveHistory(String animeId, int episode, Duration position, {bool force = false}) {
+    // Only save if we have at least 1 second of progress (unless forced)
+    if (!force && position.inSeconds < 1) return;
     
     _history[animeId] = WatchHistory(episode: episode, position: position);
     _saveToDisk();

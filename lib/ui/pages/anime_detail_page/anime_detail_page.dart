@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:akira/models/anime.dart';
 import 'package:akira/services/anime_service.dart';
 import 'package:akira/services/manga_service.dart';
@@ -10,6 +11,8 @@ import 'package:akira/ui/pages/watch_page/watch_page.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'package:akira/gestures/f_symbol_gesture.dart';
 import 'package:akira/ui/pages/anime_list_page/anime_list_page.dart';
+import 'package:akira/services/manga_read_service.dart';
+import 'package:akira/ui/pages/manga_reader_page/manga_reader_page.dart';
 import 'widgets/detail_app_bar.dart';
 import 'widgets/detail_action_row.dart';
 import 'widgets/detail_metadata_bar.dart';
@@ -222,9 +225,19 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                       child: DetailActionRow(
                                         continueEpisode: history?.episode,
                                         isManga: widget.isManga,
-                                        onPlayTap: () {
+                                        onPlayTap: () async {
                                           if (widget.isManga) {
-                                            // Handle manga reading navigation here if a reader page exists
+                                            FocusManager.instance.primaryFocus
+                                                ?.unfocus();
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => MangaReaderPage(
+                                                  anime: widget.anime,
+                                                  details: details,
+                                                ),
+                                              ),
+                                            );
                                             return;
                                           }
                                           FocusManager.instance.primaryFocus
