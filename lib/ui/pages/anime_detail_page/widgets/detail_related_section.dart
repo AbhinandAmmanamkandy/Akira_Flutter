@@ -99,7 +99,9 @@ class _RelatedShowTile extends StatelessWidget {
       future: AnimeService().fetchAnimeDetails(show.showId),
       builder: (context, snapshot) {
         final animeDetails = snapshot.data;
-        final name = animeDetails?.name ?? 'Loading...';
+        final name = animeDetails != null 
+            ? (animeDetails.englishName?.isNotEmpty == true ? animeDetails.englishName! : animeDetails.name)
+            : 'Loading...';
 
         return InkWell(
           onTap: animeDetails != null
