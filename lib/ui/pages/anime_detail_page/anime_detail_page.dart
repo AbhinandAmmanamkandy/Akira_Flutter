@@ -197,7 +197,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => AnimeListPage(
-                                              initialSearch: tag,
+                                              initialGenre: tag,
                                             ),
                                           ),
                                         );

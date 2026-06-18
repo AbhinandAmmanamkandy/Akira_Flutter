@@ -19,8 +19,9 @@ import 'package:akira/ui/widgets/common_chip.dart';
 
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
+  final String? initialGenre;
 
-  const AnimeListPage({super.key, this.initialSearch});
+  const AnimeListPage({super.key, this.initialSearch, this.initialGenre});
 
   @override
   State<AnimeListPage> createState() => _AnimeListPageState();
@@ -45,7 +46,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
     super.initState();
     _homeAnimeList = _animeService.fetchAnime();
 
-    if (widget.initialSearch != null) {
+    if (widget.initialGenre != null) {
+      _isSearching = true;
+      _searchController.text = widget.initialGenre!;
+      _animeList = _animeService.fetchAnime(genres: [widget.initialGenre!]);
+    } else if (widget.initialSearch != null) {
       _isSearching = true;
       _searchController.text = widget.initialSearch!;
       _animeList = _fetchByQuery(widget.initialSearch!);
@@ -110,6 +115,13 @@ class _AnimeListPageState extends State<AnimeListPage> {
       'Horror',
       'Sci-Fi',
       'Mystery',
+      'Historical',
+      'Isekai',
+      'Slice of Life',
+      'Supernatural',
+      'Psychological',
+      'Drama',
+      'Adventure',
     ];
     if (query.isEmpty) {
       return _homeAnimeList;
