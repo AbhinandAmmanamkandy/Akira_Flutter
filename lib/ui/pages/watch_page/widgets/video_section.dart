@@ -194,11 +194,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
   }
 
   String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    final hours = duration.inHours > 0 ? '${duration.inHours}:' : '';
-    return '$hours$minutes:$seconds';
+    return formatDuration(duration);
   }
 
   @override
@@ -294,7 +290,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   seekBarThumbColor: colorScheme.primary,
                   seekBarHeight: 4.0,
                   seekBarThumbSize: 12.0,
-                  seekBarMargin: const EdgeInsets.only(left: 20, right: 20, bottom: 42),
+                  seekBarMargin: const EdgeInsets.only(left: 64, right: 104, bottom: 42),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 20, right: 12, bottom: 16),
                   topButtonBarMargin: const EdgeInsets.only(left: 16, right: 16, top: 16),
                   seekOnDoubleTap: true,
@@ -418,7 +414,6 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       )
                     else
                       const Spacer(),
-                    const MaterialFullscreenButton(),
                     MaterialCustomButton(
                       onPressed: () => _showSpeedDialog(context),
                       icon: const Icon(Icons.speed_rounded, size: 20, color: Colors.white),
@@ -457,14 +452,33 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
                       videoWidth: constraints.maxWidth,
-                      positionStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                    Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: _PlayerPosition(
+                        player: widget.controller!.player,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     const Spacer(),
+                    Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: _PlayerDuration(
+                        player: widget.controller!.player,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                    const MaterialFullscreenButton(),
                   ],
                 ),
 
@@ -475,7 +489,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   seekBarThumbColor: colorScheme.primary,
                   seekBarHeight: 6.0,
                   seekBarThumbSize: 14.0,
-                  seekBarMargin: const EdgeInsets.only(left: 32, right: 32, bottom: 56),
+                  seekBarMargin: const EdgeInsets.only(left: 80, right: 140, bottom: 56),
                   bottomButtonBarMargin: const EdgeInsets.only(left: 32, right: 24, bottom: 24),
                   topButtonBarMargin: const EdgeInsets.only(left: 24, right: 24, top: 24),
                   seekOnDoubleTap: true,
@@ -599,7 +613,6 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       )
                     else
                       const Spacer(),
-                    const MaterialFullscreenButton(),
                     MaterialCustomButton(
                       onPressed: () => _showSpeedDialog(context),
                       icon: const Icon(Icons.speed_rounded, size: 24, color: Colors.white),
@@ -610,14 +623,33 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                       player: widget.controller!.player,
                       resumePosition: widget.resumePosition,
                       videoWidth: MediaQuery.of(context).size.width,
-                      positionStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                    Transform.translate(
+                      offset: const Offset(0, -14),
+                      child: _PlayerPosition(
+                        player: widget.controller!.player,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     const Spacer(),
+                    Transform.translate(
+                      offset: const Offset(0, -14),
+                      child: _PlayerDuration(
+                        player: widget.controller!.player,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                    const MaterialFullscreenButton(),
                   ],
                   primaryButtonBar: [
                     const Spacer(flex: 3),
@@ -914,37 +946,34 @@ class _SeekMarkers extends StatelessWidget {
   final Player player;
   final Duration? resumePosition;
   final double videoWidth;
-  final TextStyle? positionStyle;
 
   const _SeekMarkers({
     required this.player,
     this.resumePosition,
     required this.videoWidth,
-    this.positionStyle,
   });
 
   @override
   Widget build(BuildContext context) {
-    final videoState = VideoStateInheritedWidget.of(context).state;
-    final isFullscreen = videoState.isFullscreen();
-
     return StreamBuilder<Duration>(
       stream: player.stream.duration,
       builder: (context, snapshot) {
         final duration = snapshot.data ?? player.state.duration;
         if (duration.inMilliseconds <= 0) return const SizedBox.shrink();
 
-        final seekBarMargin = isFullscreen 
-            ? const EdgeInsets.only(left: 32, right: 32, bottom: 56)
-            : const EdgeInsets.only(left: 20, right: 20, bottom: 42);
+        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
         
-        final bottomButtonBarMargin = isFullscreen
+        final seekBarMargin = isLandscape 
+            ? const EdgeInsets.only(left: 80, right: 140, bottom: 56)
+            : const EdgeInsets.only(left: 64, right: 104, bottom: 42);
+        
+        final bottomButtonBarMargin = isLandscape
             ? const EdgeInsets.only(left: 32, right: 24, bottom: 24)
             : const EdgeInsets.only(left: 20, right: 12, bottom: 16);
 
-        final availableWidth = videoWidth - seekBarMargin.horizontal;
-        final seekBarHeight = isFullscreen ? 6.0 : 4.0;
-        const buttonBarHeight = 56.0;
+        final availableWidth = (videoWidth - seekBarMargin.horizontal).clamp(0.0, double.infinity);
+        final seekBarHeight = isLandscape ? 6.0 : 4.0;
+        const buttonBarHeight = 44.0;
         final dy = (seekBarMargin.bottom - bottomButtonBarMargin.bottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
 
         return SizedBox(
@@ -953,51 +982,25 @@ class _SeekMarkers extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Positioned(
-                left: seekBarMargin.left - bottomButtonBarMargin.left,
-                bottom: dy,
-                child: SizedBox(
-                  width: availableWidth,
-                  height: 0,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      // Position Indicator (Top Right of Seek Bar)
-                      if (positionStyle != null)
-                        Positioned(
-                          right: 0,
-                          bottom: isFullscreen ? 16 : 12,
-                          child: MaterialPositionIndicator(style: positionStyle),
+              if (resumePosition != null)
+                Positioned(
+                  left: seekBarMargin.left - bottomButtonBarMargin.left + (availableWidth * (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)) - 1,
+                  bottom: dy - (isLandscape ? 6 : 4), 
+                  child: Container(
+                    width: 2,
+                    height: isLandscape ? 12 : 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 2,
                         ),
-                      // Resume Position Marker
-                      if (resumePosition != null)
-                        Builder(builder: (context) {
-                          final ratio = (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-                          final markerHeight = isFullscreen ? 12.0 : 8.0;
-                          return Positioned(
-                            left: availableWidth * ratio - 1,
-                            bottom: -markerHeight / 2,
-                            child: Container(
-                              width: 2,
-                              height: markerHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(1),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.5),
-                                    blurRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         );
@@ -1006,3 +1009,44 @@ class _SeekMarkers extends StatelessWidget {
   }
 }
 
+String formatDuration(Duration duration) {
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final minutes = twoDigits(duration.inMinutes.remainder(60));
+  final seconds = twoDigits(duration.inSeconds.remainder(60));
+  final hours = duration.inHours > 0 ? '${duration.inHours}:' : '';
+  return '$hours$minutes:$seconds';
+}
+
+class _PlayerPosition extends StatelessWidget {
+  final Player player;
+  final TextStyle style;
+  const _PlayerPosition({required this.player, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Duration>(
+      stream: player.stream.position,
+      builder: (context, snapshot) {
+        final position = snapshot.data ?? player.state.position;
+        return Text(formatDuration(position), style: style);
+      },
+    );
+  }
+}
+
+class _PlayerDuration extends StatelessWidget {
+  final Player player;
+  final TextStyle style;
+  const _PlayerDuration({required this.player, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Duration>(
+      stream: player.stream.duration,
+      builder: (context, snapshot) {
+        final duration = snapshot.data ?? player.state.duration;
+        return Text(formatDuration(duration), style: style);
+      },
+    );
+  }
+}
