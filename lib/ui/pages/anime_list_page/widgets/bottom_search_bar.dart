@@ -8,6 +8,7 @@ class BottomSearchBar extends StatelessWidget {
   final Function(String) onSearch;
   final Function(String) onChanged;
   final VoidCallback? onClear;
+  final bool isManga;
 
   const BottomSearchBar({
     super.key,
@@ -16,6 +17,7 @@ class BottomSearchBar extends StatelessWidget {
     required this.onSearch,
     required this.onChanged,
     this.onClear,
+    this.isManga = false,
   });
 
   @override
@@ -61,7 +63,7 @@ class BottomSearchBar extends StatelessWidget {
               ),
               cursorColor: colorScheme.primary,
               decoration: InputDecoration(
-                hintText: 'Search anime...',
+                hintText: isManga ? 'Search manga...' : 'Search anime...',
                 hintStyle: TextStyle(
                   color: AkiraColors.getHintSubtextColor(colorScheme, isLight),
                   fontWeight: FontWeight.normal,

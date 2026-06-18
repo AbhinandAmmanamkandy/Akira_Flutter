@@ -40,6 +40,7 @@ class MangaService {
                   name
                   englishName
                   thumbnail
+                  lastChapterInfo
               }
           }
       }
@@ -77,6 +78,37 @@ class MangaService {
     }
   }
 
+  Future<List<Anime>> fetchMangaWithIds(List<String> ids) async {
+    const String query = r'''
+      query($ids: [String!]!) {
+        mangasWithIds(ids: $ids) {
+          _id
+          name
+          englishName
+          thumbnail
+        }
+      }
+    ''' ;
+
+    try {
+      final response = await _post(query, variables: {'ids': ids});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] == null || data['data']['mangasWithIds'] == null) {
+          return [];
+        }
+        final List shows = data['data']['mangasWithIds'];
+        return shows.map((e) => Anime.fromJson(e)).toList();
+      }
+      return [];
+    } on SocketException {
+      throw NoInternetException();
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<AnimeDetails?> fetchMangaDetails(String id) async {
     final String query = r'''
       query($id: String!) {
@@ -91,6 +123,7 @@ class MangaService {
           status
           averageScore
           rating
+          relatedMangas
         }
       }
     ''';
@@ -103,7 +136,11 @@ class MangaService {
         if (data['data'] == null || data['data']['manga'] == null) {
           return null;
         }
-        return AnimeDetails.fromJson(data['data']['manga']);
+        final mangaData = data['data']['manga'];
+        if (mangaData['relatedMangas'] != null) {
+          mangaData['relatedShows'] = mangaData['relatedMangas'];
+        }
+        return AnimeDetails.fromJson(mangaData);
       }
       return null;
     } on SocketException {

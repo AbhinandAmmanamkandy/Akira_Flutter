@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:akira/models/anime.dart';
 import 'package:akira/services/anime_service.dart';
+import 'package:akira/services/manga_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/favorite_service.dart';
 import 'package:akira/services/history_service.dart';
@@ -19,8 +20,9 @@ import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final Anime anime;
+  final bool isManga;
 
-  const AnimeDetailPage({super.key, required this.anime});
+  const AnimeDetailPage({super.key, required this.anime, this.isManga = false});
 
   @override
   State<AnimeDetailPage> createState() => _AnimeDetailPageState();
@@ -29,6 +31,7 @@ class AnimeDetailPage extends StatefulWidget {
 class _AnimeDetailPageState extends State<AnimeDetailPage> {
   late Future<AnimeDetails?> _detailsFuture;
   final AnimeService _animeService = AnimeService();
+  final MangaService _mangaService = MangaService();
   final FavoriteService _favoriteService = FavoriteService();
   final HistoryService _historyService = HistoryService();
   final ScrollController _scrollController = ScrollController();
@@ -37,7 +40,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   @override
   void initState() {
     super.initState();
-    _detailsFuture = _animeService.fetchAnimeDetails(widget.anime.id);
+    _detailsFuture = widget.isManga 
+        ? _mangaService.fetchMangaDetails(widget.anime.id)
+        : _animeService.fetchAnimeDetails(widget.anime.id);
     _historyService.init();
     _scrollController.addListener(_onScroll);
   }
@@ -173,7 +178,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                         FilledButton.tonalIcon(
                                           onPressed: () {
                                             setState(() {
-                                              _detailsFuture = _animeService.fetchAnimeDetails(widget.anime.id);
+                                              _detailsFuture = widget.isManga
+                                                  ? _mangaService.fetchMangaDetails(widget.anime.id)
+                                                  : _animeService.fetchAnimeDetails(widget.anime.id);
                                             });
                                           },
                                           icon: const Icon(Icons.refresh_rounded),
@@ -203,6 +210,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                             MaterialPageRoute(
                                               builder: (context) => AnimeListPage(
                                                 initialGenre: tag,
+                                                isManga: widget.isManga,
                                               ),
                                             ),
                                           );
@@ -213,7 +221,12 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                     RepaintBoundary(
                                       child: DetailActionRow(
                                         continueEpisode: history?.episode,
+                                        isManga: widget.isManga,
                                         onPlayTap: () {
+                                          if (widget.isManga) {
+                                            // Handle manga reading navigation here if a reader page exists
+                                            return;
+                                          }
                                           FocusManager.instance.primaryFocus
                                               ?.unfocus();
                                           Navigator.push(
@@ -241,6 +254,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                     const SizedBox(height: 24),
                                     DetailRelatedSection(
                                       relatedShows: details.relatedShows,
+                                      isManga: widget.isManga,
                                     ),
                                     const SizedBox(height: 100),
                                   ],

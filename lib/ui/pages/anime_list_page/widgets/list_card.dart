@@ -8,8 +8,14 @@ import 'list_card_thumbnail.dart';
 class ListCard extends StatelessWidget {
   final Anime anime;
   final VoidCallback? onTap;
+  final bool isManga;
 
-  const ListCard({super.key, required this.anime, this.onTap});
+  const ListCard({
+    super.key,
+    required this.anime,
+    this.onTap,
+    this.isManga = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +25,7 @@ class ListCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AnimeDetailPage(anime: anime),
+            builder: (context) => AnimeDetailPage(anime: anime, isManga: isManga),
           ),
         );
       },
@@ -67,7 +73,7 @@ class ListCard extends StatelessWidget {
                     top: 10,
                     right: 10,
                     child: CommonChip(
-                      label: 'EP ${anime.lastEpisode}',
+                      label: '${isManga ? 'CH' : 'EP'} ${anime.lastEpisode}',
                     ),
                   ),
                 Positioned(

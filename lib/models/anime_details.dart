@@ -23,7 +23,7 @@ class RelatedShow {
   factory RelatedShow.fromJson(Map<String, dynamic> json) {
     return RelatedShow(
       relation: json['relation']?.toString() ?? '',
-      showId: json['showId']?.toString() ?? '',
+      showId: (json['showId'] ?? json['mangaId'])?.toString() ?? '',
     );
   }
 }

@@ -5,8 +5,14 @@ import 'list_card.dart';
 class ListGrid extends StatelessWidget {
   final List<Anime> animeList;
   final Function(Anime)? onAnimeTap;
+  final bool isManga;
 
-  const ListGrid({super.key, required this.animeList, this.onAnimeTap});
+  const ListGrid({
+    super.key,
+    required this.animeList,
+    this.onAnimeTap,
+    this.isManga = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +34,7 @@ class ListGrid extends StatelessWidget {
             final anime = animeList[index];
             return ListCard(
               anime: anime,
+              isManga: isManga,
               onTap: onAnimeTap != null ? () => onAnimeTap!(anime) : null,
             );
           },

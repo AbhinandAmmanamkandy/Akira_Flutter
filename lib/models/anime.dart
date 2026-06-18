@@ -19,7 +19,12 @@ class Anime {
       thumbnail = 'https://wp.youtube-anime.com/aln.youtube-anime.com/$thumbnail';
     }
     final lastEpisodeInfo = json['lastEpisodeInfo'];
-    final String? lastEpisode = lastEpisodeInfo?['sub']?['episodeString']?.toString();
+    final lastChapterInfo = json['lastChapterInfo'];
+    
+    String? lastEpisode = lastEpisodeInfo?['sub']?['episodeString']?.toString();
+    if (lastEpisode == null && lastChapterInfo != null) {
+      lastEpisode = lastChapterInfo['sub']?['episodeString']?.toString();
+    }
 
     return Anime(
       id: json['_id']?.toString() ?? '',

@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:akira/models/anime.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/services/anime_service.dart';
+import 'package:akira/services/manga_service.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
 import '../anime_detail_page.dart';
 
 class DetailRelatedSection extends StatefulWidget {
   final List<RelatedShow> relatedShows;
+  final bool isManga;
 
-  const DetailRelatedSection({super.key, required this.relatedShows});
+  const DetailRelatedSection({
+    super.key,
+    required this.relatedShows,
+    this.isManga = false,
+  });
 
   @override
   State<DetailRelatedSection> createState() => _DetailRelatedSectionState();
@@ -39,7 +45,9 @@ class _DetailRelatedSectionState extends State<DetailRelatedSection> {
 
   void _initFuture() {
     final ids = widget.relatedShows.map((s) => s.showId).toList();
-    _relatedAnimeFuture = AnimeService().fetchAnimeWithIds(ids);
+    _relatedAnimeFuture = widget.isManga
+        ? MangaService().fetchMangaWithIds(ids)
+        : AnimeService().fetchAnimeWithIds(ids);
   }
 
   @override
@@ -115,6 +123,7 @@ class _DetailRelatedSectionState extends State<DetailRelatedSection> {
                         child: _RelatedShowTile(
                           show: rel,
                           anime: _cachedAnimeMap![rel.showId]!,
+                          isManga: widget.isManga,
                         ),
                       );
                     }).toList(),
@@ -132,8 +141,13 @@ class _DetailRelatedSectionState extends State<DetailRelatedSection> {
 class _RelatedShowTile extends StatelessWidget {
   final RelatedShow show;
   final Anime anime;
+  final bool isManga;
 
-  const _RelatedShowTile({required this.show, required this.anime});
+  const _RelatedShowTile({
+    required this.show,
+    required this.anime,
+    required this.isManga,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +195,10 @@ class _RelatedShowTile extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => AnimeDetailPage(anime: anime),
+            builder: (context) => AnimeDetailPage(
+              anime: anime,
+              isManga: isManga,
+            ),
           ),
         );
       },

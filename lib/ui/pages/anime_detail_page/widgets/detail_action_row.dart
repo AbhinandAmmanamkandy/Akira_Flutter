@@ -6,12 +6,14 @@ class DetailActionRow extends StatelessWidget {
   final VoidCallback onPlayTap;
   final String watchLabel;
   final int? continueEpisode;
+  final bool isManga;
 
   const DetailActionRow({
     super.key,
     required this.onPlayTap,
     this.watchLabel = 'Watch Now',
     this.continueEpisode,
+    this.isManga = false,
   });
 
   @override
@@ -20,9 +22,12 @@ class DetailActionRow extends StatelessWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
 
+    final defaultLabel = isManga ? 'Read Now' : watchLabel;
+    final unitLabel = isManga ? 'Chapter' : 'Episode';
+
     final label = continueEpisode != null 
-        ? 'Continue Episode $continueEpisode' 
-        : watchLabel;
+        ? 'Continue $unitLabel $continueEpisode' 
+        : defaultLabel;
 
     // Redesign: Distinct styles for Light and Dark modes
     if (isLight) {

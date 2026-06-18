@@ -8,6 +8,7 @@ import 'widgets/list_state_views.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:akira/services/anime_service.dart';
+import 'package:akira/services/manga_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
@@ -20,8 +21,14 @@ import 'package:akira/ui/widgets/common_chip.dart';
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
   final String? initialGenre;
+  final bool isManga;
 
-  const AnimeListPage({super.key, this.initialSearch, this.initialGenre});
+  const AnimeListPage({
+    super.key,
+    this.initialSearch,
+    this.initialGenre,
+    this.isManga = false,
+  });
 
   @override
   State<AnimeListPage> createState() => _AnimeListPageState();
@@ -34,6 +41,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
   late Future<List<Anime>> _homeAnimeList;
   late Future<List<Anime>> _animeList;
   final AnimeService _animeService = AnimeService();
+  final MangaService _mangaService = MangaService();
+  late bool _isManga;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -44,12 +53,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
   @override
   void initState() {
     super.initState();
-    _homeAnimeList = _animeService.fetchAnime();
+    _isManga = widget.isManga;
+    _refreshHomeList();
 
     if (widget.initialGenre != null) {
       _isSearching = true;
       _searchController.text = widget.initialGenre!;
-      _animeList = _animeService.fetchAnime(genres: [widget.initialGenre!]);
+      _animeList = _isManga 
+          ? _mangaService.fetchManga(queryText: widget.initialGenre!)
+          : _animeService.fetchAnime(genres: [widget.initialGenre!]);
     } else if (widget.initialSearch != null) {
       _isSearching = true;
       _searchController.text = widget.initialSearch!;
@@ -60,6 +72,25 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
     _scrollController.addListener(_onScroll);
     _initHint();
+  }
+
+  void _refreshHomeList() {
+    _homeAnimeList = _isManga 
+        ? _mangaService.fetchManga() 
+        : _animeService.fetchAnime();
+    if (!_isSearching) {
+      _animeList = _homeAnimeList;
+    }
+  }
+
+  void _toggleMode() {
+    setState(() {
+      _isManga = !_isManga;
+      _refreshHomeList();
+      if (_isSearching) {
+        _animeList = _fetchByQuery(_searchController.text);
+      }
+    });
   }
 
   void _initHint() {
@@ -126,11 +157,17 @@ class _AnimeListPageState extends State<AnimeListPage> {
     if (query.isEmpty) {
       return _homeAnimeList;
     } else if (query.toLowerCase() == 'trending') {
-      return _animeService.fetchPopularAnime();
+      return _isManga 
+          ? _mangaService.fetchPopularManga()
+          : _animeService.fetchPopularAnime();
     } else if (genres.contains(query)) {
-      return _animeService.fetchAnime(genres: [query]);
+      return _isManga 
+          ? _mangaService.fetchManga(queryText: query)
+          : _animeService.fetchAnime(genres: [query]);
     } else {
-      return _animeService.fetchAnime(queryText: query);
+      return _isManga
+          ? _mangaService.fetchManga(queryText: query)
+          : _animeService.fetchAnime(queryText: query);
     }
   }
 
@@ -240,7 +277,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                 parent: BouncingScrollPhysics(),
                               ),
                               slivers: [
-                                ListAppBar(appBarOpacity: _appBarOpacity),
+                                ListAppBar(
+                                  appBarOpacity: _appBarOpacity,
+                                  isManga: _isManga,
+                                  onToggleMode: _toggleMode,
+                                ),
 
                                 // Tooltip Hint Banner
                                 if (ThemeService().showTooltips)
@@ -280,6 +321,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                 else
                                   ListGrid(
                                     animeList: snapshot.data!,
+                                    isManga: _isManga,
                                     onAnimeTap: (anime) async {
                                       FocusManager.instance.primaryFocus
                                           ?.unfocus();
@@ -290,7 +332,10 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              AnimeDetailPage(anime: anime),
+                                              AnimeDetailPage(
+                                                anime: anime,
+                                                isManga: _isManga,
+                                              ),
                                         ),
                                       );
                                     },
@@ -309,6 +354,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                         focusNode: _searchFocusNode,
                         onSearch: _onSearch,
                         onChanged: (value) => setState(() {}),
+                        isManga: _isManga,
                         onClear: () {
                           setState(() {
                             _isSearching = false;
