@@ -212,20 +212,16 @@ class SettingsPage extends StatelessWidget {
                           SettingsTile(
                             icon: Icons.backup_outlined,
                             title: 'Export Data',
-                            subtitle: 'Copy backup JSON to clipboard',
-                            onTap: () {
-                              final data = BackupService.exportData();
-                              Clipboard.setData(ClipboardData(text: data));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Backup copied to clipboard')),
-                              );
+                            subtitle: 'Save backup to file or share',
+                            onTap: () async {
+                              await BackupService.exportToFile();
                             },
                           ),
                           const SettingsDivider(),
                           SettingsTile(
                             icon: Icons.restore_outlined,
                             title: 'Import Data',
-                            subtitle: 'Restore from JSON string',
+                            subtitle: 'Restore from file or JSON string',
                             onTap: () => _showImportDialog(context),
                           ),
                         ],
@@ -296,17 +292,42 @@ class SettingsPage extends StatelessWidget {
         title: const Text('Import Data'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            FilledButton.icon(
+              onPressed: () async {
+                final success = await BackupService.importFromFile();
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  _showImportResult(context, success);
+                }
+              },
+              icon: const Icon(Icons.file_open_rounded),
+              label: const Text('Import from File'),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                children: [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text('OR', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+            ),
             const Text('Paste your backup JSON below:'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextField(
               controller: controller,
-              maxLines: 5,
+              maxLines: 4,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: '{...}',
               ),
-              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
             ),
           ],
         ),
@@ -315,24 +336,29 @@ class SettingsPage extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          TextButton(
             onPressed: () async {
               final success = await BackupService.importData(controller.text);
               if (context.mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success 
-                      ? 'Data imported successfully!' 
-                      : 'Failed to import data. Invalid JSON?'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
+                _showImportResult(context, success);
               }
             },
-            child: const Text('Import'),
+            child: const Text('Import Text'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showImportResult(BuildContext context, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success 
+          ? 'Data imported successfully!' 
+          : 'Failed to import data. Invalid JSON?'),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
