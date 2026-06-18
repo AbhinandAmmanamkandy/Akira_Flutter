@@ -58,7 +58,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   void _initHint() {
-    if (_hasShownSessionHint || widget.initialSearch != null) return;
+    if (_hasShownSessionHint || widget.initialSearch != null || !ThemeService().showTooltips) return;
 
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
@@ -231,13 +231,14 @@ class _AnimeListPageState extends State<AnimeListPage> {
                                 ListAppBar(appBarOpacity: _appBarOpacity),
 
                                 // Tooltip Hint Banner
-                                SliverToBoxAdapter(
-                                  child: ScaleFadeVisibility(
-                                    isVisible:
-                                        _showHint && _appBarOpacity < 0.1,
-                                    child: HintBanner(text: _hintText),
+                                if (ThemeService().showTooltips)
+                                  SliverToBoxAdapter(
+                                    child: ScaleFadeVisibility(
+                                      isVisible:
+                                          _showHint && _appBarOpacity < 0.1,
+                                      child: HintBanner(text: _hintText),
+                                    ),
                                   ),
-                                ),
 
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting)

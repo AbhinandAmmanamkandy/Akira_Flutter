@@ -34,6 +34,9 @@ class ThemeService extends ChangeNotifier {
   
   bool _useOverscrollToClose = true;
   bool get useOverscrollToClose => _useOverscrollToClose;
+
+  bool _showTooltips = true;
+  bool get showTooltips => _showTooltips;
   
   bool _isFirstOpen = true;
   bool get isFirstOpen => _isFirstOpen;
@@ -57,6 +60,7 @@ class ThemeService extends ChangeNotifier {
     _allowUnknown = _prefs.getBool('allowUnknown') ?? false;
     _useGlassTheme = _prefs.getBool('useGlassTheme') ?? false;
     _useOverscrollToClose = _prefs.getBool('useOverscrollToClose') ?? true;
+    _showTooltips = _prefs.getBool('showTooltips') ?? true;
     _isFirstOpen = _prefs.getBool('isFirstOpen') ?? true;
     _username = _prefs.getString('username') ?? '';
     _gender = _prefs.getString('gender') ?? '';
@@ -79,6 +83,7 @@ class ThemeService extends ChangeNotifier {
       'allowUnknown': _allowUnknown,
       'useGlassTheme': _useGlassTheme,
       'useOverscrollToClose': _useOverscrollToClose,
+      'showTooltips': _showTooltips,
       'username': _username,
       'gender': _gender,
     };
@@ -122,6 +127,10 @@ class ThemeService extends ChangeNotifier {
       _useOverscrollToClose = settings['useOverscrollToClose'];
       _prefs.setBool('useOverscrollToClose', _useOverscrollToClose);
     }
+    if (settings.containsKey('showTooltips')) {
+      _showTooltips = settings['showTooltips'];
+      _prefs.setBool('showTooltips', _showTooltips);
+    }
     if (settings.containsKey('username')) {
       _username = settings['username'];
       _prefs.setString('username', _username);
@@ -159,6 +168,12 @@ class ThemeService extends ChangeNotifier {
   void toggleOverscrollToClose() {
     _useOverscrollToClose = !_useOverscrollToClose;
     _prefs.setBool('useOverscrollToClose', _useOverscrollToClose);
+    notifyListeners();
+  }
+
+  void toggleShowTooltips() {
+    _showTooltips = !_showTooltips;
+    _prefs.setBool('showTooltips', _showTooltips);
     notifyListeners();
   }
 

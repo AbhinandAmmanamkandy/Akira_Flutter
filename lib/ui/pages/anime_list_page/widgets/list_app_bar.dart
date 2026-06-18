@@ -132,7 +132,7 @@ class ListAppBar extends StatelessWidget {
                       child: Row(
                         children: [
                           IconButton(
-                            tooltip: 'Senpai\'s Picks',
+                            tooltip: ThemeService().showTooltips ? 'Senpai\'s Picks' : null,
                             onPressed: () {
                               FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage()));

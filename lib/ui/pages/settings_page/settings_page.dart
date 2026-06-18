@@ -145,6 +145,17 @@ class SettingsPage extends StatelessWidget {
                           ),
                           const SettingsDivider(),
                           SettingsTile(
+                            icon: Icons.info_outline_rounded,
+                            title: 'Show Tooltips',
+                            subtitle: 'Show tooltips on home screen',
+                            trailing: Switch(
+                              value: themeService.showTooltips,
+                              onChanged: (_) => themeService.toggleShowTooltips(),
+                              activeThumbColor: colorScheme.primary,
+                            ),
+                          ),
+                          const SettingsDivider(),
+                          SettingsTile(
                             icon: Icons.palette_outlined,
                             title: 'System Accent',
                             subtitle: 'Use wallpaper colors',
