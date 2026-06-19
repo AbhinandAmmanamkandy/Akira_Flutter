@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -98,7 +97,7 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
 
   Future<void> _loadInitialValues() async {
     try {
-      final brightness = await ScreenBrightness().current;
+      final brightness = await ScreenBrightness().application;
       final volume = await FlutterVolumeController.getVolume();
       await FlutterVolumeController.updateShowSystemUI(false);
       if (mounted) {
@@ -298,10 +297,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   brightnessGesture: true,
                   initialBrightness: _brightness,
                   onBrightnessChanged: (value) {
-                    ScreenBrightness().setScreenBrightness(value);
+                    ScreenBrightness().setApplicationScreenBrightness(value);
                   },
                   onBrightnessReset: () {
-                    ScreenBrightness().resetScreenBrightness();
+                    ScreenBrightness().resetApplicationScreenBrightness();
                   },
                   initialVolume: _volume,
                   onVolumeChanged: (value) {
@@ -497,10 +496,10 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                   brightnessGesture: true,
                   initialBrightness: _brightness,
                   onBrightnessChanged: (value) {
-                    ScreenBrightness().setScreenBrightness(value);
+                    ScreenBrightness().setApplicationScreenBrightness(value);
                   },
                   onBrightnessReset: () {
-                    ScreenBrightness().resetScreenBrightness();
+                    ScreenBrightness().resetApplicationScreenBrightness();
                   },
                   initialVolume: _volume,
                   onVolumeChanged: (value) {

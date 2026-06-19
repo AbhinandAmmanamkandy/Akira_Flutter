@@ -4,10 +4,6 @@ import 'package:akira/models/anime.dart';
 import 'package:akira/models/anime_details.dart';
 import 'package:akira/services/manga_read_service.dart';
 import 'package:akira/services/history_service.dart';
-import 'package:akira/services/theme_service.dart';
-import 'package:akira/ui/widgets/glass_container.dart';
-import 'package:akira/ui/widgets/custom_status_indicator.dart';
-import 'package:akira/theme/akira_colors.dart';
 import 'widgets/manga_page_view.dart';
 import 'widgets/manga_controls.dart';
 
@@ -149,8 +145,6 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final bgColor = Colors.black; // Typically manga readers use black background
 
     return Scaffold(

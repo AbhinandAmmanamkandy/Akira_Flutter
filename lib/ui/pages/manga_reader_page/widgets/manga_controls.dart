@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:akira/models/anime.dart';
 import 'package:akira/models/anime_details.dart';
@@ -28,7 +27,6 @@ class MangaControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Stack(
       children: [
@@ -372,9 +370,8 @@ class _ControlButton extends StatelessWidget {
   const _ControlButton({
     required this.icon,
     required this.onPressed,
-    this.color,
     this.transparent = false,
-  });
+  }) : color = null;
 
   @override
   Widget build(BuildContext context) {

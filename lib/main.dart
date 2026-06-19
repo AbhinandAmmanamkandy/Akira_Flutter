@@ -6,7 +6,6 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'services/favorite_service.dart';
-import 'services/anime_stream_service.dart';
 import 'package:media_kit/media_kit.dart';
 import 'theme/akira_colors.dart';
 import 'ui/pages/anime_list_page/anime_list_page.dart';
@@ -18,8 +17,6 @@ Future<void> main() async {
   await ThemeService().init();
   await HistoryService().init();
   await FavoriteService().init();
-
-  final result = AllAnimeApi().decypher("ARDaLhp3/l1RUhydwkTa/3biT8Yk4e6zGmuSSRVc+fWoqXTHnTpW6kz8dfyIxSQwrX0G7Jz9b1eCVJxvbFADP/C8RP0v9cA8NMGPtHaE5HfTRUqa5k9y31KBvq/5RCc3rZ/Lp9vK4ubpehM9MUcQ0GPSkvLPVL+1CiB9YJaDTaihycPbXb15IcwNOyL7CJrI3gx3GKnppWYGfSTUVF6L/jrlRSZQ2jBWpzAwX6XJieK9rj0bpaIb0pyfXQVUlJ9udBAVd6NvO0LOSGS5g3pasZXApfnBmKx0Nm2BzE5Y5uOUHKcwqeTOYgVNHg6/pYK8tBM7xcYsZy3ygMP4NyZkE4n/mmZRrU2hxG+pz7xZmUnz/5hutV3JYEz3vzK1nHnLz+Z2RyRjG2GNXjICWy2Z/C6ErfX/W5ph4gt272UbVzglS8P4ueGchYA0gB/dxxOgem+uMUSWyAWuHs61EbArOMaXU1Npstbl3GpWNtrwDsmNQ52S8RuaUKtU+tbAOx6IgZ1v8cgfff0GmiGNiVB73C6KtjsJVqSwmBFHy60mF8we6xDnYLRaBXf/aDhz+8gBtO3YKSo=");
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

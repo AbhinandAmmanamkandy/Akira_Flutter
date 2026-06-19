@@ -99,8 +99,9 @@ class _AnimeListPageState extends State<AnimeListPage> {
   void _initHint() {
     if (_hasShownSessionHint ||
         widget.initialSearch != null ||
-        !ThemeService().showTooltips)
+        !ThemeService().showTooltips) {
       return;
+    }
 
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
@@ -397,7 +398,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   Widget _buildFloatingFilterChips(ColorScheme colorScheme) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
 
     return Positioned(
