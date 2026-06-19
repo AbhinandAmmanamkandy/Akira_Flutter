@@ -17,6 +17,7 @@ import 'package:akira/gestures/m_symbol_gesture.dart';
 import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
+import 'widgets/floating_filter_bar.dart';
 import 'package:akira/ui/widgets/common_chip.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
 import 'package:akira/ui/widgets/custom_status_indicator.dart';
@@ -183,6 +184,9 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   void _onSearch(String query) {
+    if (_searchController.text != query) {
+      _searchController.text = query;
+    }
     setState(() {
       _showHint = false;
       _isSearching = query.isNotEmpty;
@@ -368,7 +372,12 @@ class _AnimeListPageState extends State<AnimeListPage> {
                             );
                           },
                         ),
-                        _buildFloatingFilterChips(colorScheme),
+                        FloatingFilterBar(
+                          isManga: _isManga,
+                          searchText: _searchController.text,
+                          onToggleMode: _toggleMode,
+                          onSearch: _onSearch,
+                        ),
                         BottomSearchBar(
                           controller: _searchController,
                           focusNode: _searchFocusNode,
@@ -395,150 +404,5 @@ class _AnimeListPageState extends State<AnimeListPage> {
       },
     );
   }
-
-  Widget _buildFloatingFilterChips(ColorScheme colorScheme) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final useGlass = ThemeService().useGlassTheme;
-
-    return Positioned(
-      bottom: bottomInset + 90,
-      left: 0,
-      right: 0,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20, bottom: 12),
-            child: GlassContainer(
-              borderRadius: 20,
-              padding: const EdgeInsets.all(2),
-              opacity: 0.15,
-              blur: 8,
-              withBlur: useGlass,
-              border: Border.all(
-                color: colorScheme.primary.withValues(alpha: 0.2),
-                width: 1,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildSmallModeButton(
-                    'ANIME',
-                    Icons.play_circle_fill_rounded,
-                    !_isManga,
-                    colorScheme,
-                  ),
-                  _buildSmallModeButton(
-                    'MANGA',
-                    Icons.menu_book_rounded,
-                    _isManga,
-                    colorScheme,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                CommonChip(
-                  label: 'Trending',
-                  icon: Icons.trending_up_rounded,
-                  color: colorScheme.primary,
-                  isSelected: _searchController.text == 'Trending',
-                  onTap: () {
-                    if (_searchController.text == 'Trending') {
-                      _searchController.clear();
-                      _onSearch('');
-                    } else {
-                      _searchController.text = 'Trending';
-                      _onSearch('Trending');
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
-                ...ThemeService().pinnedChips.map(
-                  (genre) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: CommonChip(
-                      label: genre,
-                      isSelected: _searchController.text == genre,
-                      onTap: () {
-                        if (_searchController.text == genre) {
-                          _searchController.clear();
-                          _onSearch('');
-                        } else {
-                          _searchController.text = genre;
-                          _onSearch(genre);
-                        }
-                      },
-                      onLongPress: () {
-                        ThemeService().removePinnedChip(genre);
-                        HapticFeedback.mediumImpact();
-                        CustomStatusIndicator.show(
-                          context,
-                          'Removed $genre',
-                          Icons.delete_outline_rounded,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallModeButton(
-    String label,
-    IconData icon,
-    bool isSelected,
-    ColorScheme colorScheme,
-  ) {
-    return GestureDetector(
-      onTap: isSelected ? null : _toggleMode,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 11,
-              color: isSelected
-                  ? colorScheme.onPrimary
-                  : colorScheme.primary.withValues(alpha: 0.7),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.3,
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.primary.withValues(alpha: 0.7),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 
 }

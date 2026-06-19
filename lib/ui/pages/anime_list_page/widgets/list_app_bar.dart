@@ -4,6 +4,7 @@ import 'package:akira/ui/pages/bookmarks_page/bookmarks_page.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
+import 'header_icon_button.dart';
 
 class ListAppBar extends StatelessWidget {
   final double appBarOpacity;
@@ -138,33 +139,21 @@ class ListAppBar extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
-                          IconButton(
+                          HeaderIconButton(
                             tooltip: ThemeService().showTooltips ? 'Senpai\'s Picks' : null,
+                            icon: Icons.favorite_rounded,
                             onPressed: () {
                               FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage()));
                             },
-                            style: IconButton.styleFrom(
-                              backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
-                              padding: const EdgeInsets.all(12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
-                            ),
-                            icon: Icon(Icons.favorite_rounded, size: 24, color: colorScheme.onSurface),
                           ),
                           const SizedBox(width: 8),
-                          IconButton(
+                          HeaderIconButton(
+                            icon: Icons.settings_rounded,
                             onPressed: () {
                               FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
                             },
-                            style: IconButton.styleFrom(
-                              backgroundColor: AkiraColors.getComponentColor(colorScheme, isLight),
-                              padding: const EdgeInsets.all(12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
-                            ),
-                            icon: Icon(Icons.settings_rounded, size: 24, color: colorScheme.onSurface),
                           ),
                         ],
                       ),

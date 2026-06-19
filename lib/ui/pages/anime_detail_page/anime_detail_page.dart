@@ -17,6 +17,8 @@ import 'widgets/detail_metadata_bar.dart';
 import 'widgets/detail_description_section.dart';
 import 'widgets/detail_tags_row.dart';
 import 'widgets/detail_related_section.dart';
+import 'widgets/detail_loading_view.dart';
+import 'widgets/detail_error_view.dart';
 import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeDetailPage extends StatefulWidget {
@@ -156,56 +158,19 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const SizedBox(
-                                  height: 300,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
+                                return const DetailLoadingView();
                               }
 
                               if (snapshot.hasError || !snapshot.hasData) {
-                                final bool isNoInternet = snapshot.error is NoInternetException;
-                                return SizedBox(
-                                  height: 300,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          isNoInternet ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
-                                          size: 48,
-                                          color: colorScheme.error,
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          isNoInternet 
-                                              ? 'No Internet Connection' 
-                                              : 'Failed to load details',
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                        if (isNoInternet) ...[
-                                          const SizedBox(height: 8),
-                                          const Text(
-                                            'Please check your connection and try again',
-                                            style: TextStyle(fontSize: 12),
-                                          ),
-                                        ],
-                                        const SizedBox(height: 24),
-                                        FilledButton.tonalIcon(
-                                          onPressed: () {
-                                            setState(() {
-                                              _detailsFuture = widget.isManga
-                                                  ? _mangaService.fetchMangaDetails(widget.anime.id)
-                                                  : _animeService.fetchAnimeDetails(widget.anime.id);
-                                            });
-                                          },
-                                          icon: const Icon(Icons.refresh_rounded),
-                                          label: const Text('Retry'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                return DetailErrorView(
+                                  error: snapshot.error,
+                                  onRetry: () {
+                                    setState(() {
+                                      _detailsFuture = widget.isManga
+                                          ? _mangaService.fetchMangaDetails(widget.anime.id)
+                                          : _animeService.fetchAnimeDetails(widget.anime.id);
+                                    });
+                                  },
                                 );
                               }
 
