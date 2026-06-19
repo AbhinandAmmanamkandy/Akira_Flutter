@@ -127,6 +127,9 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
       widget.anime.id,
       int.tryParse(_currentChapter) ?? 1,
       Duration(seconds: _currentPage),
+      name: widget.anime.name,
+      thumbnail: widget.anime.thumbnail,
+      isManga: true,
       force: true,
     );
   }

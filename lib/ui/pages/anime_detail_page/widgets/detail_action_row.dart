@@ -4,6 +4,7 @@ import '../../../../services/theme_service.dart';
 
 class DetailActionRow extends StatelessWidget {
   final VoidCallback onPlayTap;
+  final VoidCallback? onClearProgress;
   final String watchLabel;
   final int? continueEpisode;
   final bool isManga;
@@ -11,6 +12,7 @@ class DetailActionRow extends StatelessWidget {
   const DetailActionRow({
     super.key,
     required this.onPlayTap,
+    this.onClearProgress,
     this.watchLabel = 'Watch Now',
     this.continueEpisode,
     this.isManga = false,
@@ -29,11 +31,22 @@ class DetailActionRow extends StatelessWidget {
         ? 'Continue $unitLabel $continueEpisode' 
         : defaultLabel;
 
-    // Redesign: Distinct styles for Light and Dark modes
+    return Row(
+      children: [
+        Expanded(
+          child: _buildMainButton(context, label, isLight, colorScheme, useGlass),
+        ),
+        if (continueEpisode != null && onClearProgress != null) ...[
+          const SizedBox(width: 12),
+          _buildClearButton(context, isLight, colorScheme, useGlass),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMainButton(BuildContext context, String label, bool isLight, ColorScheme colorScheme, bool useGlass) {
     if (isLight) {
-      // Light Mode: Solid, bold, and clean
       return Container(
-        width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -60,9 +73,7 @@ class DetailActionRow extends StatelessWidget {
         ),
       );
     } else {
-      // Dark Mode: Sleek, Glassy, and Glowing
       return Container(
-        width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -83,6 +94,47 @@ class DetailActionRow extends StatelessWidget {
               label: label,
               textColor: colorScheme.primary,
             ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildClearButton(BuildContext context, bool isLight, ColorScheme colorScheme, bool useGlass) {
+    if (isLight) {
+      return Container(
+        height: 56,
+        width: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: colorScheme.errorContainer,
+        ),
+        child: IconButton(
+          onPressed: onClearProgress,
+          icon: Icon(Icons.history_rounded, color: colorScheme.onErrorContainer),
+          tooltip: 'Clear Progress',
+        ),
+      );
+    } else {
+      return Container(
+        height: 56,
+        width: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: GlassContainer(
+          borderRadius: 16,
+          opacity: 0.1,
+          blur: 10,
+          withBlur: useGlass,
+          border: Border.all(
+            color: colorScheme.error.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+          child: IconButton(
+            onPressed: onClearProgress,
+            icon: Icon(Icons.history_rounded, color: colorScheme.error),
+            tooltip: 'Clear Progress',
           ),
         ),
       );

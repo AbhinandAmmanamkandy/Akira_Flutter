@@ -3,6 +3,8 @@ import 'package:akira/ui/widgets/glass_container.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/backup_service.dart';
+import 'package:akira/services/history_service.dart';
+import 'package:akira/ui/pages/history_page/history_page.dart';
 import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
@@ -239,6 +241,20 @@ class SettingsPage extends StatelessWidget {
                             subtitle: 'Restore from file or JSON string',
                             onTap: () => _showImportDialog(context),
                           ),
+                          const SettingsDivider(),
+                          SettingsTile(
+                            icon: Icons.history_rounded,
+                            title: 'Watch History',
+                            subtitle: 'Manage your watch and reading history',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const HistoryPage(),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                       const SettingsSectionHeader(title: 'SUPPORT'),
@@ -374,6 +390,35 @@ class SettingsPage extends StatelessWidget {
           : 'Failed to import data. Invalid JSON?'),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showClearHistoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear History'),
+        content: const Text('Are you sure you want to clear all your watch history? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              HistoryService().clearHistory();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Watch history cleared'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

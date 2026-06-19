@@ -95,7 +95,14 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
           setState(() => _playedOneSecond = true);
         }
         if (player.state.playing) {
-          HistoryService().saveHistory(widget.anime.id, _currentEpisode, pos);
+          HistoryService().saveHistory(
+            widget.anime.id,
+            _currentEpisode,
+            pos,
+            name: widget.anime.name,
+            thumbnail: widget.anime.thumbnail,
+            isManga: false,
+          );
         }
       }
     });

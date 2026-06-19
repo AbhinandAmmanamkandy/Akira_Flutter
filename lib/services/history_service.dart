@@ -5,17 +5,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WatchHistory {
   final int episode;
   final Duration position;
+  final String? name;
+  final String? thumbnail;
+  final bool isManga;
+  final DateTime timestamp;
 
-  WatchHistory({required this.episode, required this.position});
+  WatchHistory({
+    required this.episode, 
+    required this.position,
+    this.name,
+    this.thumbnail,
+    this.isManga = false,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
     'episode': episode,
     'position': position.inMilliseconds,
+    'name': name,
+    'thumbnail': thumbnail,
+    'isManga': isManga,
+    'timestamp': timestamp.toIso8601String(),
   };
 
   factory WatchHistory.fromJson(Map<String, dynamic> json) => WatchHistory(
     episode: json['episode'] as int,
     position: Duration(milliseconds: json['position'] as int),
+    name: json['name'] as String?,
+    thumbnail: json['thumbnail'] as String?,
+    isManga: json['isManga'] as bool? ?? false,
+    timestamp: json['timestamp'] != null 
+        ? DateTime.parse(json['timestamp'] as String) 
+        : null,
   );
 }
 
@@ -61,11 +82,39 @@ class HistoryService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveHistory(String animeId, int episode, Duration position, {bool force = false}) {
+  void clearHistory() {
+    _history.clear();
+    _saveToDisk();
+    notifyListeners();
+  }
+
+  void deleteHistory(String animeId) {
+    if (_history.containsKey(animeId)) {
+      _history.remove(animeId);
+      _saveToDisk();
+      notifyListeners();
+    }
+  }
+
+  void saveHistory(
+    String animeId,
+    int episode,
+    Duration position, {
+    String? name,
+    String? thumbnail,
+    bool isManga = false,
+    bool force = false,
+  }) {
     // Only save if we have at least 1 second of progress (unless forced)
     if (!force && position.inSeconds < 1) return;
-    
-    _history[animeId] = WatchHistory(episode: episode, position: position);
+
+    _history[animeId] = WatchHistory(
+      episode: episode,
+      position: position,
+      name: name,
+      thumbnail: thumbnail,
+      isManga: isManga,
+    );
     _saveToDisk();
     notifyListeners();
   }

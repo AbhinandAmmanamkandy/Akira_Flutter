@@ -63,6 +63,36 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     }
   }
 
+  void _showClearProgressDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Progress'),
+        content: Text(
+          'Are you sure you want to clear your ${widget.isManga ? 'reading' : 'watch'} progress for this ${widget.isManga ? 'manga' : 'anime'}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              _historyService.deleteHistory(widget.anime.id);
+              Navigator.pop(context);
+              CustomStatusIndicator.show(
+                context,
+                'Progress cleared',
+                Icons.history_rounded,
+              );
+            },
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -204,6 +234,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                       child: DetailActionRow(
                                         continueEpisode: history?.episode,
                                         isManga: widget.isManga,
+                                        onClearProgress: () {
+                                          _showClearProgressDialog(context);
+                                        },
                                         onPlayTap: () async {
                                           if (widget.isManga) {
                                             FocusManager.instance.primaryFocus
