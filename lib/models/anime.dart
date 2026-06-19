@@ -22,10 +22,29 @@ class Anime {
     }
     final lastEpisodeInfo = json['lastEpisodeInfo'];
     final lastChapterInfo = json['lastChapterInfo'];
-    
-    String? lastEpisode = lastEpisodeInfo?['sub']?['episodeString']?.toString();
+
+    String? extractEpisode(dynamic info) {
+      if (info == null) return null;
+      if (info is! Map) return info.toString();
+      
+      if (info.containsKey('episodeString')) {
+        return info['episodeString']?.toString();
+      }
+      if (info.containsKey('chapterString')) {
+        return info['chapterString']?.toString();
+      }
+
+      final value = info['sub'] ?? info['raw'] ?? info['dub'];
+      if (value == null) return null;
+      if (value is Map) {
+        return (value['episodeString'] ?? value['chapterString'])?.toString();
+      }
+      return value.toString();
+    }
+
+    String? lastEpisode = extractEpisode(lastEpisodeInfo);
     if (lastEpisode == null && lastChapterInfo != null) {
-      lastEpisode = lastChapterInfo['sub']?['episodeString']?.toString();
+      lastEpisode = extractEpisode(lastChapterInfo);
     }
 
     return Anime(

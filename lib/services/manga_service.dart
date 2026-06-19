@@ -96,6 +96,7 @@ class MangaService {
           name
           englishName
           thumbnail
+          lastChapterInfo
         }
       }
     ''' ;
@@ -182,6 +183,7 @@ class MangaService {
               name
               englishName
               thumbnail
+              lastChapterInfo
             }
           }
         }
