@@ -265,7 +265,7 @@ class SettingsPage extends StatelessWidget {
                             icon: Icons.info_outline_rounded,
                             title: 'App Version',
                             trailing: Text(
-                              '1.0.0',
+                              '1.1.0',
                               style: TextStyle(color: colorScheme.onSurfaceVariant),
                             ),
                           ),

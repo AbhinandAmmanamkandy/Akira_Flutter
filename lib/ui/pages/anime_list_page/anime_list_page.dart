@@ -449,9 +449,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   label: 'Trending',
                   icon: Icons.trending_up_rounded,
                   color: colorScheme.primary,
+                  isSelected: _searchController.text == 'Trending',
                   onTap: () {
-                    _searchController.text = 'Trending';
-                    _onSearch('Trending');
+                    if (_searchController.text == 'Trending') {
+                      _searchController.clear();
+                      _onSearch('');
+                    } else {
+                      _searchController.text = 'Trending';
+                      _onSearch('Trending');
+                    }
                   },
                 ),
                 const SizedBox(width: 8),
@@ -460,9 +466,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
                     padding: const EdgeInsets.only(right: 8),
                     child: CommonChip(
                       label: genre,
+                      isSelected: _searchController.text == genre,
                       onTap: () {
-                        _searchController.text = genre;
-                        _onSearch(genre);
+                        if (_searchController.text == genre) {
+                          _searchController.clear();
+                          _onSearch('');
+                        } else {
+                          _searchController.text = genre;
+                          _onSearch(genre);
+                        }
                       },
                       onLongPress: () {
                         ThemeService().removePinnedChip(genre);

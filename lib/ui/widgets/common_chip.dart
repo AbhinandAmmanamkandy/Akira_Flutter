@@ -8,6 +8,7 @@ class CommonChip extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final double borderRadius;
+  final bool isSelected;
 
   const CommonChip({
     super.key,
@@ -17,6 +18,7 @@ class CommonChip extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.borderRadius = 20,
+    this.isSelected = false,
   });
 
   @override
@@ -30,21 +32,23 @@ class CommonChip extends StatelessWidget {
       child: GlassContainer(
         borderRadius: borderRadius,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        opacity: 0.15,
-        withBlur: true,
+        opacity: isSelected ? 1.0 : 0.15,
+        color: isSelected ? effectiveColor : null,
+        withBlur: !isSelected,
         blur: 8,
         border: Border.all(
-          color: effectiveColor.withValues(alpha: 0.2),
+          color: isSelected ? Colors.transparent : effectiveColor.withValues(alpha: 0.2),
           width: 1,
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
               Icon(
                 icon,
                 size: 14,
-                color: effectiveColor,
+                color: isSelected ? themeColorScheme.onPrimary : effectiveColor,
               ),
               const SizedBox(width: 4),
             ],
@@ -55,9 +59,9 @@ class CommonChip extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: effectiveColor,
+                    color: isSelected ? themeColorScheme.onPrimary : effectiveColor,
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
