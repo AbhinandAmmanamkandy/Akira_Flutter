@@ -17,74 +17,86 @@ class DetailTagsRow extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            if (details.status != null)
-              Expanded(
-                child: CommonChip(
-                  label: details.status!.toUpperCase(),
-                  color: colorScheme.tertiary,
-                  borderRadius: 8,
-                ),
-              ),
-            if (details.status != null && details.rating != null)
-              const SizedBox(width: 10),
-            if (details.rating != null)
-              Expanded(
-                child: CommonChip(
-                  label: details.rating!,
-                  color: colorScheme.secondary,
-                  borderRadius: 8,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
+        // Primary Metadata Row
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 12,
+          runSpacing: 10,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             if (details.averageScore != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star_rounded, size: 14, color: Colors.black87),
-                    const SizedBox(width: 4),
-                    Text(
-                      (details.averageScore! / 10).toStringAsFixed(1),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildMetaBadge(
+                Icons.star_rounded,
+                (details.averageScore! / 10).toStringAsFixed(1),
+                const Color(0xFFFFA000), // Deeper, more "premium" gold
+                textTheme,
               ),
-            ...details.genres.map((g) => CommonChip(
-              label: g,
-              onTap: () => onTagTap?.call(g),
-              onLongPress: () {
-                ThemeService().addPinnedChip(g);
-                HapticFeedback.mediumImpact();
-                CustomStatusIndicator.show(
-                  context,
-                  'Pinned $g',
-                  Icons.add_circle_outline_rounded,
-                );
-              },
-            )),
+            if (details.status != null)
+              _buildMetaBadge(
+                Icons.info_outline_rounded,
+                details.status!.toUpperCase(),
+                colorScheme.tertiary,
+                textTheme,
+              ),
+            if (details.rating != null)
+              _buildMetaBadge(
+                Icons.explicit_outlined,
+                details.rating!,
+                colorScheme.secondary,
+                textTheme,
+              ),
           ],
         ),
+        const SizedBox(height: 16),
+        // Genre Tags
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: details.genres.map((g) => CommonChip(
+            label: g,
+            onTap: () => onTagTap?.call(g),
+            onLongPress: () {
+              ThemeService().addPinnedChip(g);
+              HapticFeedback.mediumImpact();
+              CustomStatusIndicator.show(
+                context,
+                'Pinned $g',
+                Icons.add_circle_outline_rounded,
+              );
+            },
+          )).toList(),
+        ),
       ],
+    );
+  }
+
+  Widget _buildMetaBadge(IconData icon, String label, Color color, TextTheme textTheme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
