@@ -1,4 +1,7 @@
+import 'package:akira/services/theme_service.dart';
+import 'package:akira/ui/widgets/custom_status_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../models/anime_details.dart';
 import '../../../widgets/common_chip.dart';
 
@@ -55,6 +58,15 @@ class DetailTagsRow extends StatelessWidget {
         ...details.genres.map((g) => CommonChip(
           label: g,
           onTap: () => onTagTap?.call(g),
+          onLongPress: () {
+            ThemeService().addPinnedChip(g);
+            HapticFeedback.mediumImpact();
+            CustomStatusIndicator.show(
+              context,
+              'Pinned $g',
+              Icons.add_circle_outline_rounded,
+            );
+          },
         )),
       ],
     );

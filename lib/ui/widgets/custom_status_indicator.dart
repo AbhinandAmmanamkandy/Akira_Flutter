@@ -44,13 +44,20 @@ class CustomStatusIndicator extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            message.toUpperCase(),
-            style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.9),
-              fontWeight: FontWeight.w800,
-              fontSize: 11,
-              letterSpacing: 1.2,
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                message.toUpperCase(),
+                maxLines: 1,
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                ),
+              ),
             ),
           ),
         ],
@@ -65,13 +72,16 @@ class CustomStatusIndicator extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         behavior: SnackBarBehavior.floating,
-        width: 320,
+        margin: const EdgeInsets.only(bottom: 20),
         duration: const Duration(milliseconds: 2000),
         content: Center(
-          child: CustomStatusIndicator(
-            message: message,
-            icon: icon,
-            iconColor: iconColor,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: CustomStatusIndicator(
+              message: message,
+              icon: icon,
+              iconColor: iconColor,
+            ),
           ),
         ),
       ),

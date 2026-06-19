@@ -19,6 +19,7 @@ import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
 import 'package:akira/ui/widgets/common_chip.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
+import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
@@ -105,7 +106,10 @@ class _AnimeListPageState extends State<AnimeListPage> {
       'TIP: Swipe down to summon your Bookmarks',
       'TIP: Draw an F to add anime to favorites',
       'TIP: Draw an S to search instantly',
-      'TIP: Draw an M to switch between Anime & Manga',
+      'TIP: Draw an M to switch to Manga and to come back',
+      'TIP: Long press on genres in search to remove it and in detail long press to add it',
+      'TIP: Slide down in player screen to go to full screen',
+      'TIP: Slide up or down from the middle of video player to go to full screen and back',
       'TIP: Tap on tags to explore similar worlds',
       'TIP: Scroll down to hide this System Advisory',
     ];
@@ -405,23 +409,34 @@ class _AnimeListPageState extends State<AnimeListPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20, bottom: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildSmallModeButton(
-                  'ANIME',
-                  Icons.play_circle_fill_rounded,
-                  !_isManga,
-                  colorScheme,
-                ),
-                _buildSmallModeButton(
-                  'MANGA',
-                  Icons.menu_book_rounded,
-                  _isManga,
-                  colorScheme,
-                ),
-              ],
+            padding: const EdgeInsets.only(left: 20, bottom: 12),
+            child: GlassContainer(
+              borderRadius: 20,
+              padding: const EdgeInsets.all(2),
+              opacity: 0.15,
+              blur: 8,
+              withBlur: useGlass,
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildSmallModeButton(
+                    'ANIME',
+                    Icons.play_circle_fill_rounded,
+                    !_isManga,
+                    colorScheme,
+                  ),
+                  _buildSmallModeButton(
+                    'MANGA',
+                    Icons.menu_book_rounded,
+                    _isManga,
+                    colorScheme,
+                  ),
+                ],
+              ),
             ),
           ),
           SingleChildScrollView(
@@ -440,7 +455,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   },
                 ),
                 const SizedBox(width: 8),
-                ...['Action', 'Comedy', 'Romance', 'Fantasy', 'Horror'].map(
+                ...ThemeService().pinnedChips.map(
                   (genre) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: CommonChip(
@@ -448,6 +463,15 @@ class _AnimeListPageState extends State<AnimeListPage> {
                       onTap: () {
                         _searchController.text = genre;
                         _onSearch(genre);
+                      },
+                      onLongPress: () {
+                        ThemeService().removePinnedChip(genre);
+                        HapticFeedback.mediumImpact();
+                        CustomStatusIndicator.show(
+                          context,
+                          'Removed $genre',
+                          Icons.delete_outline_rounded,
+                        );
                       },
                     ),
                   ),
@@ -466,46 +490,36 @@ class _AnimeListPageState extends State<AnimeListPage> {
     bool isSelected,
     ColorScheme colorScheme,
   ) {
-    final useGlass = ThemeService().useGlassTheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
-
     return GestureDetector(
       onTap: isSelected ? null : _toggleMode,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primary
-              : (useGlass
-                  ? colorScheme.onSurface.withValues(alpha: 0.05)
-                  : AkiraColors.getFloatingColor(colorScheme, isLight)),
-          borderRadius: BorderRadius.horizontal(
-            left: Radius.circular(label == 'ANIME' ? 20 : 0),
-            right: Radius.circular(label == 'MANGA' ? 20 : 0),
-          ),
+          color: isSelected ? colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 10,
+              size: 11,
               color: isSelected
                   ? colorScheme.onPrimary
-                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+                  : colorScheme.primary.withValues(alpha: 0.7),
             ),
             const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 8.5,
+                fontSize: 9,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 0.2,
+                letterSpacing: 0.3,
                 color: isSelected
                     ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+                    : colorScheme.primary.withValues(alpha: 0.7),
               ),
             ),
           ],

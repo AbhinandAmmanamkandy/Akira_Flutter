@@ -50,6 +50,9 @@ class ThemeService extends ChangeNotifier {
   int? _lastSystemAccentColor;
   int? get lastSystemAccentColor => _lastSystemAccentColor;
 
+  List<String> _pinnedChips = [];
+  List<String> get pinnedChips => _pinnedChips;
+
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     _isMaterialUI = _prefs.getBool('isMaterialUI') ?? true;
@@ -65,6 +68,8 @@ class ThemeService extends ChangeNotifier {
     _username = _prefs.getString('username') ?? '';
     _gender = _prefs.getString('gender') ?? '';
     _lastSystemAccentColor = _prefs.getInt('lastSystemAccentColor');
+    
+    _pinnedChips = _prefs.getStringList('pinnedChips') ?? ['Action', 'Comedy', 'Romance', 'Fantasy', 'Horror'];
     
     final themeModeIndex = _prefs.getInt('themeMode') ?? 0;
     _themeMode = ThemeMode.values[themeModeIndex];
@@ -227,5 +232,21 @@ class ThemeService extends ChangeNotifier {
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     _prefs.setInt('themeMode', _themeMode.index);
     notifyListeners();
+  }
+
+  void addPinnedChip(String chip) {
+    if (!_pinnedChips.contains(chip)) {
+      _pinnedChips.add(chip);
+      _prefs.setStringList('pinnedChips', _pinnedChips);
+      notifyListeners();
+    }
+  }
+
+  void removePinnedChip(String chip) {
+    if (_pinnedChips.contains(chip)) {
+      _pinnedChips.remove(chip);
+      _prefs.setStringList('pinnedChips', _pinnedChips);
+      notifyListeners();
+    }
   }
 }

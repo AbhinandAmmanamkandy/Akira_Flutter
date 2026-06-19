@@ -6,6 +6,7 @@ class CommonChip extends StatelessWidget {
   final IconData? icon;
   final Color? color;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double borderRadius;
 
   const CommonChip({
@@ -14,6 +15,7 @@ class CommonChip extends StatelessWidget {
     this.icon,
     this.color,
     this.onTap,
+    this.onLongPress,
     this.borderRadius = 20,
   });
 
@@ -24,6 +26,7 @@ class CommonChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: GlassContainer(
         borderRadius: borderRadius,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
