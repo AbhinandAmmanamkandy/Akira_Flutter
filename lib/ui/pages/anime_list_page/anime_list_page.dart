@@ -18,6 +18,7 @@ import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
 import 'package:akira/ui/widgets/common_chip.dart';
+import 'package:akira/ui/widgets/glass_container.dart';
 
 class AnimeListPage extends StatefulWidget {
   final String? initialSearch;
@@ -104,6 +105,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
       'TIP: Swipe down to summon your Bookmarks',
       'TIP: Draw an F to add anime to favorites',
       'TIP: Draw an S to search instantly',
+      'TIP: Draw an M to switch between Anime & Manga',
       'TIP: Tap on tags to explore similar worlds',
       'TIP: Scroll down to hide this System Advisory',
     ];
@@ -368,6 +370,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                           onSearch: _onSearch,
                           onChanged: (value) => setState(() {}),
                           isManga: _isManga,
+                          onToggleMode: _toggleMode,
                           onClear: () {
                             setState(() {
                               _isSearching = false;
@@ -390,36 +393,119 @@ class _AnimeListPageState extends State<AnimeListPage> {
 
   Widget _buildFloatingFilterChips(ColorScheme colorScheme) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final useGlass = ThemeService().useGlassTheme;
+
     return Positioned(
       bottom: bottomInset + 90,
       left: 0,
       right: 0,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            CommonChip(
-              label: 'Trending',
-              icon: Icons.trending_up_rounded,
-              color: colorScheme.primary,
-              onTap: () {
-                _searchController.text = 'Trending';
-                _onSearch('Trending');
-              },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20, bottom: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSmallModeButton(
+                  'ANIME',
+                  Icons.play_circle_fill_rounded,
+                  !_isManga,
+                  colorScheme,
+                ),
+                _buildSmallModeButton(
+                  'MANGA',
+                  Icons.menu_book_rounded,
+                  _isManga,
+                  colorScheme,
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            ...['Action', 'Comedy', 'Romance', 'Fantasy', 'Horror'].map(
-              (genre) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: CommonChip(
-                  label: genre,
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                CommonChip(
+                  label: 'Trending',
+                  icon: Icons.trending_up_rounded,
+                  color: colorScheme.primary,
                   onTap: () {
-                    _searchController.text = genre;
-                    _onSearch(genre);
+                    _searchController.text = 'Trending';
+                    _onSearch('Trending');
                   },
                 ),
+                const SizedBox(width: 8),
+                ...['Action', 'Comedy', 'Romance', 'Fantasy', 'Horror'].map(
+                  (genre) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: CommonChip(
+                      label: genre,
+                      onTap: () {
+                        _searchController.text = genre;
+                        _onSearch(genre);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallModeButton(
+    String label,
+    IconData icon,
+    bool isSelected,
+    ColorScheme colorScheme,
+  ) {
+    final useGlass = ThemeService().useGlassTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
+    return GestureDetector(
+      onTap: isSelected ? null : _toggleMode,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colorScheme.primary
+              : (useGlass
+                  ? colorScheme.onSurface.withValues(alpha: 0.05)
+                  : AkiraColors.getFloatingColor(colorScheme, isLight)),
+          borderRadius: BorderRadius.horizontal(
+            left: Radius.circular(label == 'ANIME' ? 20 : 0),
+            right: Radius.circular(label == 'MANGA' ? 20 : 0),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 10,
+              color: isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 8.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.2,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
               ),
             ),
           ],
@@ -427,4 +513,6 @@ class _AnimeListPageState extends State<AnimeListPage> {
       ),
     );
   }
+
+
 }

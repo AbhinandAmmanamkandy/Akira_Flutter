@@ -116,44 +116,9 @@ class ListAppBar extends StatelessWidget {
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap: onToggleMode,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isManga ? colorScheme.primary : colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: colorScheme.primary.withValues(alpha: 0.5),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          isManga ? Icons.menu_book_rounded : Icons.play_circle_fill_rounded,
-                                          size: 14,
-                                          color: isManga ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          isManga ? 'MANGA' : 'ANIME',
-                                          style: TextStyle(
-                                            color: isManga ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
-                            const SizedBox(height: 0),
+                            const SizedBox(height: 4),
                             Text(
                               isManga ? 'YOUR ULTIMATE MANGA DESTINATION' : 'YOUR ULTIMATE ANIME DESTINATION',
                               maxLines: 1,
@@ -214,3 +179,4 @@ class ListAppBar extends StatelessWidget {
     );
   }
 }
+

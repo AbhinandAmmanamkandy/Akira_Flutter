@@ -96,7 +96,15 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                   Positioned.fill(child: Container(color: colorScheme.surface)),
                 FSymbolGesture(
                   onSymbolDetected: () {
-                    _favoriteService.toggleFavorite(widget.anime);
+                    final animeToSave = Anime(
+                      id: widget.anime.id,
+                      name: widget.anime.name,
+                      englishName: widget.anime.englishName,
+                      thumbnail: widget.anime.thumbnail,
+                      lastEpisode: widget.anime.lastEpisode,
+                      isManga: widget.isManga,
+                    );
+                    _favoriteService.toggleFavorite(animeToSave);
                     CustomStatusIndicator.show(
                       context,
                       isFavorite
@@ -122,7 +130,15 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                               isFavorite: isFavorite,
                               isCollapsed: isCollapsed,
                               onFavoriteTap: () {
-                                _favoriteService.toggleFavorite(widget.anime);
+                                final animeToSave = Anime(
+                                  id: widget.anime.id,
+                                  name: widget.anime.name,
+                                  englishName: widget.anime.englishName,
+                                  thumbnail: widget.anime.thumbnail,
+                                  lastEpisode: widget.anime.lastEpisode,
+                                  isManga: widget.isManga,
+                                );
+                                _favoriteService.toggleFavorite(animeToSave);
                                 CustomStatusIndicator.show(
                                   context,
                                   isFavorite

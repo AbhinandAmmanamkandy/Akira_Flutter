@@ -67,7 +67,17 @@ class MangaService {
           return [];
         }
         final List edges = data['data']['mangas']['edges'];
-        return edges.map((e) => Anime.fromJson(e)).toList();
+        return edges.map((e) {
+          final anime = Anime.fromJson(e);
+          return Anime(
+            id: anime.id,
+            name: anime.name,
+            englishName: anime.englishName,
+            thumbnail: anime.thumbnail,
+            lastEpisode: anime.lastEpisode,
+            isManga: true,
+          );
+        }).toList();
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
@@ -99,7 +109,17 @@ class MangaService {
           return [];
         }
         final List shows = data['data']['mangasWithIds'];
-        return shows.map((e) => Anime.fromJson(e)).toList();
+        return shows.map((e) {
+          final anime = Anime.fromJson(e);
+          return Anime(
+            id: anime.id,
+            name: anime.name,
+            englishName: anime.englishName,
+            thumbnail: anime.thumbnail,
+            lastEpisode: anime.lastEpisode,
+            isManga: true,
+          );
+        }).toList();
       }
       return [];
     } on SocketException {
@@ -186,7 +206,17 @@ class MangaService {
             data['data']['queryPopular']['recommendations'];
         return recommendations
             .where((e) => e['anyCard'] != null)
-            .map((e) => Anime.fromJson(e['anyCard']))
+            .map((e) {
+              final anime = Anime.fromJson(e['anyCard']);
+              return Anime(
+                id: anime.id,
+                name: anime.name,
+                englishName: anime.englishName,
+                thumbnail: anime.thumbnail,
+                lastEpisode: anime.lastEpisode,
+                isManga: true,
+              );
+            })
             .toList();
       } else {
         throw Exception('Server error: ${response.statusCode}');

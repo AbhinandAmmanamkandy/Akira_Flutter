@@ -19,13 +19,14 @@ class ListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveIsManga = anime.isManga || isManga;
     return GestureDetector(
       onTap: onTap ?? () {
         FocusScope.of(context).unfocus();
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AnimeDetailPage(anime: anime, isManga: isManga),
+            builder: (context) => AnimeDetailPage(anime: anime, isManga: effectiveIsManga),
           ),
         );
       },
@@ -73,7 +74,7 @@ class ListCard extends StatelessWidget {
                     top: 10,
                     right: 10,
                     child: CommonChip(
-                      label: '${isManga ? 'CH' : 'EP'} ${anime.lastEpisode}',
+                      label: '${effectiveIsManga ? 'CH' : 'EP'} ${anime.lastEpisode}',
                     ),
                   ),
                 Positioned(

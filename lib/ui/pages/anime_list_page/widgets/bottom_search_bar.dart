@@ -8,6 +8,7 @@ class BottomSearchBar extends StatelessWidget {
   final Function(String) onSearch;
   final Function(String) onChanged;
   final VoidCallback? onClear;
+  final VoidCallback? onToggleMode;
   final bool isManga;
 
   const BottomSearchBar({
@@ -17,6 +18,7 @@ class BottomSearchBar extends StatelessWidget {
     required this.onSearch,
     required this.onChanged,
     this.onClear,
+    this.onToggleMode,
     this.isManga = false,
   });
 
@@ -69,10 +71,39 @@ class BottomSearchBar extends StatelessWidget {
                   fontWeight: FontWeight.normal,
                 ),
                 border: InputBorder.none,
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: colorScheme.primary,
-                  size: 24,
+                prefixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: onToggleMode,
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) => RotationTransition(
+                          turns: animation,
+                          child: ScaleTransition(scale: animation, child: child),
+                        ),
+                        child: Icon(
+                          isManga ? Icons.menu_book_rounded : Icons.play_circle_fill_rounded,
+                          key: ValueKey(isManga),
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                      ),
+                      tooltip: isManga ? 'Switch to Anime' : 'Switch to Manga',
+                    ),
+                    Container(
+                      height: 24,
+                      width: 1,
+                      color: colorScheme.primary.withValues(alpha: 0.2),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.search_rounded,
+                      color: colorScheme.primary.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
+                  ],
                 ),
                 suffixIcon: controller.text.isNotEmpty
                     ? IconButton(

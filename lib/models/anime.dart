@@ -4,6 +4,7 @@ class Anime {
   final String? thumbnail;
   final String? englishName;
   final String? lastEpisode;
+  final bool isManga;
 
   Anime({
     required this.id,
@@ -11,6 +12,7 @@ class Anime {
     this.englishName,
     this.thumbnail,
     this.lastEpisode,
+    this.isManga = false,
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Anime {
       englishName: json['englishName']?.toString(),
       thumbnail: thumbnail,
       lastEpisode: lastEpisode,
+      isManga: json['isManga'] == true,
     );
   }
 
@@ -40,6 +43,7 @@ class Anime {
     'name': name,
     'englishName': englishName,
     'thumbnail': thumbnail,
+    'isManga': isManga,
     // We don't necessarily need to store lastEpisodeInfo back as it was
     // but for consistency we can store it in a simplified way or just store lastEpisode
     'lastEpisodeInfo': {

@@ -64,6 +64,7 @@ class MangaControls extends StatelessWidget {
   }
 
   void _showChapterSelection(BuildContext context) {
+    // chapters are already sorted descending in AnimeDetails
     final chapters = details.availableEpisodes;
     final colorScheme = Theme.of(context).colorScheme;
 

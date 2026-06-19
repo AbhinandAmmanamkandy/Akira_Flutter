@@ -49,8 +49,9 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
         });
       } else if (widget.details.availableEpisodes.isNotEmpty) {
         setState(() {
-          // Use the first available chapter if no history
-          _currentChapter = widget.details.availableEpisodes.first;
+          // Use the last available chapter (Chapter 1) if no history 
+          // because availableEpisodes is now sorted descending
+          _currentChapter = widget.details.availableEpisodes.last;
         });
       }
       
@@ -193,8 +194,6 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
               ),
             ),
 
-          // Controls Overlay
-          if (_showControls)
             MangaControls(
               anime: widget.anime,
               details: widget.details,

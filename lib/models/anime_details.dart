@@ -61,6 +61,12 @@ class AnimeDetails extends Anime {
     final details = json['availableEpisodesDetail'] ?? json['availableChaptersDetail'];
     if (details != null && details['sub'] != null) {
       episodes = (details['sub'] as List).map((e) => e.toString()).toList();
+      // Sort episodes numerically descending (Latest/Last chapter first)
+      episodes.sort((a, b) {
+        final aNum = double.tryParse(a) ?? 0;
+        final bNum = double.tryParse(b) ?? 0;
+        return bNum.compareTo(aNum);
+      });
     }
 
     return AnimeDetails(
