@@ -144,6 +144,14 @@ class ThemeService extends ChangeNotifier {
       _gender = settings['gender'];
       _prefs.setString('gender', _gender);
     }
+    
+    // Once settings are imported, we consider the first open setup complete
+    setFirstOpenComplete();
+  }
+
+  void setFirstOpenComplete() {
+    _isFirstOpen = false;
+    _prefs.setBool('isFirstOpen', false);
     notifyListeners();
   }
 

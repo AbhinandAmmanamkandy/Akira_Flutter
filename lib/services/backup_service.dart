@@ -110,6 +110,9 @@ class BackupService {
 
       if (data['settings'] != null) {
         await ThemeService().importSettings(data['settings']);
+      } else {
+        // Even if settings are missing, we mark setup as complete if import was successful
+        ThemeService().setFirstOpenComplete();
       }
       return true;
     } catch (e) {
