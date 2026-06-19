@@ -447,11 +447,6 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     const Spacer(flex: 3),
                   ],
                   bottomButtonBar: [
-                    _SeekMarkers(
-                      player: widget.controller!.player,
-                      resumePosition: widget.resumePosition,
-                      videoWidth: constraints.maxWidth,
-                    ),
                     Transform.translate(
                       offset: const Offset(0, -6),
                       child: _PlayerPosition(
@@ -618,11 +613,6 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                     ),
                   ],
                   bottomButtonBar: [
-                    _SeekMarkers(
-                      player: widget.controller!.player,
-                      resumePosition: widget.resumePosition,
-                      videoWidth: MediaQuery.of(context).size.width,
-                    ),
                     Transform.translate(
                       offset: const Offset(0, -14),
                       child: _PlayerPosition(
@@ -937,73 +927,6 @@ class _ThemedPlayPauseButtonState extends State<_ThemedPlayPauseButton> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SeekMarkers extends StatelessWidget {
-  final Player player;
-  final Duration? resumePosition;
-  final double videoWidth;
-
-  const _SeekMarkers({
-    required this.player,
-    this.resumePosition,
-    required this.videoWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<Duration>(
-      stream: player.stream.duration,
-      builder: (context, snapshot) {
-        final duration = snapshot.data ?? player.state.duration;
-        if (duration.inMilliseconds <= 0) return const SizedBox.shrink();
-
-        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-        
-        final seekBarMargin = isLandscape 
-            ? const EdgeInsets.only(left: 80, right: 140, bottom: 56)
-            : const EdgeInsets.only(left: 64, right: 104, bottom: 42);
-        
-        final bottomButtonBarMargin = isLandscape
-            ? const EdgeInsets.only(left: 32, right: 24, bottom: 24)
-            : const EdgeInsets.only(left: 20, right: 12, bottom: 16);
-
-        final availableWidth = (videoWidth - seekBarMargin.horizontal).clamp(0.0, double.infinity);
-        final seekBarHeight = isLandscape ? 6.0 : 4.0;
-        const buttonBarHeight = 44.0;
-        final dy = (seekBarMargin.bottom - bottomButtonBarMargin.bottom) + (seekBarHeight / 2) - (buttonBarHeight / 2);
-
-        return SizedBox(
-          width: 0,
-          height: 0,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              if (resumePosition != null)
-                Positioned(
-                  left: seekBarMargin.left - bottomButtonBarMargin.left + (availableWidth * (resumePosition!.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)) - 1,
-                  bottom: dy - (isLandscape ? 6 : 4), 
-                  child: Container(
-                    width: 2,
-                    height: isLandscape ? 12 : 8,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
