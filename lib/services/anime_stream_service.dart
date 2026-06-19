@@ -31,7 +31,7 @@ class AllAnimeApi {
         headers: {'Referer': referer},
       )).body;
 
-  String decryptToBeParsed(String s) {
+  String decypher(String s) {
     final b = base64Decode(s),
         iv = Uint8List(16)
           ..setRange(0, 12, b.sublist(1, 13))
@@ -51,7 +51,7 @@ class AllAnimeApi {
 
   Future<String?> getEpisodeVideoUrl(String id, String ep) async =>
       parseSources(
-        decryptToBeParsed(
+        decypher(
           jsonDecode(await getEpisodeResponse(id, ep))['data']['tobeparsed'],
         ),
       )

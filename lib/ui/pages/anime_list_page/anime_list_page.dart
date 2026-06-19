@@ -13,6 +13,7 @@ import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/gestures/overscroll_dismiss_gesture.dart';
 import 'package:akira/gestures/search_symbol_gesture.dart';
+import 'package:akira/gestures/m_symbol_gesture.dart';
 import 'package:akira/animations/scale_fade_visibility.dart';
 import 'widgets/list_app_bar.dart';
 import 'widgets/hint_banner.dart';
@@ -59,7 +60,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
     if (widget.initialGenre != null) {
       _isSearching = true;
       _searchController.text = widget.initialGenre!;
-      _animeList = _isManga 
+      _animeList = _isManga
           ? _mangaService.fetchManga(queryText: widget.initialGenre!)
           : _animeService.fetchAnime(genres: [widget.initialGenre!]);
     } else if (widget.initialSearch != null) {
@@ -75,8 +76,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   void _refreshHomeList() {
-    _homeAnimeList = _isManga 
-        ? _mangaService.fetchManga() 
+    _homeAnimeList = _isManga
+        ? _mangaService.fetchManga()
         : _animeService.fetchAnime();
     if (!_isSearching) {
       _animeList = _homeAnimeList;
@@ -94,7 +95,10 @@ class _AnimeListPageState extends State<AnimeListPage> {
   }
 
   void _initHint() {
-    if (_hasShownSessionHint || widget.initialSearch != null || !ThemeService().showTooltips) return;
+    if (_hasShownSessionHint ||
+        widget.initialSearch != null ||
+        !ThemeService().showTooltips)
+      return;
 
     final hints = [
       'TIP: Swipe down to summon your Bookmarks',
@@ -157,11 +161,11 @@ class _AnimeListPageState extends State<AnimeListPage> {
     if (query.isEmpty) {
       return _homeAnimeList;
     } else if (query.toLowerCase() == 'trending') {
-      return _isManga 
+      return _isManga
           ? _mangaService.fetchPopularManga()
           : _animeService.fetchPopularAnime();
     } else if (genres.contains(query)) {
-      return _isManga 
+      return _isManga
           ? _mangaService.fetchManga(queryText: query)
           : _animeService.fetchAnime(genres: [query]);
     } else {
@@ -200,7 +204,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
           resizeToAvoidBottomInset: false,
           extendBody: true,
           body: PopScope(
-            canPop: !_isSearching && !_searchFocusNode.hasFocus,
+            canPop: !_isSearching && !_searchFocusNode.hasFocus && !_isManga,
             onPopInvokedWithResult: (didPop, result) {
               if (didPop) return;
               if (_searchFocusNode.hasFocus) {
@@ -211,159 +215,169 @@ class _AnimeListPageState extends State<AnimeListPage> {
                   _searchController.clear();
                   _animeList = _homeAnimeList;
                 });
+              } else if (_isManga) {
+                _toggleMode();
               }
             },
-            child: SearchSymbolGesture(
+            child: MSymbolGesture(
               onSymbolDetected: () {
-                _searchFocusNode.requestFocus();
+                _toggleMode();
+                HapticFeedback.heavyImpact();
               },
-              child: GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AkiraColors.getBackground(
-                      colorScheme,
-                      Theme.of(context).brightness == Brightness.light,
+              child: SearchSymbolGesture(
+                onSymbolDetected: () {
+                  _searchFocusNode.requestFocus();
+                },
+                child: GestureDetector(
+                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AkiraColors.getBackground(
+                        colorScheme,
+                        Theme.of(context).brightness == Brightness.light,
+                      ),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      if (useGlass) ...[
-                        Positioned(
-                          top: 200,
-                          left: -100,
-                          child: Container(
-                            width: 300,
-                            height: 300,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colorScheme.primary.withValues(alpha: 0.1),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: -50,
-                          right: -50,
-                          child: Container(
-                            width: 250,
-                            height: 250,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colorScheme.secondary.withValues(
-                                alpha: 0.08,
+                    child: Stack(
+                      children: [
+                        if (useGlass) ...[
+                          Positioned(
+                            top: 200,
+                            left: -100,
+                            child: Container(
+                              width: 300,
+                              height: 300,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                               ),
                             ),
                           ),
+                          Positioned(
+                            bottom: -50,
+                            right: -50,
+                            child: Container(
+                              width: 250,
+                              height: 250,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colorScheme.secondary.withValues(
+                                  alpha: 0.08,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        FutureBuilder<List<Anime>>(
+                          future: _animeList,
+                          builder: (context, snapshot) {
+                            return OverscrollDismissGesture(
+                              onDismiss: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const BookmarksPage(),
+                                  ),
+                                );
+                              },
+                              child: CustomScrollView(
+                                controller: _scrollController,
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
+                                slivers: [
+                                  ListAppBar(
+                                    appBarOpacity: _appBarOpacity,
+                                    isManga: _isManga,
+                                    onToggleMode: _toggleMode,
+                                  ),
+
+                                  // Tooltip Hint Banner
+                                  if (ThemeService().showTooltips)
+                                    SliverToBoxAdapter(
+                                      child: ScaleFadeVisibility(
+                                        isVisible:
+                                            _showHint && _appBarOpacity < 0.1,
+                                        child: HintBanner(text: _hintText),
+                                      ),
+                                    ),
+
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting)
+                                    const SliverFillRemaining(
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  else if (snapshot.hasError)
+                                    ListErrorView(
+                                      error: snapshot.error,
+                                      onRetry: () => setState(() {
+                                        _animeList = _fetchByQuery(
+                                          _searchController.text,
+                                        );
+                                      }),
+                                    )
+                                  else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty)
+                                    ListEmptyView(
+                                      isSearching: _isSearching,
+                                      onClearSearch: () {
+                                        _searchController.clear();
+                                        _onSearch('');
+                                      },
+                                    )
+                                  else
+                                    ListGrid(
+                                      animeList: snapshot.data!,
+                                      isManga: _isManga,
+                                      onAnimeTap: (anime) async {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+
+                                        if (!mounted) return;
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                AnimeDetailPage(
+                                                  anime: anime,
+                                                  isManga: _isManga,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  const SliverToBoxAdapter(
+                                    child: SizedBox(height: 100),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        _buildFloatingFilterChips(colorScheme),
+                        BottomSearchBar(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onSearch: _onSearch,
+                          onChanged: (value) => setState(() {}),
+                          isManga: _isManga,
+                          onClear: () {
+                            setState(() {
+                              _isSearching = false;
+                              _animeList = _homeAnimeList;
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            });
+                          },
                         ),
                       ],
-                      FutureBuilder<List<Anime>>(
-                        future: _animeList,
-                        builder: (context, snapshot) {
-                          return OverscrollDismissGesture(
-                            onDismiss: () {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const BookmarksPage(),
-                                ),
-                              );
-                            },
-                            child: CustomScrollView(
-                              controller: _scrollController,
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              physics: const AlwaysScrollableScrollPhysics(
-                                parent: BouncingScrollPhysics(),
-                              ),
-                              slivers: [
-                                ListAppBar(
-                                  appBarOpacity: _appBarOpacity,
-                                  isManga: _isManga,
-                                  onToggleMode: _toggleMode,
-                                ),
-
-                                // Tooltip Hint Banner
-                                if (ThemeService().showTooltips)
-                                  SliverToBoxAdapter(
-                                    child: ScaleFadeVisibility(
-                                      isVisible:
-                                          _showHint && _appBarOpacity < 0.1,
-                                      child: HintBanner(text: _hintText),
-                                    ),
-                                  ),
-
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting)
-                                  const SliverFillRemaining(
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  )
-                                else if (snapshot.hasError)
-                                  ListErrorView(
-                                    error: snapshot.error,
-                                    onRetry: () => setState(() {
-                                      _animeList = _fetchByQuery(
-                                        _searchController.text,
-                                      );
-                                    }),
-                                  )
-                                else if (!snapshot.hasData ||
-                                    snapshot.data!.isEmpty)
-                                  ListEmptyView(
-                                    isSearching: _isSearching,
-                                    onClearSearch: () {
-                                      _searchController.clear();
-                                      _onSearch('');
-                                    },
-                                  )
-                                else
-                                  ListGrid(
-                                    animeList: snapshot.data!,
-                                    isManga: _isManga,
-                                    onAnimeTap: (anime) async {
-                                      FocusManager.instance.primaryFocus
-                                          ?.unfocus();
-
-                                      if (!mounted) return;
-
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              AnimeDetailPage(
-                                                anime: anime,
-                                                isManga: _isManga,
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                const SliverToBoxAdapter(
-                                  child: SizedBox(height: 100),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      _buildFloatingFilterChips(colorScheme),
-                      BottomSearchBar(
-                        controller: _searchController,
-                        focusNode: _searchFocusNode,
-                        onSearch: _onSearch,
-                        onChanged: (value) => setState(() {}),
-                        isManga: _isManga,
-                        onClear: () {
-                          setState(() {
-                            _isSearching = false;
-                            _animeList = _homeAnimeList;
-                            FocusManager.instance.primaryFocus?.unfocus();
-                          });
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
