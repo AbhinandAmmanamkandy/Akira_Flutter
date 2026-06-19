@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:akira/services/theme_service.dart';
+import 'package:akira/services/backup_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
+import 'package:akira/ui/widgets/custom_status_indicator.dart';
 import '../anime_list_page/anime_list_page.dart';
 
 class ProfileSetupPage extends StatefulWidget {
@@ -210,6 +212,40 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                               letterSpacing: 0.5,
                             ),
                           ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      TextButton.icon(
+                        onPressed: () async {
+                          final success = await BackupService.importFromFile();
+                          if (success && mounted) {
+                            CustomStatusIndicator.show(
+                              context,
+                              'Data imported successfully',
+                              Icons.check_circle_outline_rounded,
+                            );
+                            Navigator.of(context).pushReplacement(
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, secondaryAnimation) => const AnimeListPage(),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  return FadeTransition(opacity: animation, child: child);
+                                },
+                              ),
+                            );
+                          } else if (mounted) {
+                            CustomStatusIndicator.show(
+                              context,
+                              'Import failed or cancelled',
+                              Icons.error_outline_rounded,
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.file_download_outlined),
+                        label: const Text('Import Backup'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],

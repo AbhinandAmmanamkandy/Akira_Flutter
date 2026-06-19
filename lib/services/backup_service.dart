@@ -6,6 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import 'favorite_service.dart';
 import 'history_service.dart';
 import 'theme_service.dart';
+import 'anime_service.dart';
+import 'manga_service.dart';
 import '../models/anime.dart';
 
 class BackupService {
@@ -15,9 +17,12 @@ class BackupService {
     final settings = ThemeService().getSettings();
 
     final Map<String, dynamic> data = {
-      'version': 1,
+      'version': 2,
       'exportDate': DateTime.now().toIso8601String(),
-      'favorites': favorites.map((e) => e.toJson()).toList(),
+      'favorites': {
+        'anime': favorites.where((e) => !e.isManga).map((e) => e.id).toList(),
+        'manga': favorites.where((e) => e.isManga).map((e) => e.id).toList(),
+      },
       'history': history.map((key, value) => MapEntry(key, value.toJson())),
       'settings': settings,
     };
@@ -69,9 +74,30 @@ class BackupService {
       final Map<String, dynamic> data = jsonDecode(jsonString);
       
       if (data['favorites'] != null) {
-        final List favoritesJson = data['favorites'];
-        final List<Anime> favorites = favoritesJson.map((e) => Anime.fromJson(e)).toList();
-        FavoriteService().setFavorites(favorites);
+        final favoritesData = data['favorites'];
+        List<Anime> importedFavorites = [];
+
+        if (favoritesData is List) {
+          // Backward compatibility: old format was List<Map> (full Anime objects)
+          importedFavorites = favoritesData.map((e) => Anime.fromJson(e)).toList();
+        } else if (favoritesData is Map) {
+          // New format: Map with 'anime' and 'manga' ID lists
+          final animeIds = List<String>.from(favoritesData['anime'] ?? []);
+          final mangaIds = List<String>.from(favoritesData['manga'] ?? []);
+
+          if (animeIds.isNotEmpty) {
+            final animeList = await AnimeService().fetchAnimeWithIds(animeIds);
+            importedFavorites.addAll(animeList);
+          }
+          if (mangaIds.isNotEmpty) {
+            final mangaList = await MangaService().fetchMangaWithIds(mangaIds);
+            importedFavorites.addAll(mangaList);
+          }
+        }
+        
+        if (importedFavorites.isNotEmpty) {
+          FavoriteService().setFavorites(importedFavorites);
+        }
       }
 
       if (data['history'] != null) {
