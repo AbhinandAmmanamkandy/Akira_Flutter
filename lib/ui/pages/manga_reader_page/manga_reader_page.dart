@@ -6,6 +6,7 @@ import 'package:akira/services/manga_read_service.dart';
 import 'package:akira/services/history_service.dart';
 import 'widgets/manga_page_view.dart';
 import 'widgets/manga_controls.dart';
+import 'package:akira/ui/widgets/cloudflare_bypass_webview.dart';
 
 class MangaReaderPage extends StatefulWidget {
   final Anime anime;
@@ -134,6 +135,23 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
     );
   }
 
+  void _showBypassDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: CloudflareBypassWebView(
+          url: 'https://allmanga.to/manga/${widget.anime.id}/chapter-$_currentChapter-sub',
+          onComplete: () {
+            Navigator.pop(context);
+            _loadChapter(_currentChapter.toString());
+          },
+        ),
+      ),
+    );
+  }
+
   void _toggleControls() {
     setState(() {
       _showControls = !_showControls;
@@ -206,6 +224,7 @@ class _MangaReaderPageState extends State<MangaReaderPage> {
                 );
               },
               onBack: () => Navigator.pop(context),
+              onBypass: _showBypassDialog,
             ),
         ],
       ),

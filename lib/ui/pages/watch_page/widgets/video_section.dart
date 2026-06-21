@@ -14,6 +14,7 @@ class VideoSection extends StatefulWidget {
   final bool isBuffering;
   final String? errorMessage;
   final VoidCallback onRetry;
+  final VoidCallback? onBypass;
   final VoidCallback onBack;
   final Duration? resumePosition;
   final bool canShowResume;
@@ -30,6 +31,7 @@ class VideoSection extends StatefulWidget {
     this.isBuffering = false,
     this.errorMessage,
     required this.onRetry,
+    this.onBypass,
     required this.onBack,
     this.resumePosition,
     this.canShowResume = false,
@@ -261,15 +263,33 @@ class _VideoSectionState extends State<VideoSection> with SingleTickerProviderSt
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      FilledButton.icon(
-                        onPressed: widget.onRetry,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Try Again'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: widget.onRetry,
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Try Again'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                          if (widget.onBypass != null) ...[
+                            const SizedBox(width: 12),
+                            OutlinedButton.icon(
+                              onPressed: widget.onBypass,
+                              icon: const Icon(Icons.security_rounded),
+                              label: const Text('Bypass'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),

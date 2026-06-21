@@ -23,6 +23,7 @@ import 'widgets/episode_range_selector.dart';
 import 'widgets/episode_grid.dart';
 import 'widgets/info_tab.dart';
 import 'widgets/quick_jump_sheet.dart';
+import 'package:akira/ui/widgets/cloudflare_bypass_webview.dart';
 
 class WatchPage extends StatefulWidget {
   final Anime anime;
@@ -157,6 +158,23 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
     );
   }
 
+  void _showBypassDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: CloudflareBypassWebView(
+          url: 'https://allmanga.to/bangumi/${widget.anime.id}/p-$_currentEpisode-sub',
+          onComplete: () {
+            Navigator.pop(context);
+            _loadEpisode(_currentEpisode.toString());
+          },
+        ),
+      ),
+    );
+  }
+
   List<int> _getEpisodesForRange(int rangeIndex) {
     final int total = int.tryParse(widget.details.lastEpisode ?? '0') ?? 0;
     final int start = (rangeIndex * 25) + 1;
@@ -245,6 +263,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                           isBuffering: _isBuffering,
                           errorMessage: _error,
                           onRetry: () => _loadEpisode(_currentEpisode.toString()),
+                          onBypass: _showBypassDialog,
                           onBack: () => Navigator.pop(context),
                           resumePosition: _resumePosition,
                           canShowResume: _playedOneSecond,

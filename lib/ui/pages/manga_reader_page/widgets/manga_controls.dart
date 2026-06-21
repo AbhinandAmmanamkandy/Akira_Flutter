@@ -12,6 +12,7 @@ class MangaControls extends StatelessWidget {
   final Function(String) onChapterSelected;
   final Function(int) onPageSelected;
   final VoidCallback onBack;
+  final VoidCallback? onBypass;
 
   const MangaControls({
     super.key,
@@ -23,6 +24,7 @@ class MangaControls extends StatelessWidget {
     required this.onChapterSelected,
     required this.onPageSelected,
     required this.onBack,
+    this.onBypass,
   });
 
   @override
@@ -39,6 +41,7 @@ class MangaControls extends StatelessWidget {
             title: anime.name,
             subtitle: 'Chapter $currentChapter',
             onBack: onBack,
+            onBypass: onBypass,
           ),
         ),
 
@@ -144,11 +147,13 @@ class _TopBar extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onBack;
+  final VoidCallback? onBypass;
 
   const _TopBar({
     required this.title,
     required this.subtitle,
     required this.onBack,
+    this.onBypass,
   });
 
   @override
@@ -201,6 +206,11 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
+          if (onBypass != null)
+            IconButton(
+              icon: const Icon(Icons.security_rounded, color: Colors.white),
+              onPressed: onBypass,
+            ),
         ],
       ),
     );

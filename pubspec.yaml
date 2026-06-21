@@ -26,6 +26,7 @@ dependencies:
   media_kit_libs_video: ^1.0.5
   screen_brightness: ^2.1.11
   flutter_volume_controller: ^2.0.1
+  webview_flutter: ^4.4.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
