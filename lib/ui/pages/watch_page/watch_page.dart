@@ -10,6 +10,7 @@ import 'package:akira/services/anime_stream_service.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/history_service.dart';
 import 'package:akira/services/favorite_service.dart';
+import 'package:akira/services/download_service.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
 import 'package:akira/ui/widgets/custom_status_indicator.dart';
 import 'package:akira/ui/widgets/sliver_app_bar_delegate.dart';
@@ -100,7 +101,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
             widget.anime.id,
             _currentEpisode,
             pos,
-            name: widget.anime.name,
+            name: widget.anime.englishName ?? widget.anime.name,
             thumbnail: widget.anime.thumbnail,
             isManga: false,
           );
@@ -123,7 +124,18 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
     });
 
     try {
-      final url = await _api.getEpisodeVideoUrl(widget.anime.id, ep);
+      final downloaded = DownloadService().getDownload(widget.anime.id, epInt);
+      String? url;
+      Map<String, String>? headers;
+
+      if (downloaded != null) {
+        url = downloaded.localPath;
+        headers = null;
+      } else {
+        url = await _api.getEpisodeVideoUrl(widget.anime.id, ep);
+        headers = {'Referer': 'https://youtu-chan.com'};
+      }
+
       if (url == null) {
         setState(() {
           _isLoading = false;
@@ -136,7 +148,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
         _isLoading = false;
       });
 
-      await player.open(Media(url, httpHeaders: {'Referer': 'https://youtu-chan.com'}), play: true);
+      await player.open(Media(url, httpHeaders: headers), play: true);
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -276,7 +288,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
                           onDismissResume: () {
                             setState(() => _resumePosition = null);
                           },
-                          animeTitle: widget.anime.name,
+                          animeTitle: widget.anime.englishName ?? widget.anime.name,
                           episodeNumber: _currentEpisode,
                         ),
                       ),
@@ -341,6 +353,7 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
 
                         // Episode Grid
                         EpisodeGrid(
+                          animeId: widget.anime.id,
                           episodes: _getEpisodesForRange(_selectedRangeIndex),
                           selectedEpisode: _currentEpisode,
                           onEpisodeSelected: (ep) {

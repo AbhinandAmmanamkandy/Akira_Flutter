@@ -6,6 +6,8 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'services/favorite_service.dart';
+import 'services/download_service.dart';
+import 'services/notification_service.dart';
 import 'package:media_kit/media_kit.dart';
 import 'theme/akira_colors.dart';
 import 'ui/pages/anime_list_page/anime_list_page.dart';
@@ -17,6 +19,8 @@ Future<void> main() async {
   await ThemeService().init();
   await HistoryService().init();
   await FavoriteService().init();
+  await DownloadService().init();
+  await NotificationService().init();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

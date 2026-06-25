@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../models/anime.dart';
 import '../../../../services/favorite_service.dart';
+import '../../../../services/download_service.dart';
+import '../../../../services/anime_stream_service.dart';
 import '../../../widgets/custom_status_indicator.dart';
 
 class WatchHeader extends StatelessWidget {
@@ -18,6 +20,8 @@ class WatchHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final favoriteService = FavoriteService();
+    final downloadService = DownloadService();
+    final api = AllAnimeApi();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -51,6 +55,87 @@ class WatchHeader extends StatelessWidget {
               ),
               const Spacer(),
               ListenableBuilder(
+                listenable: downloadService,
+                builder: (context, _) {
+                  final downloaded = downloadService.getDownload(anime.id, currentEpisode);
+                  final isDownloading = downloadService.isDownloading(anime.id, currentEpisode);
+                  final progress = downloadService.getProgress(anime.id, currentEpisode);
+
+                  if (isDownloading) {
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            value: progress > 0 ? progress : null,
+                            strokeWidth: 2,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            // Cancel not implemented in simple service, but we can show it's working
+                          },
+                          icon: Icon(Icons.close_rounded, size: 16, color: colorScheme.primary),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return IconButton(
+                    onPressed: () async {
+                      if (downloaded != null) {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Download?'),
+                            content: const Text('Do you want to delete this episode from your downloads?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await downloadService.deleteDownload(anime.id, currentEpisode);
+                        }
+                      } else {
+                        try {
+                          CustomStatusIndicator.show(context, 'Starting download...', Icons.downloading_rounded);
+                          final url = await api.getEpisodeVideoUrl(anime.id, currentEpisode.toString());
+                          if (url != null) {
+                            await downloadService.startDownload(anime, currentEpisode, url);
+                            if (context.mounted) {
+                              CustomStatusIndicator.show(context, 'Download complete!', Icons.download_done_rounded);
+                            }
+                          } else {
+                            if (context.mounted) {
+                              CustomStatusIndicator.show(context, 'Could not find stream URL', Icons.error_outline_rounded);
+                            }
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            CustomStatusIndicator.show(context, 'Download failed: $e', Icons.error_outline_rounded);
+                          }
+                        }
+                      }
+                    },
+                    icon: Icon(
+                      downloaded != null ? Icons.download_done_rounded : Icons.download_for_offline_outlined,
+                      color: downloaded != null ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                    ),
+                  );
+                },
+              ),
+              ListenableBuilder(
                 listenable: favoriteService,
                 builder: (context, _) {
                   final isFavorite = favoriteService.isFavorite(anime.id);
@@ -80,7 +165,7 @@ class WatchHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            anime.name,
+            anime.englishName ?? anime.name,
             style: textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w900,
               letterSpacing: -0.5,

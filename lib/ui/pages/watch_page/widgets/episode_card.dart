@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/glass_container.dart';
 import '../../../../services/theme_service.dart';
+import '../../../../services/download_service.dart';
 import '../../../../theme/akira_colors.dart';
 
 class EpisodeCard extends StatelessWidget {
+  final String animeId;
   final int episodeNum;
   final bool isSelected;
   final VoidCallback onTap;
 
   const EpisodeCard({
     super.key,
+    required this.animeId,
     required this.episodeNum,
     required this.isSelected,
     required this.onTap,
@@ -20,6 +23,46 @@ class EpisodeCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final useGlass = ThemeService().useGlassTheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
+    final downloadService = DownloadService();
+
+    Widget buildContent() {
+      return ListenableBuilder(
+        listenable: downloadService,
+        builder: (context, _) {
+          final isDownloaded = downloadService.getDownload(animeId, episodeNum) != null;
+          final isDownloading = downloadService.isDownloading(animeId, episodeNum);
+
+          return Stack(
+            children: [
+              Center(
+                child: Text(
+                  '$episodeNum',
+                  style: TextStyle(
+                    color: isSelected 
+                        ? (useGlass ? colorScheme.primary : colorScheme.onPrimary) 
+                        : colorScheme.onSurface,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              if (isDownloaded || isDownloading)
+                Positioned(
+                  right: 4,
+                  bottom: 4,
+                  child: Icon(
+                    isDownloaded ? Icons.download_done_rounded : Icons.downloading_rounded,
+                    size: 10,
+                    color: isSelected 
+                        ? (useGlass ? colorScheme.primary : colorScheme.onPrimary) 
+                        : colorScheme.primary,
+                  ),
+                ),
+            ],
+          );
+        },
+      );
+    }
 
     if (useGlass) {
       return GlassContainer(
@@ -34,16 +77,7 @@ class EpisodeCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: Center(
-            child: Text(
-              '$episodeNum',
-              style: TextStyle(
-                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
-          ),
+          child: buildContent(),
         ),
       );
     }
@@ -66,16 +100,7 @@ class EpisodeCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Center(
-          child: Text(
-            '$episodeNum',
-            style: TextStyle(
-              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
-              fontSize: 16,
-            ),
-          ),
-        ),
+        child: buildContent(),
       ),
     );
   }

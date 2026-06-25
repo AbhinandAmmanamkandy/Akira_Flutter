@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:akira/ui/pages/settings_page/settings_page.dart';
 import 'package:akira/ui/pages/bookmarks_page/bookmarks_page.dart';
+import 'package:akira/ui/pages/downloads_page/downloads_page.dart';
 import 'package:akira/services/theme_service.dart';
 import 'package:akira/theme/akira_colors.dart';
 import 'package:akira/ui/widgets/glass_container.dart';
@@ -145,6 +146,14 @@ class ListAppBar extends StatelessWidget {
                             onPressed: () {
                               FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const BookmarksPage()));
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          HeaderIconButton(
+                            icon: Icons.download_done_rounded,
+                            onPressed: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const DownloadsPage()));
                             },
                           ),
                           const SizedBox(width: 8),

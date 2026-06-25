@@ -5,6 +5,7 @@ import 'package:akira/services/theme_service.dart';
 import 'package:akira/services/backup_service.dart';
 import 'package:akira/services/history_service.dart';
 import 'package:akira/ui/pages/history_page/history_page.dart';
+import 'package:akira/ui/pages/downloads_page/downloads_page.dart';
 import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
@@ -251,6 +252,20 @@ class SettingsPage extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => const HistoryPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SettingsDivider(),
+                          SettingsTile(
+                            icon: Icons.download_done_rounded,
+                            title: 'Downloads',
+                            subtitle: 'Watch offline episodes',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DownloadsPage(),
                                 ),
                               );
                             },
