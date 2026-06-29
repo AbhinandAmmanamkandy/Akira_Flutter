@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
@@ -29,11 +30,13 @@ import 'package:akira/ui/widgets/cloudflare_bypass_webview.dart';
 class WatchPage extends StatefulWidget {
   final Anime anime;
   final AnimeDetails details;
+  final int? initialEpisode;
 
   const WatchPage({
     super.key,
     required this.anime,
     required this.details,
+    this.initialEpisode,
   });
 
   @override
@@ -72,7 +75,17 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
     // Initialize history service
     HistoryService().init().then((_) {
       final history = HistoryService().getHistory(widget.anime.id);
-      if (history != null) {
+      
+      if (widget.initialEpisode != null) {
+        setState(() {
+          _currentEpisode = widget.initialEpisode!;
+          // If we have history for this specific episode, use its position
+          if (history != null && history.episode == _currentEpisode) {
+            _resumePosition = history.position;
+          }
+          _selectedRangeIndex = (_currentEpisode - 1) ~/ 25;
+        });
+      } else if (history != null) {
         setState(() {
           _currentEpisode = history.episode;
           _resumePosition = history.position;
@@ -128,8 +141,19 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
       String? url;
       Map<String, String>? headers;
 
-      if (downloaded != null) {
-        url = downloaded.localPath;
+      // Use local file if it exists and is likely a valid video (not just a playlist)
+      bool useLocal = false;
+      if (downloaded != null && File(downloaded.localPath).existsSync()) {
+        final file = File(downloaded.localPath);
+        // If it's an m3u8 playlist, it won't work offline unless segments are also there.
+        // Usually these are small (< 1MB), whereas actual videos are much larger.
+        if (!downloaded.localPath.endsWith('.m3u8') && file.lengthSync() > 1024 * 1024) {
+          useLocal = true;
+        }
+      }
+
+      if (useLocal) {
+        url = downloaded!.localPath;
         headers = null;
       } else {
         url = await _api.getEpisodeVideoUrl(widget.anime.id, ep);
@@ -144,11 +168,17 @@ class _WatchPageState extends State<WatchPage> with SingleTickerProviderStateMix
         return;
       }
 
-      setState(() {
-        _isLoading = false;
-      });
+      final playerMedia = url.startsWith('http')
+          ? Media(url, httpHeaders: headers)
+          : Media(Uri.file(url).toString());
 
-      await player.open(Media(url, httpHeaders: headers), play: true);
+      await player.open(playerMedia, play: true);
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;

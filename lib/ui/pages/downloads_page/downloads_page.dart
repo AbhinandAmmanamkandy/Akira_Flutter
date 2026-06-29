@@ -6,6 +6,7 @@ import '../../../theme/akira_colors.dart';
 import '../../widgets/glass_container.dart';
 import '../../../gestures/overscroll_dismiss_gesture.dart';
 import '../../../models/anime.dart';
+import '../../../models/anime_details.dart';
 import '../watch_page/watch_page.dart';
 import '../../../services/anime_service.dart';
 import '../anime_list_page/widgets/list_card_thumbnail.dart';
@@ -25,7 +26,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final downloadService = DownloadService();
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final useGlass = ThemeService().useGlassTheme;
     final bgColor = AkiraColors.getBackground(colorScheme, isLight);
 
     return Scaffold(
@@ -294,7 +294,6 @@ class _AnimeDownloadGroup extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
-    final themeService = ThemeService();
 
     final animeTitle = firstItem.englishName ?? firstItem.animeName;
 
@@ -414,7 +413,6 @@ class _EpisodeDownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final useGlass = ThemeService().useGlassTheme;
 
     Widget buildTileContent() {
@@ -433,19 +431,19 @@ class _EpisodeDownloadTile extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => WatchPage(anime: anime, details: details),
+                    builder: (context) => WatchPage(
+                      anime: anime, 
+                      details: details,
+                      initialEpisode: item.episode,
+                    ),
                   ),
                 );
              } else if (context.mounted) {
-               ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text('Could not load anime details')),
-               );
+               _navigateToWatchOffline(context, anime, item);
              }
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Connect to internet to load details')),
-              );
+              _navigateToWatchOffline(context, anime, item);
             }
           }
         },
@@ -519,6 +517,35 @@ class _EpisodeDownloadTile extends StatelessWidget {
               ),
               child: buildTileContent(),
             ),
+    );
+  }
+
+  void _navigateToWatchOffline(BuildContext context, Anime anime, DownloadItem item) {
+    final allDownloads = DownloadService().getAllDownloads()
+        .where((d) => d.animeId == item.animeId)
+        .toList();
+    
+    final episodes = allDownloads.map((d) => d.episode.toString()).toList();
+    episodes.sort((a, b) => (int.tryParse(b) ?? 0).compareTo(int.tryParse(a) ?? 0));
+
+    final details = AnimeDetails(
+      id: item.animeId,
+      name: item.animeName,
+      englishName: item.englishName,
+      thumbnail: item.thumbnail,
+      lastEpisode: episodes.first,
+      availableEpisodes: episodes,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WatchPage(
+          anime: anime, 
+          details: details,
+          initialEpisode: item.episode,
+        ),
+      ),
     );
   }
 

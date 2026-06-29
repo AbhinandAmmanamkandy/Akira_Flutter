@@ -156,7 +156,14 @@ class DownloadService extends ChangeNotifier {
   String _getKey(String animeId, int episode) => '${animeId}_$episode';
 
   DownloadItem? getDownload(String animeId, int episode) {
-    return _downloads[_getKey(animeId, episode)];
+    final item = _downloads[_getKey(animeId, episode)];
+    if (item != null && !File(item.localPath).existsSync()) {
+      // Clean up if file is missing
+      _downloads.remove(_getKey(animeId, episode));
+      _saveToDisk();
+      return null;
+    }
+    return item;
   }
 
   double getProgress(String animeId, int episode) {
@@ -170,7 +177,24 @@ class DownloadService extends ChangeNotifier {
   List<DownloadProgress> get currentDownloads => _activeDownloads.values.toList();
 
   List<DownloadItem> getAllDownloads() {
-    return _downloads.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    // Filter out items where the file has been deleted manually
+    final List<DownloadItem> validDownloads = [];
+    bool needsSave = false;
+
+    _downloads.forEach((key, item) {
+      if (File(item.localPath).existsSync()) {
+        validDownloads.add(item);
+      } else {
+        needsSave = true;
+      }
+    });
+
+    if (needsSave) {
+      _downloads.removeWhere((key, item) => !File(item.localPath).existsSync());
+      _saveToDisk();
+    }
+
+    return validDownloads..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
 
   Future<void> startDownload(Anime anime, int episode, String url) async {
@@ -327,6 +351,9 @@ class DownloadService extends ChangeNotifier {
     int completedThreads = 0;
     final Completer<void> completer = Completer<void>();
     final List<double> threadProgressValues = List.filled(threads, 0.0);
+    
+    // Use a lock to prevent concurrent writes to the same RandomAccessFile
+    Future<void> writeLock = Future.value();
 
     for (int i = 0; i < threads; i++) {
       final threadIndex = i;
@@ -343,21 +370,25 @@ class DownloadService extends ChangeNotifier {
       
       int chunkReceived = 0;
 
-      final sub = response.stream.listen((value) async {
+      final sub = response.stream.listen((value) {
         final writeOffset = start + chunkReceived;
         chunkReceived += value.length;
         totalReceived += value.length;
         
         threadProgressValues[threadIndex] = chunkReceived / currentThreadTotal;
 
-        await raf.setPosition(writeOffset);
-        await raf.writeFrom(value);
+        // Serialize the write operation
+        writeLock = writeLock.then((_) async {
+          await raf.setPosition(writeOffset);
+          await raf.writeFrom(value);
+        });
 
         final progress = totalReceived / total;
         _activeDownloads[key] = _activeDownloads[key]!.copyWith(
           progress: progress,
           threadProgresses: List.from(threadProgressValues),
         );
+        // ...
         
         final currentProgressInt = (progress * 100).toInt();
         if (currentProgressInt > lastNotificationProgress) {
@@ -375,7 +406,7 @@ class DownloadService extends ChangeNotifier {
       }, onDone: () {
         completedThreads++;
         if (completedThreads == threads) {
-          completer.complete();
+          writeLock.then((_) => completer.complete());
         }
       }, onError: (e) {
         if (!completer.isCompleted) completer.completeError(e);
