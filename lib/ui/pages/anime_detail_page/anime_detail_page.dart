@@ -19,6 +19,7 @@ import 'widgets/detail_tags_row.dart';
 import 'widgets/detail_related_section.dart';
 import 'widgets/detail_loading_view.dart';
 import 'widgets/detail_error_view.dart';
+import 'widgets/download_options_sheet.dart';
 import 'package:akira/ui/widgets/custom_status_indicator.dart';
 
 class AnimeDetailPage extends StatefulWidget {
@@ -89,6 +90,24 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
             child: const Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDownloadOptionsDialog(BuildContext context, AnimeDetails details) {
+    final totalEpisodes = int.tryParse(details.lastEpisode ?? '0') ?? 0;
+    if (totalEpisodes <= 0) {
+      CustomStatusIndicator.show(context, 'No episodes found to download', Icons.error_outline_rounded);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => DownloadOptionsSheet(
+        anime: widget.anime,
+        totalEpisodes: totalEpisodes,
       ),
     );
   }
@@ -237,6 +256,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                                         onClearProgress: () {
                                           _showClearProgressDialog(context);
                                         },
+                                        onDownloadTap: () => _showDownloadOptionsDialog(context, details),
                                         onPlayTap: () async {
                                           if (widget.isManga) {
                                             FocusManager.instance.primaryFocus

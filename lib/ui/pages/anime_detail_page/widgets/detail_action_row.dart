@@ -4,6 +4,7 @@ import '../../../../services/theme_service.dart';
 
 class DetailActionRow extends StatelessWidget {
   final VoidCallback onPlayTap;
+  final VoidCallback? onDownloadTap;
   final VoidCallback? onClearProgress;
   final String watchLabel;
   final int? continueEpisode;
@@ -12,6 +13,7 @@ class DetailActionRow extends StatelessWidget {
   const DetailActionRow({
     super.key,
     required this.onPlayTap,
+    this.onDownloadTap,
     this.onClearProgress,
     this.watchLabel = 'Watch Now',
     this.continueEpisode,
@@ -36,6 +38,10 @@ class DetailActionRow extends StatelessWidget {
         Expanded(
           child: _buildMainButton(context, label, isLight, colorScheme, useGlass),
         ),
+        if (!isManga && onDownloadTap != null) ...[
+          const SizedBox(width: 12),
+          _buildDownloadButton(context, isLight, colorScheme, useGlass),
+        ],
         if (continueEpisode != null && onClearProgress != null) ...[
           const SizedBox(width: 12),
           _buildClearButton(context, isLight, colorScheme, useGlass),
@@ -94,6 +100,47 @@ class DetailActionRow extends StatelessWidget {
               label: label,
               textColor: colorScheme.primary,
             ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildDownloadButton(BuildContext context, bool isLight, ColorScheme colorScheme, bool useGlass) {
+    if (isLight) {
+      return Container(
+        height: 56,
+        width: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: colorScheme.secondaryContainer,
+        ),
+        child: IconButton(
+          onPressed: onDownloadTap,
+          icon: Icon(Icons.download_rounded, color: colorScheme.onSecondaryContainer),
+          tooltip: 'Download Episodes',
+        ),
+      );
+    } else {
+      return Container(
+        height: 56,
+        width: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: GlassContainer(
+          borderRadius: 16,
+          opacity: 0.1,
+          blur: 10,
+          withBlur: useGlass,
+          border: Border.all(
+            color: colorScheme.secondary.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+          child: IconButton(
+            onPressed: onDownloadTap,
+            icon: Icon(Icons.download_rounded, color: colorScheme.secondary),
+            tooltip: 'Download Episodes',
           ),
         ),
       );
