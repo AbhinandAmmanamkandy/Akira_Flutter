@@ -15,40 +15,45 @@ class AccentShadeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
     
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected 
-              ? colorScheme.primary
-              : (isLight ? colorScheme.surface : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutQuart,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
             color: isSelected 
-                ? colorScheme.primary 
-                : colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: 1.5,
+                ? colorScheme.primary
+                : colorScheme.onSurface.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected 
+                  ? colorScheme.primary 
+                  : colorScheme.onSurface.withValues(alpha: 0.05),
+              width: 1.5,
+            ),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              )
+            ] : [],
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ] : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected 
-                ? colorScheme.onPrimary 
-                : colorScheme.onSurface,
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected 
+                  ? colorScheme.onPrimary 
+                  : colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ),
