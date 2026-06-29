@@ -49,15 +49,58 @@ class DownloadItem {
 }
 
 class DownloadProgress {
+  final String animeId;
   final String animeName;
   final int episode;
   final double progress;
+  final bool isPaused;
+  final String url;
+  final Anime anime;
 
   DownloadProgress({
+    required this.animeId,
     required this.animeName,
     required this.episode,
     required this.progress,
+    this.isPaused = false,
+    required this.url,
+    required this.anime,
   });
+
+  DownloadProgress copyWith({
+    double? progress,
+    bool? isPaused,
+  }) {
+    return DownloadProgress(
+      animeId: animeId,
+      animeName: animeName,
+      episode: episode,
+      progress: progress ?? this.progress,
+      isPaused: isPaused ?? this.isPaused,
+      url: url,
+      anime: anime,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'animeId': animeId,
+    'animeName': animeName,
+    'episode': episode,
+    'progress': progress,
+    'isPaused': isPaused,
+    'url': url,
+    'anime': anime.toJson(),
+  };
+
+  factory DownloadProgress.fromJson(Map<String, dynamic> json) => DownloadProgress(
+    animeId: json['animeId'] as String,
+    animeName: json['animeName'] as String,
+    episode: json['episode'] as int,
+    progress: (json['progress'] as num).toDouble(),
+    isPaused: json['isPaused'] as bool? ?? false,
+    url: json['url'] as String,
+    anime: Anime.fromJson(json['anime'] as Map<String, dynamic>),
+  );
 }
 
 class DownloadService extends ChangeNotifier {
@@ -67,12 +110,15 @@ class DownloadService extends ChangeNotifier {
 
   final Map<String, DownloadItem> _downloads = {};
   final Map<String, DownloadProgress> _activeDownloads = {};
+  final Map<String, StreamSubscription> _subscriptions = {};
   SharedPreferences? _prefs;
   bool _initialized = false;
 
   Future<void> init() async {
     if (_initialized) return;
     _prefs = await SharedPreferences.getInstance();
+    
+    // Load completed downloads
     final String? encoded = _prefs!.getString('downloads');
     if (encoded != null) {
       try {
@@ -82,6 +128,20 @@ class DownloadService extends ChangeNotifier {
         });
       } catch (e) {}
     }
+
+    // Load active downloads
+    final String? encodedActive = _prefs!.getString('active_downloads');
+    if (encodedActive != null) {
+      try {
+        final Map<String, dynamic> decoded = jsonDecode(encodedActive);
+        decoded.forEach((key, value) {
+          final progress = DownloadProgress.fromJson(value);
+          // All loaded active downloads should start as paused
+          _activeDownloads[key] = progress.copyWith(isPaused: true);
+        });
+      } catch (e) {}
+    }
+
     _initialized = true;
     notifyListeners();
   }
@@ -108,15 +168,21 @@ class DownloadService extends ChangeNotifier {
 
   Future<void> startDownload(Anime anime, int episode, String url) async {
     final key = _getKey(anime.id, episode);
-    if (_downloads.containsKey(key) || _activeDownloads.containsKey(key)) return;
+    if (_downloads.containsKey(key)) return;
+    if (_activeDownloads.containsKey(key) && !_activeDownloads[key]!.isPaused) return;
 
     final notificationId = key.hashCode;
     final notificationService = NotificationService();
 
+    final currentProgress = _activeDownloads[key]?.progress ?? 0;
     _activeDownloads[key] = DownloadProgress(
+      animeId: anime.id,
       animeName: anime.name,
       episode: episode,
-      progress: 0,
+      progress: currentProgress,
+      url: url,
+      anime: anime,
+      isPaused: false,
     );
     notifyListeners();
 
@@ -127,7 +193,6 @@ class DownloadService extends ChangeNotifier {
         downloadsDir.createSync();
       }
 
-      // Determine extension from URL or default to .mp4
       String extension = '.mp4';
       if (url.contains('.m3u8')) extension = '.m3u8';
       else if (url.contains('.mkv')) extension = '.mkv';
@@ -135,29 +200,35 @@ class DownloadService extends ChangeNotifier {
 
       final fileName = '${anime.id}_$episode$extension';
       final file = File('${downloadsDir.path}/$fileName');
+      
+      int existingLength = 0;
+      if (file.existsSync()) {
+        existingLength = file.lengthSync();
+      }
 
       final request = http.Request('GET', Uri.parse(url));
       request.headers['Referer'] = 'https://youtu-chan.com';
+      if (existingLength > 0) {
+        request.headers['Range'] = 'bytes=$existingLength-';
+      }
+      
       final response = await http.Client().send(request);
 
-      final total = response.contentLength ?? 0;
-      var received = 0;
+      // If server doesn't support range or we are starting fresh
+      final isResuming = response.statusCode == 206;
+      final total = (response.contentLength ?? 0) + (isResuming ? existingLength : 0);
+      var received = isResuming ? existingLength : 0;
       var lastNotificationProgress = -1;
 
-      final IOSink sink = file.openWrite();
+      final IOSink sink = file.openWrite(mode: isResuming ? FileMode.append : FileMode.write);
 
-      await response.stream.listen((value) {
+      final subscription = response.stream.listen((value) {
         sink.add(value);
         received += value.length;
         if (total > 0) {
           final progress = received / total;
-          _activeDownloads[key] = DownloadProgress(
-            animeName: anime.name,
-            episode: episode,
-            progress: progress,
-          );
+          _activeDownloads[key] = _activeDownloads[key]!.copyWith(progress: progress);
           
-          // Update notification every 1% to avoid overwhelming the system
           final currentProgressInt = (progress * 100).toInt();
           if (currentProgressInt > lastNotificationProgress) {
             lastNotificationProgress = currentProgressInt;
@@ -173,9 +244,13 @@ class DownloadService extends ChangeNotifier {
           
           notifyListeners();
         }
-      }).asFuture();
+      });
 
+      _subscriptions[key] = subscription;
+
+      await subscription.asFuture();
       await sink.close();
+      _subscriptions.remove(key);
 
       _downloads[key] = DownloadItem(
         animeId: anime.id,
@@ -191,22 +266,76 @@ class DownloadService extends ChangeNotifier {
       await notificationService.cancelNotification(notificationId);
       final finalAnimeTitle = anime.englishName ?? anime.name;
       await notificationService.showDownloadComplete(
-        id: notificationId + 1, // Different ID so it doesn't replace the progress one if it's still finishing
+        id: notificationId + 1,
         title: 'Download Complete',
         body: '$finalAnimeTitle - Episode $episode',
       );
       
       notifyListeners();
     } catch (e) {
-      _activeDownloads.remove(key);
-      await notificationService.cancelNotification(notificationId);
+      if (_activeDownloads[key]?.isPaused ?? false) {
+        // Handled by pauseDownload
+      } else {
+        _activeDownloads.remove(key);
+        _subscriptions.remove(key);
+        await notificationService.cancelNotification(notificationId);
+        notifyListeners();
+        rethrow;
+      }
+    }
+  }
+
+  void pauseDownload(String animeId, int episode) {
+    final key = _getKey(animeId, episode);
+    final subscription = _subscriptions[key];
+    if (subscription != null) {
+      subscription.cancel();
+      _subscriptions.remove(key);
+    }
+    if (_activeDownloads.containsKey(key)) {
+      _activeDownloads[key] = _activeDownloads[key]!.copyWith(isPaused: true);
+      _saveToDisk();
       notifyListeners();
-      rethrow;
+    }
+  }
+
+  void resumeDownload(String animeId, int episode) {
+    final key = _getKey(animeId, episode);
+    final progress = _activeDownloads[key];
+    if (progress != null && progress.isPaused) {
+      startDownload(progress.anime, progress.episode, progress.url);
     }
   }
 
   Future<void> deleteDownload(String animeId, int episode) async {
     final key = _getKey(animeId, episode);
+    
+    // 1. Handle Active/Paused Download
+    final activeProgress = _activeDownloads[key];
+    if (activeProgress != null) {
+      pauseDownload(animeId, episode);
+      
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final downloadsDir = Directory('${dir.path}/downloads');
+        
+        String url = activeProgress.url;
+        String extension = '.mp4';
+        if (url.contains('.m3u8')) extension = '.m3u8';
+        else if (url.contains('.mkv')) extension = '.mkv';
+        else if (url.contains('.webm')) extension = '.webm';
+
+        final fileName = '${animeId}_$episode$extension';
+        final file = File('${downloadsDir.path}/$fileName');
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      } catch (e) {}
+      
+      _activeDownloads.remove(key);
+    }
+
+    // 2. Handle Completed Download
     final item = _downloads[key];
     if (item != null) {
       try {
@@ -216,17 +345,27 @@ class DownloadService extends ChangeNotifier {
         }
       } catch (e) {}
       _downloads.remove(key);
-      _saveToDisk();
-      notifyListeners();
     }
+    
+    _saveToDisk();
+    notifyListeners();
   }
 
   void _saveToDisk() {
     if (_prefs == null) return;
+    
+    // Save completed downloads
     final Map<String, dynamic> toSave = {};
     _downloads.forEach((key, value) {
       toSave[key] = value.toJson();
     });
     _prefs!.setString('downloads', jsonEncode(toSave));
+
+    // Save active downloads
+    final Map<String, dynamic> activeToSave = {};
+    _activeDownloads.forEach((key, value) {
+      activeToSave[key] = value.toJson();
+    });
+    _prefs!.setString('active_downloads', jsonEncode(activeToSave));
   }
 }

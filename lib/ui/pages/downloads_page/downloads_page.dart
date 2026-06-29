@@ -41,8 +41,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           listenable: downloadService,
           builder: (context, _) {
             final downloads = downloadService.getAllDownloads();
+            final activeDownloads = downloadService.currentDownloads;
 
-            if (downloads.isEmpty) {
+            if (downloads.isEmpty && activeDownloads.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -76,28 +77,176 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
             final animeIds = groupedDownloads.keys.toList();
 
-            return ListView.builder(
+            return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: animeIds.length,
-              itemBuilder: (context, index) {
-                final animeId = animeIds[index];
-                final animeDownloads = groupedDownloads[animeId]!;
-                // Sort episodes numerically within each anime group
-                animeDownloads.sort((a, b) => a.episode.compareTo(b.episode));
-                
-                return _AnimeDownloadGroup(
-                  animeId: animeId,
-                  downloads: animeDownloads,
-                  isExpanded: _expandedState[animeId] ?? false,
-                  onToggle: () {
-                    setState(() {
-                      _expandedState[animeId] = !(_expandedState[animeId] ?? false);
-                    });
-                  },
-                );
-              },
+              children: [
+                if (activeDownloads.isNotEmpty) ...[
+                  const _SectionHeader(title: 'DOWNLOADING'),
+                  const SizedBox(height: 8),
+                  ...activeDownloads.map((progress) => _ActiveDownloadTile(progress: progress)),
+                  const SizedBox(height: 24),
+                ],
+                if (downloads.isNotEmpty) ...[
+                  if (activeDownloads.isNotEmpty)
+                    const _SectionHeader(title: 'COMPLETED'),
+                  const SizedBox(height: 8),
+                  ...animeIds.map((animeId) {
+                    final animeDownloads = groupedDownloads[animeId]!;
+                    animeDownloads.sort((a, b) => a.episode.compareTo(b.episode));
+                    return _AnimeDownloadGroup(
+                      animeId: animeId,
+                      downloads: animeDownloads,
+                      isExpanded: _expandedState[animeId] ?? false,
+                      onToggle: () {
+                        setState(() {
+                          _expandedState[animeId] = !(_expandedState[animeId] ?? false);
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveDownloadTile extends StatelessWidget {
+  final DownloadProgress progress;
+
+  const _ActiveDownloadTile({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final useGlass = ThemeService().useGlassTheme;
+
+    Widget buildContent() {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        progress.animeName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Episode ${progress.episode}${progress.isPaused ? ' • Paused' : ''}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${(progress.progress * 100).toInt()}%',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    if (progress.isPaused) {
+                      DownloadService().resumeDownload(progress.animeId, progress.episode);
+                    } else {
+                      DownloadService().pauseDownload(progress.animeId, progress.episode);
+                    }
+                  },
+                  icon: Icon(
+                    progress.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                    color: colorScheme.primary,
+                  ),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    DownloadService().deleteDownload(progress.animeId, progress.episode);
+                  },
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress.progress,
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                minHeight: 8,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: useGlass
+          ? GlassContainer(
+              borderRadius: 20,
+              child: buildContent(),
+            )
+          : Container(
+              decoration: BoxDecoration(
+                color: AkiraColors.getComponentColor(colorScheme, isLight),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AkiraColors.getShadowColor(colorScheme),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: buildContent(),
+            ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          color: colorScheme.primary,
+          letterSpacing: 1.2,
         ),
       ),
     );
