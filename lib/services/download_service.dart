@@ -118,6 +118,8 @@ class DownloadService extends ChangeNotifier {
   final Map<String, DownloadItem> _downloads = {};
   final Map<String, DownloadProgress> _activeDownloads = {};
   final Map<String, List<StreamSubscription>> _subscriptions = {};
+  final Map<String, List<http.Client>> _clients = {};
+  final Map<String, Completer<void>> _completers = {};
   SharedPreferences? _prefs;
   bool _initialized = false;
 
@@ -212,8 +214,13 @@ class DownloadService extends ChangeNotifier {
       try {
         await _startMultiThreadedDownload(anime, episode, url, threads);
       } catch (e) {
-        // Fallback to single threaded if multi-threaded fails (e.g. Range not supported)
-        await _startSingleThreadedDownload(anime, episode, url);
+        // Only fallback if the error is specifically about range support/server issues
+        // and NOT because the user paused or deleted the download.
+        if (e.toString().contains('not supported') && 
+            _activeDownloads.containsKey(key) && 
+            !_activeDownloads[key]!.isPaused) {
+          await _startSingleThreadedDownload(anime, episode, url);
+        }
       }
     } else {
       await _startSingleThreadedDownload(anime, episode, url);
@@ -263,7 +270,10 @@ class DownloadService extends ChangeNotifier {
         request.headers['Range'] = 'bytes=$existingLength-';
       }
       
-      final response = await http.Client().send(request);
+      final client = http.Client();
+      _clients[key] = [client];
+      
+      final response = await client.send(request);
 
       final isResuming = response.statusCode == 206;
       final total = (response.contentLength ?? 0) + (isResuming ? existingLength : 0);
@@ -271,6 +281,9 @@ class DownloadService extends ChangeNotifier {
       var lastNotificationProgress = -1;
 
       final IOSink sink = file.openWrite(mode: isResuming ? FileMode.append : FileMode.write);
+
+      final Completer<void> completer = Completer<void>();
+      _completers[key] = completer;
 
       final subscription = response.stream.listen((value) {
         sink.add(value);
@@ -294,16 +307,20 @@ class DownloadService extends ChangeNotifier {
           
           notifyListeners();
         }
-      });
+      }, onDone: () => completer.complete(), onError: (e) => completer.completeError(e));
 
       _subscriptions[key] = [subscription];
 
-      await subscription.asFuture();
+      await completer.future;
       await sink.close();
       _subscriptions.remove(key);
+      _clients.remove(key);
+      _completers.remove(key);
 
       _finishDownload(anime, episode, file.path, key, notificationId);
     } catch (e) {
+      _clients.remove(key);
+      _completers.remove(key);
       _handleDownloadError(key, notificationId);
       rethrow;
     }
@@ -344,12 +361,15 @@ class DownloadService extends ChangeNotifier {
 
     final chunkSize = (total / threads).ceil();
     final List<StreamSubscription> subs = [];
+    final List<http.Client> clients = [];
     _subscriptions[key] = subs;
+    _clients[key] = clients;
 
     int totalReceived = 0;
     var lastNotificationProgress = -1;
     int completedThreads = 0;
     final Completer<void> completer = Completer<void>();
+    _completers[key] = completer;
     final List<double> threadProgressValues = List.filled(threads, 0.0);
     
     // Use a lock to prevent concurrent writes to the same RandomAccessFile
@@ -366,6 +386,7 @@ class DownloadService extends ChangeNotifier {
       request.headers['Range'] = 'bytes=$start-$end';
 
       final client = http.Client();
+      clients.add(client);
       final response = await client.send(request);
       
       int chunkReceived = 0;
@@ -419,9 +440,13 @@ class DownloadService extends ChangeNotifier {
       await completer.future;
       await raf.close();
       _subscriptions.remove(key);
+      _clients.remove(key);
+      _completers.remove(key);
       _finishDownload(anime, episode, file.path, key, notificationId);
     } catch (e) {
       await raf.close();
+      _clients.remove(key);
+      _completers.remove(key);
       _handleDownloadError(key, notificationId);
       rethrow;
     }
@@ -463,6 +488,8 @@ class DownloadService extends ChangeNotifier {
 
   void pauseDownload(String animeId, int episode) {
     final key = _getKey(animeId, episode);
+    
+    // 1. Cancel Subscriptions
     final subs = _subscriptions[key];
     if (subs != null) {
       for (var sub in subs) {
@@ -470,6 +497,23 @@ class DownloadService extends ChangeNotifier {
       }
       _subscriptions.remove(key);
     }
+
+    // 2. Close Clients (Stops active network requests)
+    final clients = _clients[key];
+    if (clients != null) {
+      for (var client in clients) {
+        client.close();
+      }
+      _clients.remove(key);
+    }
+
+    // 3. Abort the background task
+    final completer = _completers[key];
+    if (completer != null && !completer.isCompleted) {
+      completer.completeError('Paused');
+      _completers.remove(key);
+    }
+
     if (_activeDownloads.containsKey(key)) {
       _activeDownloads[key] = _activeDownloads[key]!.copyWith(isPaused: true);
       _saveToDisk();
