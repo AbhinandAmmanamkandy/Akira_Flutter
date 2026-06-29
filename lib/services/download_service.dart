@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/anime.dart';
 import 'notification_service.dart';
+import 'theme_service.dart';
 
 class DownloadItem {
   final String animeId;
@@ -56,6 +57,7 @@ class DownloadProgress {
   final bool isPaused;
   final String url;
   final Anime anime;
+  final List<double>? threadProgresses;
 
   DownloadProgress({
     required this.animeId,
@@ -65,11 +67,13 @@ class DownloadProgress {
     this.isPaused = false,
     required this.url,
     required this.anime,
+    this.threadProgresses,
   });
 
   DownloadProgress copyWith({
     double? progress,
     bool? isPaused,
+    List<double>? threadProgresses,
   }) {
     return DownloadProgress(
       animeId: animeId,
@@ -79,6 +83,7 @@ class DownloadProgress {
       isPaused: isPaused ?? this.isPaused,
       url: url,
       anime: anime,
+      threadProgresses: threadProgresses ?? this.threadProgresses,
     );
   }
 
@@ -90,6 +95,7 @@ class DownloadProgress {
     'isPaused': isPaused,
     'url': url,
     'anime': anime.toJson(),
+    'threadProgresses': threadProgresses,
   };
 
   factory DownloadProgress.fromJson(Map<String, dynamic> json) => DownloadProgress(
@@ -100,6 +106,7 @@ class DownloadProgress {
     isPaused: json['isPaused'] as bool? ?? false,
     url: json['url'] as String,
     anime: Anime.fromJson(json['anime'] as Map<String, dynamic>),
+    threadProgresses: (json['threadProgresses'] as List?)?.map((e) => (e as num).toDouble()).toList(),
   );
 }
 
@@ -110,7 +117,7 @@ class DownloadService extends ChangeNotifier {
 
   final Map<String, DownloadItem> _downloads = {};
   final Map<String, DownloadProgress> _activeDownloads = {};
-  final Map<String, StreamSubscription> _subscriptions = {};
+  final Map<String, List<StreamSubscription>> _subscriptions = {};
   SharedPreferences? _prefs;
   bool _initialized = false;
 
@@ -171,6 +178,26 @@ class DownloadService extends ChangeNotifier {
     if (_downloads.containsKey(key)) return;
     if (_activeDownloads.containsKey(key) && !_activeDownloads[key]!.isPaused) return;
 
+    final threads = ThemeService().downloadThreads;
+    
+    // For now, only use multi-threading for new downloads that aren't m3u8
+    // Resuming multi-threaded downloads requires metadata which we don't have yet
+    bool canUseMultiThreads = threads > 1 && !url.contains('.m3u8');
+    
+    if (canUseMultiThreads) {
+      try {
+        await _startMultiThreadedDownload(anime, episode, url, threads);
+      } catch (e) {
+        // Fallback to single threaded if multi-threaded fails (e.g. Range not supported)
+        await _startSingleThreadedDownload(anime, episode, url);
+      }
+    } else {
+      await _startSingleThreadedDownload(anime, episode, url);
+    }
+  }
+
+  Future<void> _startSingleThreadedDownload(Anime anime, int episode, String url) async {
+    final key = _getKey(anime.id, episode);
     final notificationId = key.hashCode;
     final notificationService = NotificationService();
 
@@ -214,7 +241,6 @@ class DownloadService extends ChangeNotifier {
       
       final response = await http.Client().send(request);
 
-      // If server doesn't support range or we are starting fresh
       final isResuming = response.statusCode == 206;
       final total = (response.contentLength ?? 0) + (isResuming ? existingLength : 0);
       var received = isResuming ? existingLength : 0;
@@ -246,50 +272,171 @@ class DownloadService extends ChangeNotifier {
         }
       });
 
-      _subscriptions[key] = subscription;
+      _subscriptions[key] = [subscription];
 
       await subscription.asFuture();
       await sink.close();
       _subscriptions.remove(key);
 
-      _downloads[key] = DownloadItem(
-        animeId: anime.id,
-        episode: episode,
-        animeName: anime.name,
-        englishName: anime.englishName,
-        thumbnail: anime.thumbnail ?? '',
-        localPath: file.path,
-      );
-      _activeDownloads.remove(key);
-      _saveToDisk();
-      
-      await notificationService.cancelNotification(notificationId);
-      final finalAnimeTitle = anime.englishName ?? anime.name;
-      await notificationService.showDownloadComplete(
-        id: notificationId + 1,
-        title: 'Download Complete',
-        body: '$finalAnimeTitle - Episode $episode',
-      );
-      
-      notifyListeners();
+      _finishDownload(anime, episode, file.path, key, notificationId);
     } catch (e) {
-      if (_activeDownloads[key]?.isPaused ?? false) {
-        // Handled by pauseDownload
-      } else {
-        _activeDownloads.remove(key);
-        _subscriptions.remove(key);
-        await notificationService.cancelNotification(notificationId);
+      _handleDownloadError(key, notificationId);
+      rethrow;
+    }
+  }
+
+  Future<void> _startMultiThreadedDownload(Anime anime, int episode, String url, int threads) async {
+    final key = _getKey(anime.id, episode);
+    final notificationId = key.hashCode;
+    final notificationService = NotificationService();
+
+    // 1. Get file size and check for Range support
+    final headResponse = await http.head(Uri.parse(url), headers: {'Referer': 'https://youtu-chan.com'});
+    final total = int.tryParse(headResponse.headers['content-length'] ?? '') ?? 0;
+    final acceptRanges = headResponse.headers['accept-ranges'] == 'bytes';
+
+    if (total == 0 || !acceptRanges) {
+      throw Exception('Multi-threaded download not supported by server');
+    }
+
+    _activeDownloads[key] = DownloadProgress(
+      animeId: anime.id,
+      animeName: anime.name,
+      episode: episode,
+      progress: 0,
+      url: url,
+      anime: anime,
+      isPaused: false,
+    );
+    notifyListeners();
+
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName = '${anime.id}_$episode.mp4'; // Default to mp4 for multi-thread
+    final file = File('${dir.path}/downloads/$fileName');
+    if (!file.parent.existsSync()) file.parent.createSync();
+
+    final raf = await file.open(mode: FileMode.write);
+    await raf.truncate(total);
+
+    final chunkSize = (total / threads).ceil();
+    final List<StreamSubscription> subs = [];
+    _subscriptions[key] = subs;
+
+    int totalReceived = 0;
+    var lastNotificationProgress = -1;
+    int completedThreads = 0;
+    final Completer<void> completer = Completer<void>();
+    final List<double> threadProgressValues = List.filled(threads, 0.0);
+
+    for (int i = 0; i < threads; i++) {
+      final threadIndex = i;
+      final start = i * chunkSize;
+      final end = (i == threads - 1) ? total - 1 : (i + 1) * chunkSize - 1;
+      final currentThreadTotal = end - start + 1;
+
+      final request = http.Request('GET', Uri.parse(url));
+      request.headers['Referer'] = 'https://youtu-chan.com';
+      request.headers['Range'] = 'bytes=$start-$end';
+
+      final client = http.Client();
+      final response = await client.send(request);
+      
+      int chunkReceived = 0;
+
+      final sub = response.stream.listen((value) async {
+        final writeOffset = start + chunkReceived;
+        chunkReceived += value.length;
+        totalReceived += value.length;
+        
+        threadProgressValues[threadIndex] = chunkReceived / currentThreadTotal;
+
+        await raf.setPosition(writeOffset);
+        await raf.writeFrom(value);
+
+        final progress = totalReceived / total;
+        _activeDownloads[key] = _activeDownloads[key]!.copyWith(
+          progress: progress,
+          threadProgresses: List.from(threadProgressValues),
+        );
+        
+        final currentProgressInt = (progress * 100).toInt();
+        if (currentProgressInt > lastNotificationProgress) {
+          lastNotificationProgress = currentProgressInt;
+          final animeTitle = anime.englishName ?? anime.name;
+          notificationService.showDownloadProgress(
+            id: notificationId,
+            title: 'Downloading $animeTitle (Multi-thread)',
+            body: 'Episode $episode • $currentProgressInt%',
+            progress: currentProgressInt,
+            maxProgress: 100,
+          );
+        }
         notifyListeners();
-        rethrow;
-      }
+      }, onDone: () {
+        completedThreads++;
+        if (completedThreads == threads) {
+          completer.complete();
+        }
+      }, onError: (e) {
+        if (!completer.isCompleted) completer.completeError(e);
+      });
+
+      subs.add(sub);
+    }
+
+    try {
+      await completer.future;
+      await raf.close();
+      _subscriptions.remove(key);
+      _finishDownload(anime, episode, file.path, key, notificationId);
+    } catch (e) {
+      await raf.close();
+      _handleDownloadError(key, notificationId);
+      rethrow;
+    }
+  }
+
+  void _finishDownload(Anime anime, int episode, String filePath, String key, int notificationId) {
+    _downloads[key] = DownloadItem(
+      animeId: anime.id,
+      episode: episode,
+      animeName: anime.name,
+      englishName: anime.englishName,
+      thumbnail: anime.thumbnail ?? '',
+      localPath: filePath,
+    );
+    _activeDownloads.remove(key);
+    _saveToDisk();
+    
+    NotificationService().cancelNotification(notificationId);
+    final finalAnimeTitle = anime.englishName ?? anime.name;
+    NotificationService().showDownloadComplete(
+      id: notificationId + 1,
+      title: 'Download Complete',
+      body: '$finalAnimeTitle - Episode $episode',
+    );
+    
+    notifyListeners();
+  }
+
+  void _handleDownloadError(String key, int notificationId) {
+    if (_activeDownloads[key]?.isPaused ?? false) {
+      // Handled
+    } else {
+      _activeDownloads.remove(key);
+      _subscriptions.remove(key);
+      NotificationService().cancelNotification(notificationId);
+      notifyListeners();
     }
   }
 
   void pauseDownload(String animeId, int episode) {
     final key = _getKey(animeId, episode);
-    final subscription = _subscriptions[key];
-    if (subscription != null) {
-      subscription.cancel();
+    final subs = _subscriptions[key];
+    if (subs != null) {
+      for (var sub in subs) {
+        sub.cancel();
+      }
       _subscriptions.remove(key);
     }
     if (_activeDownloads.containsKey(key)) {

@@ -6,6 +6,7 @@ import 'package:akira/services/backup_service.dart';
 import 'package:akira/services/history_service.dart';
 import 'package:akira/ui/pages/history_page/history_page.dart';
 import 'package:akira/ui/pages/downloads_page/downloads_page.dart';
+import 'package:akira/ui/widgets/common_chip.dart';
 import 'widgets/settings_components.dart';
 import 'widgets/accent_shade_button.dart';
 import 'widgets/settings_background.dart';
@@ -220,6 +221,31 @@ class SettingsPage extends StatelessWidget {
                               value: themeService.allowUnknown,
                               onChanged: (_) => themeService.toggleAllowUnknown(),
                               activeThumbColor: colorScheme.primary,
+                            ),
+                          ),
+                          const SettingsDivider(),
+                          const SettingsTile(
+                            icon: Icons.speed_rounded,
+                            title: 'Download Threads',
+                            subtitle: 'Multi-threaded downloads (Faster)',
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(56, 0, 16, 16),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [1, 2, 4, 6, 8].map((value) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: CommonChip(
+                                      label: '$value',
+                                      isSelected: themeService.downloadThreads == value,
+                                      onTap: () => themeService.setDownloadThreads(value),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
                         ],

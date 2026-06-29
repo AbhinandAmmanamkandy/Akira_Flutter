@@ -38,6 +38,9 @@ class ThemeService extends ChangeNotifier {
   bool _showTooltips = true;
   bool get showTooltips => _showTooltips;
   
+  int _downloadThreads = 1;
+  int get downloadThreads => _downloadThreads;
+  
   bool _isFirstOpen = true;
   bool get isFirstOpen => _isFirstOpen;
 
@@ -64,6 +67,7 @@ class ThemeService extends ChangeNotifier {
     _useGlassTheme = _prefs.getBool('useGlassTheme') ?? false;
     _useOverscrollToClose = _prefs.getBool('useOverscrollToClose') ?? true;
     _showTooltips = _prefs.getBool('showTooltips') ?? true;
+    _downloadThreads = _prefs.getInt('downloadThreads') ?? 1;
     _isFirstOpen = _prefs.getBool('isFirstOpen') ?? true;
     _username = _prefs.getString('username') ?? '';
     _gender = _prefs.getString('gender') ?? '';
@@ -89,6 +93,7 @@ class ThemeService extends ChangeNotifier {
       'useGlassTheme': _useGlassTheme,
       'useOverscrollToClose': _useOverscrollToClose,
       'showTooltips': _showTooltips,
+      'downloadThreads': _downloadThreads,
       'username': _username,
       'gender': _gender,
     };
@@ -135,6 +140,10 @@ class ThemeService extends ChangeNotifier {
     if (settings.containsKey('showTooltips')) {
       _showTooltips = settings['showTooltips'];
       _prefs.setBool('showTooltips', _showTooltips);
+    }
+    if (settings.containsKey('downloadThreads')) {
+      _downloadThreads = settings['downloadThreads'];
+      _prefs.setInt('downloadThreads', _downloadThreads);
     }
     if (settings.containsKey('username')) {
       _username = settings['username'];
@@ -187,6 +196,12 @@ class ThemeService extends ChangeNotifier {
   void toggleShowTooltips() {
     _showTooltips = !_showTooltips;
     _prefs.setBool('showTooltips', _showTooltips);
+    notifyListeners();
+  }
+
+  void setDownloadThreads(int threads) {
+    _downloadThreads = threads;
+    _prefs.setInt('downloadThreads', threads);
     notifyListeners();
   }
 

@@ -192,14 +192,36 @@ class _ActiveDownloadTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress.progress,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                minHeight: 8,
+            if (progress.threadProgresses != null && progress.threadProgresses!.isNotEmpty)
+              SizedBox(
+                height: 8,
+                child: Row(
+                  children: progress.threadProgresses!.map((threadProgress) {
+                    return Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: threadProgress,
+                            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                            minHeight: 8,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )
+            else
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress.progress,
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                  minHeight: 8,
+                ),
               ),
-            ),
           ],
         ),
       );
