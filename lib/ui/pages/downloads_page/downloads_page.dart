@@ -196,17 +196,23 @@ class _ActiveDownloadTile extends StatelessWidget {
               SizedBox(
                 height: 8,
                 child: Row(
-                  children: progress.threadProgresses!.map((threadProgress) {
+                  children: progress.threadProgresses!.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final threadProgress = entry.value;
+                    final isFirst = index == 0;
+                    final isLast = index == progress.threadProgresses!.length - 1;
+
                     return Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 1),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: threadProgress,
-                            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                            minHeight: 8,
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.horizontal(
+                          left: isFirst ? const Radius.circular(4) : Radius.zero,
+                          right: isLast ? const Radius.circular(4) : Radius.zero,
+                        ),
+                        child: LinearProgressIndicator(
+                          value: threadProgress,
+                          backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                          minHeight: 8,
+                          borderRadius: BorderRadius.zero,
                         ),
                       ),
                     );
@@ -220,6 +226,7 @@ class _ActiveDownloadTile extends StatelessWidget {
                   value: progress.progress,
                   backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                   minHeight: 8,
+                  borderRadius: BorderRadius.zero,
                 ),
               ),
           ],

@@ -437,7 +437,7 @@ class SettingsPage extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               alignment: WrapAlignment.center,
-              children: [1, 2, 4, 6, 8].map((e) => CommonChip(
+              children: [1, 2, 4, 8, 16, 32, 64].map((e) => CommonChip(
                 label: '$e Threads',
                 isSelected: themeService.downloadThreads == e,
                 onTap: () {
